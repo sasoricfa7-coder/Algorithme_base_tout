@@ -1,0 +1,5 @@
+signe = ←  seul. = signifie comparaison pas de == ici
+*** Variables
+Nom_variable signe(←) valeur
+
+Nom_constante signe(←) valeur (affectation obligatoire à la declaration)

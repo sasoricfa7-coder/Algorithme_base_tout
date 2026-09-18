@@ -1,0 +1,13 @@
+1/*ce sont de petits trucs propre à nous dans le langage : 
+Tout caractère est considerer comme une chaine de caractère donc :
+Variables
+A : chaine
+
+A ← "E" est valide
+mais l'inverse non. Un caractère n'est pas une chaine de caractère.*/
+
+2/*
+Tout entier est un decimal comme dans la vrai vie. Et une operation entre entier et decimal est autoriser mais produis toujours
+un decimal.
+
+ */

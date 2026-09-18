@@ -1,0 +1,3 @@
+Les commentaires sont encadrés par le signe %
+Exemple : 
+%  Ceci est un commentaire %

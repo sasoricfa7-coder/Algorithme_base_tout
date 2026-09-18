@@ -1,0 +1,9 @@
+Pour I ← N à M pas A faire
+	...
+Fin Pour
+N et M sont compris. Et j'envisage plustard le pas negatif afin de passer du 10, 9, puis 8 ... très pratique
+avec :
+I : indice 
+N : valeur initial
+M : valeur final
+A : Le pas de variation
