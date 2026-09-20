@@ -1,79 +1,75 @@
 {
-  "mots_cles": {
-    "algorithme": "ALGORITHME",
-    "variable": "VARIABLE",
-    "constante": "CONSTANTE",
-    "debut": "DEBUT",
-    "fin": "FIN",
-    "ecrire": "ECRIRE",
-    "lire": "LIRE",
-
-    "entier": "ENTIER",
-    "reel": "REEL",
-    "booleen": "BOOLEEN",
-    "chaine": "CHAINE",
-    "caractere": "CARACTERE",
-
-    "si": "SI",
-    "alors": "ALORS",
-    "sinon": "SINON",
-    "fin si": "FIN_SI",
-
-    "cas": "CAS",
-    "vaut": "VAUT",
-
-    "pour": "POUR",
-    "fin pour": "FIN_POUR",
-
-    "tant que": "TANT_QUE",
-    "fin tant que": "FIN_TANT_QUE",
-
-    "repeter jusqu'a": "REPETER_JUSQUA",
-    "fin repeter jusqu'a": "FIN_REPETER_JUSQUA",
-
-    "tableau": "TABLEAU",
-    "fonction": "FONCTION",
-    "procedure": "PROCEDURE",
-
-    "et": "ET",
-    "ou": "OU",
-    "non": "NON",
-
-    "mod": "MOD",
-    "div": "DIV"
-  },
-
-  "booleen": {
-    "vrai": "VRAI",
-    "faux": "FAUX"
-  },
-
-  "operateurs": {
-    "←": "AFFECTATION",
-    "+": "PLUS",
-    "-": "MOINS",
-    "*": "MULTIPLICATION",
-    "/": "DIVISION",
-    "^": "PUISSANCE",
-    "=": "EGAL",
-    "<": "INFERIEUR",
-    ">": "SUPERIEUR",
-    "<=": "INFERIEUR_EGAL",
-    ">=": "SUPERIEUR_EGAL",
-    "<>": "DIFFERENT",
-    ":": "SYMBOLE_DECLARATION",
-    ",": "SEPARATEUR"
-  },
-
-  "commentaire": {
-    "%": "DELIMITEUR_COMMENTAIRE"
-  },
-
-  "regles": {
-    "identifiant": "lettre suivie de lettres, chiffres ou _",
-    "entier": "suite de chiffres",
-    "reel": "chiffres avec une partie decimale",
-    "chaine": "texte entre guillemets",
-    "caractere": "un caractere entre apostrophes"
-  }
+	"mots_cles_simple" : [
+		"algorithme",
+		"variable",
+		"constante",
+		"constantes",
+		"variables",
+		"debut",
+		"fin",
+		"ecrire",
+		"lire",
+		"entier",
+		"reel",
+		"booleen",
+		"chaine",
+		"caractere",
+		"si",
+		"alors",
+		"sinon",
+		"cas",
+		"vaut",
+		"pour",
+		"tableau",
+		"fonction",
+		"procedure",
+		"retourne"
+		
+	],
+	"mots_cles_ambigu" : [
+		"tant que",
+		"repeter jusqu'a"
+	],
+	"les_fins" : [
+		"fin si",
+		"fin pour",
+		"fin tant que",
+		"fin repeter jusqu'a",
+	],
+	"operateurs_logiques" : [
+		"ou",
+		"et",
+		"non"
+	],
+	"operateurs_comparaison" : [
+		"=",
+		"<",
+		">",
+		"<=",
+		">=",
+		"<>"
+	],
+	"operateurs_arihmetiques" : [
+		"+",
+		"-",
+		"*",
+		"/",
+		"^",
+		"mod",
+		"div"
+	],
+	"valeur_booleen" : [
+		"vrai",
+		"faux"
+	],
+	"operateurs_affectation" : [
+		"←"
+	],
+	"commentaire" : [
+		"%"
+	],
+	"autres" : [
+		":",
+		","
+	]
 }

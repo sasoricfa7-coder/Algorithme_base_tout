@@ -22,7 +22,23 @@ def main(code_source: str, le_json: dict) -> list[dict] :
 
         if caractere == "'" :
             ligne, colonne, index = un_seul_caractere(ligne, colonne, index, code_source, token)
-        
+            continue
+
+        if caractere == '"' :
+            ligne, colonne, index = chaine_caractere(ligne, colonne, index, code_source, token)
+            continue
+
+        if caractere in ("(" , ")") :
+            ligne, colonne, index = parenthese(ligne, colonne, index, code_source, token)
+            continue
+
+        if caractere.isdigit() :
+            ligne, colonne, index = numerique(ligne, colonne, index, code_source, token)
+            continue
+
+        if caractere.isalpha() or caractere == "_" :
+            ligne, colonne, index = alpha(ligne, colonne, index, code_source, token)
+            continue
 
 if __name__=="__main__" :
     main()
