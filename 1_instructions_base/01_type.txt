@@ -1,5 +1,0 @@
-chaine  →  chaine de caractères mais on garde chaine tout court.
-entier → int
-caractere →  pour caractère  mais sans accent et en plus vu qu'on est insensible à la casse : caractere egale aussi caractère
-reel → float
-booleen → vrai / faux

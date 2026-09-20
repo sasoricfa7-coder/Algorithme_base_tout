@@ -1,5 +1,0 @@
-Declarer :
-Tableau nom_tab(nombre_lignes, nombre_colonnes) : Type
-
-Acceder à un élément :
-A ← nom_tab(numero_lignes, numero_colonnes)
