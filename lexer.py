@@ -1,37 +1,28 @@
-import json
-import sys
-from erreur import gestion as erreur
-import os
+from aide_lexer import *
 
-def verificateur() -> str:
-    if len(sys.argv) < 2 :
-        erreur("Aucun fichier indiquer.")
-    nom: str = sys.argv[1]
+def main(code_source: str, le_json: dict) -> list[dict] :
+    token: list[dict] = []
+    ligne: int, colonne: int, index: int = 1, 1, 0
+    _commentaire: dict[str, str] = le_json["commentaire"]
 
-    if not os.path.isfile(nom) :
-        erreur(f"Le fichier {nom} n'existe pas.")
-    if any(nom) :
-        erreur(f"Fichier {nom} est vide.")
+    while (index < len(code_source)) :
+        caractere: str = code_source[index]
 
-    return nom
+        if caractere in (" ", "\t") :
+            ligne, colonne, index = espace(ligne, colonne, index)
+            continue
 
-def charger_code(nom: str) -> str :
-    with open(nom, "r", encoding="utf-8") as f :
-        return f.read()
+        if caractere == "\n" :
+            ligne, colonne, index = retour_ligne(ligne, colonne, index)
+            continue
+
+        if caractere in _commentaire :
+            ligne, colonne, index = commentaire(ligne, colonne, index, code_source, _commentaire)
+            continue
+
+        if caractere == "'" :
+            ligne, colonne, index = un_seul_caractere(ligne, colonne, index, code_source, token)
         
 
-
-def charger_json(nom: str) -> dict:
-    with open(nom, "r", encoding="utf-8") as f :
-        contenu = json.load(f)
-    return contenu
-
-def main() :
-    nom: str = verificateur()
-    code_source: str = charger_code(nom)
-    fichier_json: dict[str , str] = charger_json("langage.json")
-    print(nom)
-    print(code_source)
-    
 if __name__=="__main__" :
     main()
