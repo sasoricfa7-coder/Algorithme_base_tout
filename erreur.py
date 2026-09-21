@@ -11,9 +11,9 @@ def gestion(message: str, ligne: int = -1, colonne: int = -1, contenu: str = "",
     if not warning :
         print(f"{ROUGE} Erreur grave {contenu} {RESET}")    
         if ligne != -1 : 
-            print("A la ligne {ligne}")
+            print(f"A la ligne {ligne}")
         if colonne != -1 :
-            print("A la colonne {colonne}")
+            print(f"A la colonne {colonne}")
         print(f"GUIDE : {VERT} {message} {RESET}")
         arret()
 

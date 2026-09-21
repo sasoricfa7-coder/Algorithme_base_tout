@@ -1,1 +1,15 @@
-FiN SI
+Algortihme TEST
+Variables
+	X: entier entier
+	Z: entier caractere
+
+Debut
+	Ecrire("Entrez la valeur de x : ")
+	Lire(X)
+
+	Ecrire(x^2) %CECI RETOURNE X A LA PUISSANCE 2%
+	Z ← 'Z'
+
+
+
+Fin
