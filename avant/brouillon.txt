@@ -1,0 +1,45 @@
+algorithme
+variable
+constante
+debut
+fin
+ecrire
+lire
+entier
+reel
+booleen : vrai / faux
+chaine
+caractere
+← : affectation
++ - * / 
+mod : modulo
+div : division entière sans partie decimal
+^ : exposant
+= : egalité
+<
+>
+<=
+>=
+<> : différent
+
+et ou non
+
+% ceci est un commentaire %  : pour les commentaires
+structure conditionnelle : 
+Si ... Alors ... Fin Si
+Si ... Alors ... Sinon ... Fin Si
+Si ... Alors ... Sinon Si ... Alors ... Sinon Si ... Alors ... Sinon ... Fin Si Fin Si Fin Si
+
+structure à choix multiple : 
+cas ... vaut 
+
+Pour
+Fin Pour
+Tant que
+Fin Tant que
+repeter jusqu'a
+Fin repeter jusqu'a
+Tableau
+Fonction
+Procedure
+

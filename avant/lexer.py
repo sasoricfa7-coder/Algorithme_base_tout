@@ -1,9 +1,8 @@
 from aide_lexer import *
 from erreur import gestion as erreur
-from tous_les_types import Token
 
-def main(code_source: str, le_json: dict[str, list[str]]) -> list[Token] :
-    token: list[Token] = []
+def main(code_source: str, le_json: dict) -> list[dict] :
+    token: list[dict] = []
     ligne: int = 1
     colonne: int = 1
     index: int = 0

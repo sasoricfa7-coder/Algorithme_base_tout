@@ -1,16 +1,14 @@
 from erreur import gestion as erreur
 import unicodedata
-from tous_les_types import Token
-
 
 #---------------------------------------------------------------------------------------------
-def espace(ligne: int, colonne: int, index: int) -> tuple[int, int, int]:
+def espace(ligne: int, colonne: int, index: int) -> (int, int, int):
     return ligne, colonne + 1 , index + 1
 #---------------------------------------------------------------------------------------------
-def retour_ligne(ligne: int, colonne: int, index: int) -> tuple[int, int, int] :
+def retour_ligne(ligne: int, colonne: int, index: int) -> (int, int, int) :
     return ligne + 1 , 1, index + 1
 #---------------------------------------------------------------------------------------------
-def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: list[str]) -> tuple[int, int, int] :
+def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: list[str]) -> (int, int, int) :
     index += 1
     colonne += 1
     while ( (code_source[index] not in _commentaire) and (index < len(code_source)) ) :
@@ -25,7 +23,7 @@ def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commen
         aide_remonter(index, code_source, ligne, colonne, "A la fin du ficher vous avez oublier de fermer le bloc de commentaire")
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def token_append(type_: str, valeur: str | int | float | None, ligne: int, colonne: int, longueur: int, token: list[Token]) -> None: # valeur
+def token_append(type_: str, valeur: str, ligne: int, colonne: int, longueur: int, token: list[dict]) : # valeur
     # peut être int ou float j'en ai conscience
     token.append({
         "type" : type_,
@@ -35,7 +33,7 @@ def token_append(type_: str, valeur: str | int | float | None, ligne: int, colon
         "longueur" : longueur,
     })
 #---------------------------------------------------------------------------------------------
-def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, message: str) -> None:
+def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, message: str) :
     ligne_depart: int = ligne
     colonne_depart: int = colonne
     contenu: str = ""
@@ -51,7 +49,7 @@ def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, messag
     erreur(message, ligne_depart, colonne_depart, contenu)
 
 
-def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
+def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
     ligne_depart: int = ligne
     colonne_depart: int = colonne
     index += 1
@@ -69,7 +67,7 @@ def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, to
 
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
+def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
     ligne_depart: int = ligne
     colonne_depart: int = colonne
 
@@ -96,7 +94,7 @@ def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, to
     token_append("CHAINE_CARACTERE", valeur, ligne_depart, colonne_depart, len(valeur), token)
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
+def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
     type_: str = "PAREN_OUVRANT" if code_source[index] == "(" else "PAREN_FERMANT"
     token_append(type_, code_source[index], ligne, colonne, 1, token)
 
@@ -105,7 +103,7 @@ def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: l
 
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def numerique (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
+def numerique (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
     depart: int = index
     point_utiliser: bool = False
     colonne_depart: int = colonne
@@ -131,7 +129,7 @@ def numerique (ligne: int, colonne: int, index: int, code_source: str, token: li
     return ligne, colonne, index    
      
 #---------------------------------------------------------------------------------------------
-def sans_accents(texte: str) -> str:
+def sans_accents(texte):
     # 1. Décompose : "É" -> "E" + "´" (accent combinant)
     decompose = unicodedata.normalize("NFD", texte)
     # 2. Garde tout sauf les accents (catégorie "Mn" = Mark, nonspacing)
@@ -139,7 +137,7 @@ def sans_accents(texte: str) -> str:
     # 3. Met en minuscules (optionnel)
     return sans.lower()
 #---------------------------------------------------------------------------------------------
-def verificateur(valeur: str, le_json: dict[str, list[str]]) -> (bool, str): # J'ai separer ca la en cas de modification du langage seul celui ci change
+def verificateur(valeur: str, le_json: dict) : # J'ai separer ca la en cas de modification du langage seul celui ci change
     # Je sais qu'arriver au parseur je vais remodifier le json pour me faciliter la tâche donc je reviendrai sur cette fonction
     valide: bool = True
     type_: str = "identifiant"
@@ -173,7 +171,7 @@ def verificateur(valeur: str, le_json: dict[str, list[str]]) -> (bool, str): # J
     return valide, type_
     
 #---------------------------------------------------------------------------------------------
-def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: dict[str, list[str]]) -> tuple[int, int, int]:
+def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[dict], fichier: dict) :
     depart: int = index
     colonne_depart: int = colonne
 

@@ -1,0 +1,76 @@
+{
+	"mots_cles_simple" : [
+		"algorithme",
+		"variable",
+		"constante",
+		"constantes",
+		"variables",
+		"debut",
+		"fin",
+		"ecrire",
+		"lire",
+		"entier",
+		"reel",
+		"booleen",
+		"chaine",
+		"caractere",
+		"si",
+		"alors",
+		"sinon",
+		"cas",
+		"vaut",
+		"pour",
+		"tableau",
+		"fonction",
+		"procedure",
+		"retourne",
+		"pas",
+		"faire",
+		"a",
+		"jusqu'a",
+		"repeter"
+		
+	],
+	"les_mots_ambigu" : [
+		"fin si",
+		"fin pour",
+		"fin tant que",
+		"tant que"
+	],
+	"operateurs_logiques" : [
+		"ou",
+		"et",
+		"non"
+	],
+	"operateurs_comparaison" : [
+		"=",
+		"<",
+		">",
+		"<=",
+		">=",
+		"<>"
+	],
+	"operateurs_arihmetiques" : [
+		"+",
+		"-",
+		"*",
+		"/",
+		"^",
+		"mod",
+		"div"
+	],
+	"valeur_booleen" : [
+		"vrai",
+		"faux"
+	],
+	"operateurs_affectation" : [
+		"←"
+	],
+	"commentaire" : [
+		"%"
+	],
+	"autres" : [
+		":",
+		","
+	]
+}
