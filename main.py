@@ -6,6 +6,9 @@ import pprint as p
 code_source: str
 fichier_json: dict
 code_source, fichier_json = avant_lexer()
-token: list[dict] = lexer(code_source, fichier_json)
+
+original_code_source: str = code_source
+
+token: list[dict] = lexer(code_source.lower(), fichier_json)
 
 p.pprint(token)

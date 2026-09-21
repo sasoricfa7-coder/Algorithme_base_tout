@@ -1,4 +1,5 @@
 from aide_lexer import *
+from erreur import gestion as erreur
 
 def main(code_source: str, le_json: dict) -> list[dict] :
     token: list[dict] = []
@@ -6,44 +7,39 @@ def main(code_source: str, le_json: dict) -> list[dict] :
     colonne: int = 1
     index: int = 0
 
-    _commentaire: dict[str, str] = le_json["commentaire"]
+    _commentaire: list[str] = le_json["commentaire"]
 
     while (index < len(code_source)) :
         caractere: str = code_source[index]
 
         if caractere in (" ", "\t") :
             ligne, colonne, index = espace(ligne, colonne, index)
-            continue
 
-        if caractere == "\n" :
+        elif caractere == "\n" :
             ligne, colonne, index = retour_ligne(ligne, colonne, index)
-            continue
 
-        if caractere in _commentaire :
+        elif caractere in _commentaire :
             ligne, colonne, index = commentaire(ligne, colonne, index, code_source, _commentaire)
-            continue
 
-        if caractere == "'" :
+        elif caractere == "'" :
             ligne, colonne, index = un_seul_caractere(ligne, colonne, index, code_source, token)
-            continue
 
-        if caractere == '"' :
+        elif caractere == '"' :
             ligne, colonne, index = chaine_caractere(ligne, colonne, index, code_source, token)
-            continue
 
-        if caractere in ("(" , ")") :
+        elif caractere in ("(" , ")") :
             ligne, colonne, index = parenthese(ligne, colonne, index, code_source, token)
-            continue
 
-        if caractere.isdigit() :
+        elif caractere.isdigit() :
             ligne, colonne, index = numerique(ligne, colonne, index, code_source, token)
-            continue
 
-        if caractere.isalpha() or caractere == "_" :
+        elif caractere.isalpha() or caractere == "_" :
             ligne, colonne, index = alpha(ligne, colonne, index, code_source, token, le_json)
-            continue
 
-        token_append("FIN_FICHIER", None, ligne + 1, colonne + 1, 0, token)
+        else :
+            aide_remonter(index, code_source, ligne, colonne, "TERMES non pris en charge")
+
+    token_append("FIN_FICHIER", None, ligne, colonne, 0, token)
 
         return token
 

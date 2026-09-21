@@ -8,7 +8,7 @@ def espace(ligne: int, colonne: int, index: int) -> (int, int, int):
 def retour_ligne(ligne: int, colonne: int, index: int) -> (int, int, int) :
     return ligne + 1 , 1, index + 1
 #---------------------------------------------------------------------------------------------
-def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: dict) -> (int, int, int) :
+def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: list[str]) -> (int, int, int) :
     index += 1
     colonne += 1
     while ( (code_source[index] not in _commentaire) and (index < len(code_source)) ) :
@@ -58,7 +58,7 @@ def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, to
     if (index + 1) >= len(code_source) :
         aide_remonter(index, code_source, ligne, colonne, "Fichier mal terminer veuillez inspecter la dernière ligne")
 
-    if (index + 1) != "'" :
+    if code_source[(index + 1)] != "'" :
         aide_remonter(index, code_source, ligne, colonne, "Entre deux apostrofes '' il ne dois avoir qu'un seul caractère")
 
     token_append("CARACTERE", code_source[index], ligne_depart, colonne_depart, 1, token)
@@ -84,7 +84,7 @@ def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, to
 
     if code_source[index] != '"' :
         aide_remonter(index, code_source, ligne, colonne, "Chaine n'est pas fermée")
-    if code_source[index] >= len(code_source) :
+    if index >= len(code_source) :
         aide_remonter(index, code_source, ligne, colonne, "Fin de fichier anormal")
 
     valeur: str = code_source[depart : index]
@@ -106,7 +106,7 @@ def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: l
 def numerique (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
     depart: int = index
     point_utiliser: bool = False
-    colonne_depart: int = colonne_depart
+    colonne_depart: int = colonne
 
     while (
          (index < len(code_source)) and
@@ -121,11 +121,13 @@ def numerique (ligne: int, colonne: int, index: int, code_source: str, token: li
         index += 1
         colonne += 1
 
-    if not code_source[index - 1].isdigit :
+    if not code_source[index - 1].isdigit() :
         aide_remonter(index, code_source, ligne, colonne, "Les nombres doivent être soit réels ou entiers et sur une même ligne.")
 
     valeur = int(code_source[depart : index]) if not point_utiliser else float(code_source[depart : index])
-    token_append("NOMBRE", valeur, ligne, colonne_depart, len(code_source[depart : index]), token)       
+    token_append("NOMBRE", valeur, ligne, colonne_depart, len(code_source[depart : index]), token)  
+    return ligne, colonne, index    
+     
 #---------------------------------------------------------------------------------------------
 def sans_accents(texte):
     # 1. Décompose : "É" -> "E" + "´" (accent combinant)
@@ -174,11 +176,11 @@ def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[d
     colonne_depart: int = colonne
 
     while (
+        len(code_source) > index and
         (
             code_source[index].isalpha() or
             code_source[index] == "_"
-        ) and
-        len(code_source) > index
+        )
     ) :
         index += 1
         colonne += 1
@@ -192,20 +194,20 @@ def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[d
     if not valide :
         avant: int = index
         while (
-            code_source[index] in (" ", "\t") and
-            len(code_source) > index
+            len(code_source) > index and
+            code_source[index] in (" ", "\t")
         ) :
             index += 1
             colonne += 1
         
         depart_2: int = index
-        if code_source[index].isalpha() :
+        if len(code_source) > index and code_source[index].isalpha() :
             while(
+                len(code_source) > index and
                 (
                     code_source[index].isalpha() or
                     code_source[index] == "_"
-                ) and
-                len(code_source) > index
+                )
             ) :
                 index += 1
                 colonne += 1
@@ -215,6 +217,7 @@ def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[d
                 type_ = "identifiant"
                 index = index - (index - avant)
                 colonne = colonne - (index - avant)
+                valeur_final = valeur_un
             else :
                 valeur_final = f"{valeur_un} {valeur_deux}"
 
