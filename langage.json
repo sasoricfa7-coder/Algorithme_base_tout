@@ -23,18 +23,19 @@
 		"tableau",
 		"fonction",
 		"procedure",
-		"retourne"
+		"retourne",
+		"pas",
+		"faire",
+		"a",
+		"jusqu'a",
+		"repeter"
 		
 	],
-	"mots_cles_ambigu" : [
-		"tant que",
-		"repeter jusqu'a"
-	],
-	"les_fins" : [
+	"les_mots_ambigu" : [
 		"fin si",
 		"fin pour",
 		"fin tant que",
-		"fin repeter jusqu'a",
+		"tant que"
 	],
 	"operateurs_logiques" : [
 		"ou",

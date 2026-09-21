@@ -1,5 +1,5 @@
 from erreur import gestion as erreur
-
+import unicodedata
 
 #---------------------------------------------------------------------------------------------
 def espace(ligne: int, colonne: int, index: int) -> (int, int, int):
@@ -23,7 +23,8 @@ def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commen
         aide_remonter(index, code_source, ligne, colonne, "A la fin du ficher vous avez oublier de fermer le bloc de commentaire")
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def token_append(type_: str, valeur, ligne: int, colonne: int, longueur: int, token: list[dict) :
+def token_append(type_: str, valeur: str, ligne: int, colonne: int, longueur: int, token: list[dict]) : # valeur
+    # peut être int ou float j'en ai conscience
     token.append({
         "type" : type_,
         "valeur" : valeur,
@@ -33,7 +34,8 @@ def token_append(type_: str, valeur, ligne: int, colonne: int, longueur: int, to
     })
 #---------------------------------------------------------------------------------------------
 def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, message: str) :
-    ligne_depart: int, colonne_depart: int = ligne, colonne
+    ligne_depart: int = ligne
+    colonne_depart: int = colonne
     contenu: str = ""
     index_depart: int = index
     while (code_source[index] != "\n") and (ligne_depart != 1):
@@ -48,7 +50,8 @@ def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, messag
 
 
 def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
-    ligne_depart: int, colonne_depart: int = ligne, colonne
+    ligne_depart: int = ligne
+    colonne_depart: int = colonne
     index += 1
     colonne += 1
 
@@ -65,7 +68,8 @@ def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, to
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
 def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
-    ligne_depart: int, colonne_depart: int = ligne, colonne
+    ligne_depart: int = ligne
+    colonne_depart: int = colonne
 
     if (index + 1) >= len(code_source) :
         aide_remonter(index, code_source, ligne, colonne, "Fichier mal terminer veuillez inspecter la dernière ligne")
@@ -123,5 +127,102 @@ def numerique (ligne: int, colonne: int, index: int, code_source: str, token: li
     valeur = int(code_source[depart : index]) if not point_utiliser else float(code_source[depart : index])
     token_append("NOMBRE", valeur, ligne, colonne_depart, len(code_source[depart : index]), token)       
 #---------------------------------------------------------------------------------------------
-def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
+def sans_accents(texte):
+    # 1. Décompose : "É" -> "E" + "´" (accent combinant)
+    decompose = unicodedata.normalize("NFD", texte)
+    # 2. Garde tout sauf les accents (catégorie "Mn" = Mark, nonspacing)
+    sans = "".join(c for c in decompose if unicodedata.category(c) != "Mn")
+    # 3. Met en minuscules (optionnel)
+    return sans.lower()
+#---------------------------------------------------------------------------------------------
+def verificateur(valeur: str, le_json: dict) : # J'ai separer ca la en cas de modification du langage seul celui ci change
+    # Je sais qu'arriver au parseur je vais remodifier le json pour me faciliter la tâche donc je reviendrai sur cette fonction
+    valide: bool = True
+    type_: str = "identifiant"
+    if valeur in le_json["mots_cles_simple"] :
+        type_ = "mots_cles_simple"
+
+    elif valeur in le_json["les_mots_ambigu"] :
+        type_ = "les_mots_ambigu"
+
+    elif valeur in le_json["operateurs_logiques"] :
+        type_ = "operateurs_logiques"
+
+    elif valeur in le_json["operateurs_comparaison"] :
+        type_ = "operateurs_comparaison"
+
+    elif valeur in le_json["operateurs_arihmetiques"] :
+        type_ = "operateurs_arihmetiques"
+
+    elif valeur in le_json["valeur_booleen"] :
+        type_ = "valeur_booleen"
+
+    elif valeur in le_json["operateurs_affectation"] :
+        type_ = "operateurs_affectation"
+
+    elif valeur in le_json["autres"] :
+        type_ = "autres"
+
+    else :
+        valide = False
+
+    return valide, type_
     
+#---------------------------------------------------------------------------------------------
+def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[dict], fichier: dict) :
+    depart: int = index
+    colonne_depart: int = colonne
+
+    while (
+        (
+            code_source[index].isalpha() or
+            code_source[index] == "_"
+        ) and
+        len(code_source) > index
+    ) :
+        index += 1
+        colonne += 1
+
+    valide: bool
+    type_ : str = "identifiant"
+    valeur_un: str = sans_accents(code_source[depart : index])
+    valide, type_ = verificateur(valeur_un, fichier)
+    valeur_final: str = valeur_un
+
+    if not valide :
+        avant: int = index
+        while (
+            code_source[index] in (" ", "\t") and
+            len(code_source) > index
+        ) :
+            index += 1
+            colonne += 1
+        
+        depart_2: int = index
+        if code_source[index].isalpha() :
+            while(
+                (
+                    code_source[index].isalpha() or
+                    code_source[index] == "_"
+                ) and
+                len(code_source) > index
+            ) :
+                index += 1
+                colonne += 1
+            valeur_deux = sans_accents(code_source[depart_2 : index])
+            valide, type_ = verificateur(f"{valeur_un} {valeur_deux}", fichier)
+            if not valide :
+                type_ = "identifiant"
+                index = index - (index - avant)
+                colonne = colonne - (index - avant)
+            else :
+                valeur_final = f"{valeur_un} {valeur_deux}"
+
+    
+    token_append(type_, valeur_final, ligne, colonne_depart, len(code_source[depart : index]), token)
+    return ligne, colonne, index
+                
+                
+
+            
+        

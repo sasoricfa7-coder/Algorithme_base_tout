@@ -10,8 +10,6 @@ def verificateur() -> str:
 
     if not os.path.isfile(nom) :
         erreur(f"Le fichier {nom} n'existe pas.")
-    """if any(nom) :
-        erreur(f"Fichier {nom} est vide.") """
 
     return nom
 
@@ -30,6 +28,10 @@ def main() :
     nom: str = verificateur()
     code_source: str = charger_code(nom)
     fichier_json: dict[str , str] = charger_json("langage.json")
+
+    if code_source.strip() == "":
+        erreur(f"{nom} est vide")
+    
     return code_source, fichier_json
 
     

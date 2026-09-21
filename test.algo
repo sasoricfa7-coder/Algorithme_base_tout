@@ -1,6 +1,0 @@
-Algorithme TEST
-Variables
-	a: entier = 3
-debut
-	Ecrire(a)
-fin

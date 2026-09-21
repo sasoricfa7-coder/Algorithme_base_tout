@@ -2,7 +2,10 @@ from aide_lexer import *
 
 def main(code_source: str, le_json: dict) -> list[dict] :
     token: list[dict] = []
-    ligne: int, colonne: int, index: int = 1, 1, 0
+    ligne: int = 1
+    colonne: int = 1
+    index: int = 0
+
     _commentaire: dict[str, str] = le_json["commentaire"]
 
     while (index < len(code_source)) :
@@ -37,8 +40,12 @@ def main(code_source: str, le_json: dict) -> list[dict] :
             continue
 
         if caractere.isalpha() or caractere == "_" :
-            ligne, colonne, index = alpha(ligne, colonne, index, code_source, token)
+            ligne, colonne, index = alpha(ligne, colonne, index, code_source, token, le_json)
             continue
+
+        token_append("FIN_FICHIER", None, ligne + 1, colonne + 1, 0, token)
+
+        return token
 
 if __name__=="__main__" :
     main()
