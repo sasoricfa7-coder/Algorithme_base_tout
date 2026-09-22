@@ -18,15 +18,18 @@ def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commen
     index += 1
     colonne += 1
     while ( index_Error(code_source, index) and  (code_source[index] not in _commentaire)) :
-        index += 1
         if len(code_source) > index and code_source[index] == "\n" :
             ligne += 1
             colonne = 1
         else :
             colonne += 1
+        index += 1
 
     if index_Error(code_source, index) and code_source[index] not in _commentaire :
         aide_remonter(index, code_source, ligne, colonne, "A la fin du ficher vous avez oublier de fermer le bloc de commentaire")
+    if index_Error(code_source, index) :
+        index += 1
+        colonne += 1
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
 def token_append(type_: str, valeur: str | int | float | None, ligne: int, colonne: int, longueur: int, token: list[Token]) -> None: # valeur
@@ -141,6 +144,7 @@ def sans_accents(texte: str) -> str:
     # 2. Garde tout sauf les accents (catégorie "Mn" = Mark, nonspacing)
     sans = "".join(c for c in decompose if unicodedata.category(c) != "Mn")
     # 3. Met en minuscules (optionnel)
+    sans = sans.strip()
     return sans.lower()
 #---------------------------------------------------------------------------------------------
 def symbole(ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int, int]:
@@ -198,71 +202,70 @@ def verificateur(valeur: str, le_json: Langage) -> (bool, str): # J'ai separer c
     return valide, type_
     
 #---------------------------------------------------------------------------------------------
-def renvoi_bon_mot(ligne_complete: str, token: list[Token], fichier: list) :
-    index = 0
-    type_ = "mots_cles"
-    liste_mot: list[str] = []
-    liste_espace: list[str] = []
-    longueur: int = 1
-
-    mot_actu: str = ""
-    espace_actu: str = ""
-    for i in ligne_complete :
-        if len(liste_mot) >= MAX :
-            break
-        if i in (" ", "\t") :
-            if mot_actu != "" :
-                liste_mot.append(mot_actu)
-            espace_actu += i
-        else :
-            if espace_actu != "" :
-                liste_espace.append(espace_actu)
-                espace_actu = ""
-            mot_actu += i
-
-    valeur_final: str = ""
-    for i in liste_mot :
-        valeur_final += i
-        valeur_final += " "
-    if sans_accents(valeur_final) in fichier :
-        longueur = 3
-    else :
-        valeur_final = ""
-        for i in range(len(liste_mot) - 1) :
-            valeur_final += liste_mot[i]
-            valeur_final += " "
-        if sans_accents(valeur_final) in fichier :
-            longueur = 2
-        else :
-            valeur_final = ""
-            for i in range(len(liste_mot) - 2) :
-                valeur_final += liste_mot[i]
-            if sans_accents(valeur_final) not in fichier :
-                type_ = "identifiant"
-
-    match longueur :
-        case 3 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1]) + len(liste_espace[2])
-        case 2 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1])
-        case 1 : index = len(valeur_final) + 1
-    return valeur_final, type_, index
-
-#---------------------------------------------------------------------------------------------
-def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int, int]:
+def alpha(ligne: int, colonne: int, index: int, code_source: str,
+          token: list[Token], fichier: Langage) -> tuple[int, int, int]:
     depart_index: int = index
     colonne_depart: int = colonne
 
-    ligne_complete: str = ""
-    longueur: int
-    while(
-        index_Error(code_source, index) and
-        code_source[index] != "\n"
-    ) :
-        ligne_complete += code_source[index]
-        index += 1
+    # ✅ Table unique : mot normalisé -> type de token
+    #    On fusionne toutes les listes alphabétiques du JSON
+    table: dict[str, str] = {}
+    for cle, type_ in (
+        ("mots_cles",            "mots_cles"),
+        ("operateurs_logiques",  "operateurs_logiques"),
+        ("operateurs_arihmetiques", "operateurs_arihmetiques"),
+        ("valeur_booleen",       "valeur_booleen"),
+    ):
+        for mot in fichier[cle]:
+            table[sans_accents(mot)] = type_
 
-    ligne_complete = ligne_complete.strip()
-    valeur_final, type_, longueur = renvoi_bon_mot(ligne_complete, token, fichier["mots_cles"])
+    meilleur_fin_i: int = index
+    meilleur_fin_c: int = colonne
+    meilleur_type: str = "identifiant"
+    meilleur_valeur: str = ""
 
-    token_append(type_, valeur_final, ligne, colonne_depart, len(valeur_final), token)
+    temp_i: int = index
+    temp_c: int = colonne
+    mots: list[str] = []
 
-    return ligne, colonne_depart + longueur, depart_index + longueur
+    while len(mots) < MAX:
+        mot: str = ""
+        while (index_Error(code_source, temp_i)
+               and (code_source[temp_i].isalnum() or code_source[temp_i] == "_")):
+            mot += code_source[temp_i]
+            temp_i += 1
+            temp_c += 1
+
+        if mot == "":
+            break
+
+        mots.append(mot)
+        candidat_norm: str = sans_accents(" ".join(mots))
+
+        if candidat_norm in table:
+            meilleur_fin_i = temp_i
+            meilleur_fin_c = temp_c
+            meilleur_type = table[candidat_norm]
+            meilleur_valeur = candidat_norm
+
+        debut_esp: int = temp_i
+        while (index_Error(code_source, temp_i)
+               and code_source[temp_i] in (" ", "\t")):
+            temp_i += 1
+            temp_c += 1
+
+        if temp_i == debut_esp:
+            break
+
+    if meilleur_type == "identifiant":
+        mot_brut: str = mots[0]
+        valeur: str = sans_accents(mot_brut)
+        meilleur_fin_i = depart_index + len(mot_brut)
+        meilleur_fin_c = colonne_depart + len(mot_brut)
+    else:
+        valeur = meilleur_valeur
+
+    longueur: int = meilleur_fin_i - depart_index
+    token_append(meilleur_type, valeur, ligne, colonne_depart, longueur, token)
+
+    return ligne, meilleur_fin_c, meilleur_fin_i

@@ -9,7 +9,7 @@ def main(code_source: str, le_json: Langage) -> list[Token] :
     index: int = 0
 
     _commentaire: list[str] = le_json["commentaire"]
-    cas_symbole: list[str] = [ "=", "<", ">", "<=", ">=", "<>", "+", "-", "*", "/", "^", "←", ":", ","]
+    cas_symbole: list[str] = ["=", "<", ">", "+", "-", "*", "/", "^", "←", ":", ","]
 
     while (index < len(code_source)) :
         caractere: str = code_source[index]
