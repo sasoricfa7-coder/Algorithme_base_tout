@@ -1,29 +1,35 @@
 from erreur import gestion as erreur
 import unicodedata
+from tous_les_types import Token, Langage, MAX
+
+def index_Error(code_source, index) -> bool:
+    if index < len(code_source) :
+        return True
+    return False
 
 #---------------------------------------------------------------------------------------------
-def espace(ligne: int, colonne: int, index: int) -> (int, int, int):
+def espace(ligne: int, colonne: int, index: int) -> tuple[int, int, int]:
     return ligne, colonne + 1 , index + 1
 #---------------------------------------------------------------------------------------------
-def retour_ligne(ligne: int, colonne: int, index: int) -> (int, int, int) :
+def retour_ligne(ligne: int, colonne: int, index: int) -> tuple[int, int, int] :
     return ligne + 1 , 1, index + 1
 #---------------------------------------------------------------------------------------------
-def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: list[str]) -> (int, int, int) :
+def commentaire (ligne: int, colonne: int, index: int, code_source: str, _commentaire: list[str]) -> tuple[int, int, int] :
     index += 1
     colonne += 1
-    while ( (code_source[index] not in _commentaire) and (index < len(code_source)) ) :
+    while ( index_Error(code_source, index) and  (code_source[index] not in _commentaire)) :
         index += 1
-        if code_source[index] == "\n" :
+        if len(code_source) > index and code_source[index] == "\n" :
             ligne += 1
             colonne = 1
         else :
             colonne += 1
 
-    if (index >= len(code_source)) and (code_source[index] not in _commentaire) :
+    if index_Error(code_source, index) and code_source[index] not in _commentaire :
         aide_remonter(index, code_source, ligne, colonne, "A la fin du ficher vous avez oublier de fermer le bloc de commentaire")
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def token_append(type_: str, valeur: str, ligne: int, colonne: int, longueur: int, token: list[dict]) : # valeur
+def token_append(type_: str, valeur: str | int | float | None, ligne: int, colonne: int, longueur: int, token: list[Token]) -> None: # valeur
     # peut être int ou float j'en ai conscience
     token.append({
         "type" : type_,
@@ -33,32 +39,32 @@ def token_append(type_: str, valeur: str, ligne: int, colonne: int, longueur: in
         "longueur" : longueur,
     })
 #---------------------------------------------------------------------------------------------
-def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, message: str) :
+def aide_remonter(index: int, code_source: str, ligne: int, colonne: int, message: str) -> None:
     ligne_depart: int = ligne
     colonne_depart: int = colonne
     contenu: str = ""
     index_depart: int = index
-    while (code_source[index] != "\n") and (ligne_depart != 1):
+    while (index_Error(code_source, index) and (code_source[index] != "\n") and (ligne_depart != 1) ):
         index -= 1
     if ligne != 1 :
         for i in range( (index_depart - index) ) :
             contenu += code_source[index + i]
     else :
-        message = "A la première ligne"
+        message = f"A la première ligne : {message}"
 
     erreur(message, ligne_depart, colonne_depart, contenu)
 
 
-def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
+def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
     ligne_depart: int = ligne
     colonne_depart: int = colonne
     index += 1
     colonne += 1
 
-    if (index + 1) >= len(code_source) :
+    if not index_Error(code_source, index) :
         aide_remonter(index, code_source, ligne, colonne, "Fichier mal terminer veuillez inspecter la dernière ligne")
 
-    if code_source[(index + 1)] != "'" :
+    if (index_Error(code_source, index) and  code_source[(index + 1)] != "'") :
         aide_remonter(index, code_source, ligne, colonne, "Entre deux apostrofes '' il ne dois avoir qu'un seul caractère")
 
     token_append("CARACTERE", code_source[index], ligne_depart, colonne_depart, 1, token)
@@ -67,24 +73,24 @@ def un_seul_caractere(ligne: int, colonne: int, index: int, code_source: str, to
 
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
+def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
     ligne_depart: int = ligne
     colonne_depart: int = colonne
 
-    if (index + 1) >= len(code_source) :
+    if not index_Error(code_source, index) :
         aide_remonter(index, code_source, ligne, colonne, "Fichier mal terminer veuillez inspecter la dernière ligne")
     
     index += 1
     depart = index
     colonne += 1
 
-    while (code_source[index] != '"' and len(code_source) > index and code_source[index] != "\n") :
+    while ( index_Error(code_source, index) and  code_source[index] != '"' and code_source[index] != "\n") :
         index += 1
         colonne += 1
 
-    if code_source[index] != '"' :
+    if  (index_Error(code_source, index) and  code_source[index] != '"' ):
         aide_remonter(index, code_source, ligne, colonne, "Chaine n'est pas fermée")
-    if index >= len(code_source) :
+    if not index_Error(code_source, index) :
         aide_remonter(index, code_source, ligne, colonne, "Fin de fichier anormal")
 
     valeur: str = code_source[depart : index]
@@ -94,7 +100,7 @@ def chaine_caractere (ligne: int, colonne: int, index: int, code_source: str, to
     token_append("CHAINE_CARACTERE", valeur, ligne_depart, colonne_depart, len(valeur), token)
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
+def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
     type_: str = "PAREN_OUVRANT" if code_source[index] == "(" else "PAREN_FERMANT"
     token_append(type_, code_source[index], ligne, colonne, 1, token)
 
@@ -103,13 +109,13 @@ def parenthese (ligne: int, colonne: int, index: int, code_source: str, token: l
 
     return ligne, colonne, index
 #---------------------------------------------------------------------------------------------
-def numerique (ligne: int, colonne: int, index: int, code_source: str, token: list[dict]) :
+def numerique (ligne: int, colonne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int, int]:
     depart: int = index
     point_utiliser: bool = False
     colonne_depart: int = colonne
 
     while (
-         (index < len(code_source)) and
+         index_Error(code_source, index) and
          (
             (code_source[index].isdigit()) or
             (code_source[index] == "." and not point_utiliser)
@@ -129,7 +135,7 @@ def numerique (ligne: int, colonne: int, index: int, code_source: str, token: li
     return ligne, colonne, index    
      
 #---------------------------------------------------------------------------------------------
-def sans_accents(texte):
+def sans_accents(texte: str) -> str:
     # 1. Décompose : "É" -> "E" + "´" (accent combinant)
     decompose = unicodedata.normalize("NFD", texte)
     # 2. Garde tout sauf les accents (catégorie "Mn" = Mark, nonspacing)
@@ -137,15 +143,33 @@ def sans_accents(texte):
     # 3. Met en minuscules (optionnel)
     return sans.lower()
 #---------------------------------------------------------------------------------------------
-def verificateur(valeur: str, le_json: dict) : # J'ai separer ca la en cas de modification du langage seul celui ci change
+def symbole(ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int, int]:
+    valeur_un: str = code_source[index]
+    depart = index
+    index += 1
+    if index_Error(code_source, index)  :
+        valeur_deux = valeur_un + code_source[index]
+        valide: bool
+        type_ : str
+        valide, type_ = verificateur(valeur_deux, fichier)
+        valeur_final : str = valeur_deux
+        if not valide :
+            valide, type_ = verificateur(valeur_un, fichier)
+            valeur_final = valeur_un
+        else :
+            index += 1
+        token_append(type_, valeur_final, ligne, colonne, len(code_source[depart : index]), token)
+        return ligne, colonne + (index - depart), index
+    else :
+        aide_remonter(index, code_source, ligne, colonne, "vers la fin symbole seul ne sert à rien")
+#---------------------------------------------------------------------------------------------
+
+def verificateur(valeur: str, le_json: Langage) -> (bool, str): # J'ai separer ca la en cas de modification du langage seul celui ci change
     # Je sais qu'arriver au parseur je vais remodifier le json pour me faciliter la tâche donc je reviendrai sur cette fonction
     valide: bool = True
     type_: str = "identifiant"
-    if valeur in le_json["mots_cles_simple"] :
-        type_ = "mots_cles_simple"
-
-    elif valeur in le_json["les_mots_ambigu"] :
-        type_ = "les_mots_ambigu"
+    if valeur in le_json["mots_cles"] :
+        type_ = "mots_cles"
 
     elif valeur in le_json["operateurs_logiques"] :
         type_ = "operateurs_logiques"
@@ -162,8 +186,11 @@ def verificateur(valeur: str, le_json: dict) : # J'ai separer ca la en cas de mo
     elif valeur in le_json["operateurs_affectation"] :
         type_ = "operateurs_affectation"
 
-    elif valeur in le_json["autres"] :
-        type_ = "autres"
+    elif valeur in le_json["separateur"] :
+        type_ = "separateur"
+
+    elif valeur in le_json["declaration_type"] :
+        type_ = "declaration_type"
 
     else :
         valide = False
@@ -171,62 +198,71 @@ def verificateur(valeur: str, le_json: dict) : # J'ai separer ca la en cas de mo
     return valide, type_
     
 #---------------------------------------------------------------------------------------------
-def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[dict], fichier: dict) :
-    depart: int = index
+def renvoi_bon_mot(ligne_complete: str, token: list[Token], fichier: list) :
+    index = 0
+    type_ = "mots_cles"
+    liste_mot: list[str] = []
+    liste_espace: list[str] = []
+    longueur: int = 1
+
+    mot_actu: str = ""
+    espace_actu: str = ""
+    for i in ligne_complete :
+        if len(liste_mot) >= MAX :
+            break
+        if i in (" ", "\t") :
+            if mot_actu != "" :
+                liste_mot.append(mot_actu)
+            espace_actu += i
+        else :
+            if espace_actu != "" :
+                liste_espace.append(espace_actu)
+                espace_actu = ""
+            mot_actu += i
+
+    valeur_final: str = ""
+    for i in liste_mot :
+        valeur_final += i
+        valeur_final += " "
+    if sans_accents(valeur_final) in fichier :
+        longueur = 3
+    else :
+        valeur_final = ""
+        for i in range(len(liste_mot) - 1) :
+            valeur_final += liste_mot[i]
+            valeur_final += " "
+        if sans_accents(valeur_final) in fichier :
+            longueur = 2
+        else :
+            valeur_final = ""
+            for i in range(len(liste_mot) - 2) :
+                valeur_final += liste_mot[i]
+            if sans_accents(valeur_final) not in fichier :
+                type_ = "identifiant"
+
+    match longueur :
+        case 3 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1]) + len(liste_espace[2])
+        case 2 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1])
+        case 1 : index = len(valeur_final) + 1
+    return valeur_final, type_, index
+
+#---------------------------------------------------------------------------------------------
+def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int, int]:
+    depart_index: int = index
     colonne_depart: int = colonne
 
-    while (
-        len(code_source) > index and
-        (
-            code_source[index].isalpha() or
-            code_source[index] == "_"
-        )
+    ligne_complete: str = ""
+    longueur: int
+    while(
+        index_Error(code_source, index) and
+        code_source[index] != "\n"
     ) :
+        ligne_complete += code_source[index]
         index += 1
-        colonne += 1
 
-    valide: bool
-    type_ : str = "identifiant"
-    vrai_valeur_un = code_source[depart : index]
-    valeur_un: str = sans_accents(vrai_valeur_un)
-    valide, type_ = verificateur(valeur_un, fichier)
-    valeur_final: str = vrai_valeur_un
+    ligne_complete = ligne_complete.strip()
+    valeur_final, type_, longueur = renvoi_bon_mot(ligne_complete, token, fichier["mots_cles"])
 
-    avant: int = index
-    while (
-        len(code_source) > index and
-        code_source[index] in (" ", "\t")
-    ) :
-        index += 1
-        colonne += 1
-        
-    depart_2: int = index
-    if len(code_source) > index and code_source[index].isalpha() :
-        while(
-            len(code_source) > index and
-            (
-                code_source[index].isalpha() or
-                code_source[index] == "_"
-            )
-        ) :
-            index += 1
-            colonne += 1
-        vrai_valeur_deux = code_source[depart_2 : index]
-        valeur_deux = sans_accents(vrai_valeur_deux)
-        valide, type_ = verificateur(f"{valeur_un} {valeur_deux}", fichier)
-        if not valide :
-            type_ = "identifiant"
-            index = index - (index - avant)
-            colonne = colonne - (index - avant)
-            valeur_final = vrai_valeur_un
-        else :
-            valeur_final = f"{vrai_valeur_un} {vrai_valeur_deux}"
+    token_append(type_, valeur_final, ligne, colonne_depart, len(valeur_final), token)
 
-    
-    token_append(type_, valeur_final, ligne, colonne_depart, len(code_source[depart : index]), token)
-    return ligne, colonne, index
-                
-                
-
-            
-        
+    return ligne, colonne_depart + longueur, depart_index + longueur

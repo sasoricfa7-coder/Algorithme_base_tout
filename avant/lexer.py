@@ -1,13 +1,15 @@
 from aide_lexer import *
 from erreur import gestion as erreur
+from tous_les_types import Token, Langage
 
-def main(code_source: str, le_json: dict) -> list[dict] :
-    token: list[dict] = []
+def main(code_source: str, le_json: Langage) -> list[Token] :
+    token: list[Token] = []
     ligne: int = 1
     colonne: int = 1
     index: int = 0
 
     _commentaire: list[str] = le_json["commentaire"]
+    cas_symbole: list[str] = [ "=", "<", ">", "<=", ">=", "<>", "+", "-", "*", "/", "^", "←", ":", ","]
 
     while (index < len(code_source)) :
         caractere: str = code_source[index]
@@ -32,6 +34,9 @@ def main(code_source: str, le_json: dict) -> list[dict] :
 
         elif caractere.isdigit() :
             ligne, colonne, index = numerique(ligne, colonne, index, code_source, token)
+
+        elif caractere in cas_symbole :
+            ligne, colonne, index = symbole(ligne, colonne, index, code_source, token, le_json)
 
         elif caractere.isalpha() or caractere == "_" :
             ligne, colonne, index = alpha(ligne, colonne, index, code_source, token, le_json)

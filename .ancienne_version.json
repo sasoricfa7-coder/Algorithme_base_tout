@@ -1,5 +1,5 @@
 {
-	"mots_cles" : [
+	"mots_cles_simple" : [
 		"algorithme",
 		"variable",
 		"constante",
@@ -24,15 +24,22 @@
 		"fonction",
 		"procedure",
 		"retourne",
-		"repeter",
-		"jusqu'a",
-		"fin pour",
-		"fin si",
-		"fin cas",
-		"fin tant que",
 		"pas",
+		"faire",
 		"a",
-		"faire"
+		"jusqu'a",
+		"repeter"
+		
+	],
+	"mots_cles_ambigu" : [
+		"tant que",
+		"repeter"
+	],
+	"les_mots_ambigu" : [
+		"fin si",
+		"fin pour",
+		"fin tant que",
+		"tant que"
 	],
 	"operateurs_logiques" : [
 		"ou",
@@ -66,10 +73,8 @@
 	"commentaire" : [
 		"%"
 	],
-	"separateur" : [
+	"autres" : [
+		":",
 		","
-	],
-	"declaration_type" : [
-		":"
 	]
 }

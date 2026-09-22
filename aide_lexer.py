@@ -1,6 +1,6 @@
 from erreur import gestion as erreur
 import unicodedata
-from tous_les_types import Token, Langage
+from tous_les_types import Token, Langage, MAX
 
 def index_Error(code_source, index) -> bool:
     if index < len(code_source) :
@@ -168,11 +168,8 @@ def verificateur(valeur: str, le_json: Langage) -> (bool, str): # J'ai separer c
     # Je sais qu'arriver au parseur je vais remodifier le json pour me faciliter la tâche donc je reviendrai sur cette fonction
     valide: bool = True
     type_: str = "identifiant"
-    if valeur in le_json["mots_cles_simple"] :
-        type_ = "mots_cles_simple"
-
-    elif valeur in le_json["les_mots_ambigu"] :
-        type_ = "les_mots_ambigu"
+    if valeur in le_json["mots_cles"] :
+        type_ = "mots_cles"
 
     elif valeur in le_json["operateurs_logiques"] :
         type_ = "operateurs_logiques"
@@ -189,8 +186,11 @@ def verificateur(valeur: str, le_json: Langage) -> (bool, str): # J'ai separer c
     elif valeur in le_json["operateurs_affectation"] :
         type_ = "operateurs_affectation"
 
-    elif valeur in le_json["autres"] :
-        type_ = "autres"
+    elif valeur in le_json["separateur"] :
+        type_ = "separateur"
+
+    elif valeur in le_json["declaration_type"] :
+        type_ = "declaration_type"
 
     else :
         valide = False
@@ -198,57 +198,71 @@ def verificateur(valeur: str, le_json: Langage) -> (bool, str): # J'ai separer c
     return valide, type_
     
 #---------------------------------------------------------------------------------------------
+def renvoi_bon_mot(ligne_complete: str, token: list[Token], fichier: list) :
+    index = 0
+    type_ = "mots_cles"
+    liste_mot: list[str] = []
+    liste_espace: list[str] = []
+    longueur: int = 1
+
+    mot_actu: str = ""
+    espace_actu: str = ""
+    for i in ligne_complete :
+        if len(liste_mot) >= MAX :
+            break
+        if i in (" ", "\t") :
+            if mot_actu != "" :
+                liste_mot.append(mot_actu)
+            espace_actu += i
+        else :
+            if espace_actu != "" :
+                liste_espace.append(espace_actu)
+                espace_actu = ""
+            mot_actu += i
+
+    valeur_final: str = ""
+    for i in liste_mot :
+        valeur_final += i
+        valeur_final += " "
+    if sans_accents(valeur_final) in fichier :
+        longueur = 3
+    else :
+        valeur_final = ""
+        for i in range(len(liste_mot) - 1) :
+            valeur_final += liste_mot[i]
+            valeur_final += " "
+        if sans_accents(valeur_final) in fichier :
+            longueur = 2
+        else :
+            valeur_final = ""
+            for i in range(len(liste_mot) - 2) :
+                valeur_final += liste_mot[i]
+            if sans_accents(valeur_final) not in fichier :
+                type_ = "identifiant"
+
+    match longueur :
+        case 3 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1]) + len(liste_espace[2])
+        case 2 : index = len(valeur_final) + len(liste_espace[0]) + len(liste_espace[1])
+        case 1 : index = len(valeur_final) + 1
+    return valeur_final, type_, index
+
+#---------------------------------------------------------------------------------------------
 def alpha (ligne: int, colonne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int, int]:
-    depart: int = index
+    depart_index: int = index
     colonne_depart: int = colonne
 
-    while (
+    ligne_complete: str = ""
+    longueur: int
+    while(
         index_Error(code_source, index) and
-        (
-            code_source[index].isalpha() or
-            code_source[index] == "_"
-        )
+        code_source[index] != "\n"
     ) :
+        ligne_complete += code_source[index]
         index += 1
-        colonne += 1
 
-    valide: bool
-    type_ : str = "identifiant"
-    vrai_valeur_un = code_source[depart : index]
-    valeur_un: str = sans_accents(vrai_valeur_un)
-    valide, type_ = verificateur(valeur_un, fichier)
-    valeur_final: str = vrai_valeur_un
+    ligne_complete = ligne_complete.strip()
+    valeur_final, type_, longueur = renvoi_bon_mot(ligne_complete, token, fichier["mots_cles"])
 
-    avant: int = index
-    while (
-        index_Error(code_source, index) and
-        code_source[index] in (" ", "\t")
-    ) :
-        index += 1
-        colonne += 1
-        
-    depart_2: int = index
-    if len(code_source) > index and code_source[index].isalpha() :
-        while(
-            index_Error(code_source, index) and
-            (
-                code_source[index].isalpha() or
-                code_source[index] == "_"
-            )
-        ) :
-            index += 1
-            colonne += 1
-        vrai_valeur_deux = code_source[depart_2 : index]
-        valeur_deux = sans_accents(vrai_valeur_deux)
-        valide, type_ = verificateur(f"{valeur_un} {valeur_deux}", fichier)
-        if not valide :
-            type_ = "identifiant"
-            index = index - (index - avant)
-            colonne = colonne - (index - avant)
-            valeur_final = vrai_valeur_un
-        else :
-            valeur_final = f"{vrai_valeur_un} {vrai_valeur_deux}"
+    token_append(type_, valeur_final, ligne, colonne_depart, len(valeur_final), token)
 
-    
-    token_append(type_, valeur_final, ligne, colonne_depart, len(code_source[depart : index]), token)
-    return ligne, colonne, index
+    return ligne, colonne_depart + longueur, depart_index + longueur
