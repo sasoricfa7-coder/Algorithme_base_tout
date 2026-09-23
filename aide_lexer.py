@@ -1,4 +1,4 @@
-from erreur import gestion as erreur
+from erreur import aide_remonter
 import unicodedata
 from tous_les_types import Token, Langage, MAX
 from utils import sans_accents
@@ -42,24 +42,7 @@ def token_append(type_: str, valeur: str | int | float | None, ligne: int, token
     })
 
 #---------------------------------------------------------------------------------------------
-def aide_remonter(index: int, code_source: str, ligne: int, message: str) -> None:
-    ligne_depart: int = ligne
-    contenu: str = ""
-    index_depart: int = index
 
-    # garde-fou : 0 < index < len, sinon code_source[index] peut exploser ou boucler
-    while (0 < index < len(code_source)
-           and code_source[index] != "\n"
-           and ligne_depart != 1):
-        index -= 1
-
-    if ligne != 1:
-        for i in range(index_depart - index):
-            contenu += code_source[index + i]
-    else:
-        message = f"À la première ligne // On first line : {message}"
-
-    erreur(message, ligne_depart, contenu)
 
 #---------------------------------------------------------------------------------------------
 def un_seul_caractere(ligne: int, index: int, code_source: str, token: list[Token]) -> tuple[int, int]:

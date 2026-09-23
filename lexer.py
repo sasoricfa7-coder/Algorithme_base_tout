@@ -1,5 +1,5 @@
 from aide_lexer import *
-from erreur import gestion as erreur
+from erreur import aide_remonter
 from tous_les_types import Token, Langage
 
 
