@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TypedDict, Union
 from erreur import erreur
-from utils import sans_accents
 
 MOTS_FIN_BLOC: tuple[str, ...] = (
     "fin", "fin si", "fin cas", "fin pour", "fin tant que",
@@ -10,66 +9,77 @@ MOTS_FIN_BLOC: tuple[str, ...] = (
 )
 
 #------------PARSEUR-------------------------------------------
-@dataclass
 class Parseur:
-    tokens: list[Token]
-    position: int
+    def __init__(self, tokens: list[Token]) -> None :
+        self.tokens: list[Token] = tokens
+        self.position: int = 0
 
     def token_courant(self) :
-        return self.tokens[position]
+        return self.tokens[self.position]
 
     def token_suivant(self) :
-        return self.tokens[position + 1]
+        if self.position + 1 >= len(self.tokens) :
+            self.erreur("Fin de fichier inattendue // Unexpected end of file")
+        return self.tokens[self.position + 1]
 
     def avancer(self) :
         self.position += 1
 
     def verifier(self, type_: str, valeur = None) :
-        if self.tokens[position].type != type_ :
-            erreur(f"type : {type_} : c'est ce qui était attendu.", self.tokens[position].ligne)
-        elif (valeur != None) and (self.tokens[position].valeur != valeur) :
-            erreur(f"valeur : {valeur} : c'est ce qui était attendu.", self.tokens[position].ligne)
+        if self.tokens[self.position]["type"] != type_ :
+            self.erreur(f"type : {type_} : c'est ce qui était attendu.")
+        elif (valeur != None) and (self.tokens[self.position]["valeur"] != valeur) :
+            self.erreur(f"valeur : {valeur} : c'est ce qui était attendu.")
 
     def consommer(self, type_, valeur=None) :
         self.verifier(type_, valeur)
         self.avancer()
 
     def est_fin_bloc(self) :
-        if self.tokens[position].valeur in MOTS_FIN_BLOC :
+        if self.tokens[self.position]["valeur"] in MOTS_FIN_BLOC :
             return True
         return False
 
     def erreur(self, message) :
-        erreur(message, self.tokens[position].ligne)
+        erreur(message, self.tokens[self.position]["ligne"])
 
 
     def parse_programme(self) :
-        self.parse_algorithme()
+        return self.parse_algorithme()
 
     def parse_algorithme(self) :
-        if self.tokens[position].valeur
+        self.consommer("mots_cles", "algorithme")
+        index_nom: int = self.position
+        self.consommer("identifiant")
+        # Les differents blocs pour recevoir les retours et former l'AST
+        Fonction_bloc: list[Fonction] = []
+        Procedure_bloc: list[Procedure] = []
+        Variable_bloc: list[DeclarationVariable] = []
+        Constante_bloc: list[DeclarationConstante] = []
+        # Fin des blocs
+        while (self.tokens[self.position]["valeur"] in ("fonction", "procedure")) :
+            if self.tokens[self.position]["valeur"] == "fonction" :
+                Fonction_bloc.append(self.parse_fonction())
+            else :
+                Procedure_bloc.append(self.parse_procedure())
 
+        vus: set[str] = set()
+        while self.token_courant()["valeur"] in ("variable", "constante") :
+            mot = self.token_courant()["valeur"]
+            if mot in vus :
+                self.erreur(f'Bloc "{mot}" déjà déclaré // "{mot}" block already declared 🚫')    
+            vus.add(mot)
+            if mot == "variable" :
+                Variable_bloc += self.parse_bloc_variables()
+            else :
+                Constante_bloc += self.parse_bloc_constantes()  
 
+        corps_complet: list[Instruction] = self.parse_corps()
 
+        return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, Variable_bloc + Constante_bloc, corps_complet )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
     
+
 #------------PARSEUR-------------------------------------------
 
 MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"
@@ -79,7 +89,7 @@ class Algorithme:
     nom: str
     fonctions: list[Fonction]
     procedures: list[Procedure]
-    declarations: list[Declaration] # ici je me dis c'est mieux plutard une class Declaration avec les types
+    declarations: list[Declaration]
     corps: list[Instruction]
 
 @dataclass
@@ -229,16 +239,19 @@ class Token(TypedDict):
 
 
 class Langage(TypedDict):
-    mots_cles: list[str]
-    operateurs_logiques: list[str]
-    operateurs_comparaison: list[str]
-    operateurs_arihmetiques: list[str]
-    valeur_booleen: list[str]
-    operateurs_affectation: list[str]
-    commentaire: list[str]
-    separateur: list[str]
-    declaration_type: list[str]
-    table_mots: dict[str, str]   # ✅ ajouté
+        mots_cles: list[str]
+        operateurs_logiques: list[str]
+        operateurs_comparaison: list[str]
+        operateurs_arihmetiques: list[str]
+        valeur_booleen: list[str]
+        operateurs_affectation: list[str]
+        commentaire: list[str]
+        separateur: list[str]
+        declaration_type: list[str]
+        normalisation: dict[str, str]                 # ✅ ajouté
+        table_mots: dict[str, tuple[str, str]]        # ✅ type mis à jour
+
+
 
 Expression = Union[Nombre, ChaineCaractere, Caractere, Booleen, Identifiant,
                    OperationBinaire, OperationUnaire, AppelFonction, Indexation]

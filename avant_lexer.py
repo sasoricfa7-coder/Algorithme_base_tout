@@ -27,20 +27,31 @@ def charger_json(nom: str) -> dict:
     return contenu
 
 
-def construire_table(le_json: dict) -> dict[str, str]:
+def construire_table(le_json: dict) -> dict[str, tuple[str, str]]:
     """
-    Construit une table unique : mot normalisé -> type de token.
-    Fusionne toutes les listes alphabétiques du JSON.
+    Construit une table unique : mot normalisé -> (type, valeur_canonique).
+    La valeur_canonique est la forme singulière/standard à stocker dans le token.
     """
-    table: dict[str, str] = {}
+    # 1. Normaliser la table de normalisation (accents + minuscules)
+    normalisation_brute: dict[str, str] = le_json.get("normalisation", {})
+    normalisation: dict[str, str] = {
+        sans_accents(alias): sans_accents(canonique)
+        for alias, canonique in normalisation_brute.items()
+    }
+
+    # 2. Construire la table principale
+    table: dict[str, tuple[str, str]] = {}
     for cle, type_ in (
-        ("mots_cles",              "mots_cles"),
-        ("operateurs_logiques",    "operateurs_logiques"),
+        ("mots_cles",               "mots_cles"),
+        ("operateurs_logiques",     "operateurs_logiques"),
         ("operateurs_arihmetiques", "operateurs_arihmetiques"),
-        ("valeur_booleen",         "valeur_booleen"),
+        ("valeur_booleen",          "valeur_booleen"),
     ):
         for mot in le_json[cle]:
-            table[sans_accents(mot)] = type_
+            mot_norm = sans_accents(mot)
+            canonique = normalisation.get(mot_norm, mot_norm)
+            table[mot_norm] = (type_, canonique)
+
     return table
 
 

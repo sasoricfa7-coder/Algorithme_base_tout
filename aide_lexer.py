@@ -168,8 +168,8 @@ def verificateur(valeur: str, le_json: Langage) -> tuple[bool, str]:
 def alpha(ligne: int, index: int, code_source: str, token: list[Token], fichier: Langage) -> tuple[int, int]:
     depart_index: int = index
 
-    # ✅ table pré-calculée dans avant_lexer, plus besoin de la reconstruire
-    table: dict[str, str] = fichier["table_mots"]
+    # ✅ table pré-calculée : mot normalisé -> (type, valeur_canonique)
+    table: dict[str, tuple[str, str]] = fichier["table_mots"]
 
     meilleur_fin_i: int = index
     meilleur_type: str = "identifiant"
@@ -193,8 +193,7 @@ def alpha(ligne: int, index: int, code_source: str, token: list[Token], fichier:
 
         if candidat_norm in table:
             meilleur_fin_i = temp_i
-            meilleur_type = table[candidat_norm]
-            meilleur_valeur = candidat_norm
+            meilleur_type, meilleur_valeur = table[candidat_norm]   # ✅ déballage du tuple
 
         debut_esp: int = temp_i
         while (index_Error(code_source, temp_i)

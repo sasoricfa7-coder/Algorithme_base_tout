@@ -1,6 +1,7 @@
 {
 	"mots_cles" : [
 		"algorithme",
+		"algorithmes",
 		"variable",
 		"constante",
 		"constantes",
@@ -10,10 +11,15 @@
 		"ecrire",
 		"lire",
 		"entier",
+		"entiers",
 		"reel",
+		"reels",
 		"booleen",
+		"booleens",
 		"chaine",
+		"chaines",
 		"caractere",
+		"caracteres",
 		"si",
 		"alors",
 		"sinon",
@@ -21,9 +27,13 @@
 		"vaut",
 		"pour",
 		"tableau",
+		"tableaux",
 		"fonction",
+		"fonctions",
+		"procedures",
 		"procedure",
 		"retourne",
+		"retourner",
 		"repeter",
 		"jusqu'a",
 		"fin pour",
@@ -35,42 +45,27 @@
 		"tant que",
 		"faire"
 	],
-	"operateurs_logiques" : [
-		"ou",
-		"et",
-		"non"
-	],
-	"operateurs_comparaison" : [
-		"=",
-		"<",
-		">",
-		"<=",
-		">=",
-		"<>"
-	],
-	"operateurs_arihmetiques" : [
-		"+",
-		"-",
-		"*",
-		"/",
-		"^",
-		"mod",
-		"div"
-	],
-	"valeur_booleen" : [
-		"vrai",
-		"faux"
-	],
-	"operateurs_affectation" : [
-		"←"
-	],
-	"commentaire" : [
-		"%"
-	],
-	"separateur" : [
-		","
-	],
-	"declaration_type" : [
-		":"
-	]
+	"operateurs_logiques" : ["ou", "et", "non"],
+	"operateurs_comparaison" : ["=", "<", ">", "<=", ">=", "<>"],
+	"operateurs_arihmetiques" : ["+", "-", "*", "/", "^", "mod", "div"],
+	"valeur_booleen" : ["vrai", "faux"],
+	"operateurs_affectation" : ["←"],
+	"commentaire" : ["%"],
+	"separateur" : [","],
+	"declaration_type" : [":"],
+
+	"normalisation" : {
+		"algorithmes": "algorithme",
+		"variables":   "variable",
+		"constantes":  "constante",
+		"entiers":     "entier",
+		"reels":       "reel",
+		"booleens":    "booleen",
+		"chaines":     "chaine",
+		"caracteres":  "caractere",
+		"tableaux":    "tableau",
+		"fonctions":   "fonction",
+		"procedures":  "procedure",
+		"retourner":   "retourne"
+	}
 }
