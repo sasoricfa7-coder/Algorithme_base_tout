@@ -135,58 +135,93 @@ class Parseur:
                 Constante_bloc += self.parse_bloc_constantes()
         return Variable_bloc + Constante_bloc
 
-    def parse_aide_variable(self) :
-        noms: list[str, ...] = []
-        info_tableau: dict[str, str] = {}
-        le_type: str
-        def aide_moi(self) :
-            le_type: str = ""
-            self.consommer("declaration_type")
-            if self.token_courant()["valeur"] in LES_TYPES_PRIS :
-                le_type = self.token_courant()["valeur"]
-                self.consommer("mots_cles")
-                if self.token_courant()["ligne"] == ligne_depart :
-                    self.erreur("Chaque ligne prend une instruction")
+    def parse_bloc_constantes(self) -> list[Declaration]:
+        self.consommer("mots_cles", "constante")
+        resultats: list[Declaration] = []
+        while self.token_courant()["valeur"] == "tableau" or self.token_courant()["type"] == "identifiant" :
+            if self.token_courant()["valeur"] == "tableau" :
+                resultats.append(self.aide_constante_tableau())
             else :
-                self.erreur(f"{self.token_courant()['valeur']} : type non pris en charge")
+                resultats.append(self.parse_aide_constante())
 
-            return le_type
+    def parse_aide_constante(self) -> DeclarationConstante:
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("operateurs_affectation")
+        valeur: Expression = self.parse_expression()
 
-        ligne_depart: int = self.token_courant()["ligne"]
-        while(self.token_courant()["ligne"] == ligne_depart) :
-            if self.token_courant()["type"] == "identifiant" :
-                noms.append(self.token_courant()["valeur"])
-                self.consommer("identifiant")
-                if self.token_courant()["type"] == "declaration_type" :
-                    le_type = aide_moi()
-
-                else :
-                    if self.token_courant()["type"] == "separateur" :
-                        while (self.token_courant()["type"] == "separateur") :
-                            self.consommer("separateur")
-                            noms.append(self.token_courant()["valeur"])
-                            self.consommer("identifiant")
-                        le_type = aide_moi()
-                    else :
-                        self.erreur("Declaration invalide")
-            else :
-                self.consommer("mots_cles", "tableau")
-                info_tableau ["identifiant"] = self.token_courant()["valeur"]
-                self.consommer("identifiant")
-                self.consommer("PAREN_OUVRANT")
-                info_tableau ["taille"] = self.token_courant()["valeur"]
-                self.consommer("nombre")
-                self.consommer("PAREN_FERMANT")
-                info_tableau["type"] = aide_moi()
-                
+        return DeclarationConstante(nom, valeur)
         
 
-
-    def parse_bloc_variables(self) list[Declaration] :
+    def parse_bloc_variables(self) -> list[Declaration]:
         self.consommer("mots_cles", "variable")
-        while(self.token_courant()["type"] == "identifiant" or self.token_courant()["valeur"] == "tableau") :
-            self.parse_aide_variable()
-        
+        resultats: list[Declaration] = []
+        while self.token_courant()["valeur"] == "tableau" or self.token_courant()["type"] == "identifiant" :
+            if self.token_courant()["valeur"] == "tableau" :
+                resultats.append(self.parse_aide_tableau())
+            else :
+                resultats.extend(self.parse_aide_variable())
+
+        return resultats
+
+    def parse_aide_variable(self) -> list[DeclarationVariable]:
+        ligne_debut = self.token_courant()["ligne"]
+        noms: list[str] = []
+        noms.append(self.token_courant()["valeur"])
+        self.consommer("identifiant")
+        while self.token_courant()["type"] == "separateur" :
+            self.consommer("separateur")
+            noms.append(self.token_courant()["valeur"])
+            self.consommer("identifiant")
+        self.consommer("declaration_type")
+        type_: str = self.token_courant()["valeur"]
+        if type_ not in LES_TYPES_PRIS :
+            self.erreur(f"{type_} non pris en charge dans le langage EVA")
+        self.consommer("mots_cles")
+        if self.token_courant()["ligne"] == ligne_debut :
+            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
+
+        return [DeclarationVariable(nom, type_) for nom in noms]
+
+    def parse_aide_tableau(self) -> DeclarationTableau : # Tableau 1D et 2D uniquement
+        ligne_debut = self.token_courant()["ligne"]
+        self.consommer("mots_cles", "tableau")
+        nom: str = self.token_courant()["valeur"]
+        dimensions: list[Expression] = []
+        self.consommer("identifiant")
+        self.consommer("PAREN_OUVRANT")
+        dimensions.append(self.parse_expression())
+        if self.token_courant()["type"] == "separateur" :
+            self.consommer("separateur")
+            dimensions.append(self.parse_expression())
+        self.consommer("PAREN_FERMANT")
+        self.consommer("declaration_type")
+        type_: str = self.token_courant()["valeur"]
+        if type_ not in LES_TYPES_PRIS :
+            self.erreur(f"{type_} non pris en charge dans le langage EVA")
+        self.consommer("mots_cles")
+        if self.token_courant()["ligne"] == ligne_debut :
+            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
+
+        return DeclarationTableau(nom, type_, dimensions)
+
+    def parse_corps(self) -> list[Instruction]:
+        self.consommer("mots_cles", "debut")
+        retour: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "fin")
+        return retour
+
+    def parse_instructions(self) -> list[Instruction]:
+        resultats: list[Instruction] = []
+        while not self.est_fin_bloc() :
+            resultats.append(self.parse_instruction())
+
+        return resultats
+
+    def parse_instruction(self) -> Instruction :
+        pass
+
+
 
 #------------PARSEUR-------------------------------------------
 
