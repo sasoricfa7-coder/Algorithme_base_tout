@@ -7,6 +7,13 @@ MOTS_FIN_BLOC: tuple[str, ...] = (
     "fin", "fin si", "fin cas", "fin pour", "fin tant que",
     "sinon", "jusqu'a",
 )
+LES_TYPES_PRIS: tuple[str, ...] = (
+    "entier",
+    "reel",
+    "caractere",
+    "chaine",
+    "booleen",
+)
 
 #------------PARSEUR-------------------------------------------
 class Parseur:
@@ -89,25 +96,24 @@ class Parseur:
 
         return Procedure(nom, parametre, declaration, corps_complet)
 
-    def parse_type(self) -> Parametre:
+    def parse_aide_parametre(self) -> Parametre:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("declaration_type")
-        type: str = self.token_courant()["valeur"]
-        if self.token_courant()["valeur"] not in ("entier", "reel", "caractere", "chaine", "booleen") :
+        le_type: str = self.token_courant()["valeur"]
+        if self.token_courant()["valeur"] not in LES_TYPES_PRIS :
             self.erreur(f"{self.token_courant()['valeur']} type non pris en charge.")
         self.consommer("mots_cles")
 
-        return Parametre(nom, type)
+        return Parametre(nom, le_type)
 
     def parse_parametres(self) -> list[Parametre]:
         self.consommer("PAREN_OUVRANT")
         arguments: list[Parametre] = []
         while(self.token_courant()["type"] != "PAREN_FERMANT") :
-            arguments.append(self.parse_type())
+            arguments.append(self.parse_aide_parametre())
             if self.token_courant()["type"] == "separateur" :
                 self.consommer("separateur")
-
         self.consommer("PAREN_FERMANT")
 
         return arguments
@@ -129,8 +135,57 @@ class Parseur:
                 Constante_bloc += self.parse_bloc_constantes()
         return Variable_bloc + Constante_bloc
 
+    def parse_aide_variable(self) :
+        noms: list[str, ...] = []
+        info_tableau: dict[str, str] = {}
+        le_type: str
+        def aide_moi(self) :
+            le_type: str = ""
+            self.consommer("declaration_type")
+            if self.token_courant()["valeur"] in LES_TYPES_PRIS :
+                le_type = self.token_courant()["valeur"]
+                self.consommer("mots_cles")
+                if self.token_courant()["ligne"] == ligne_depart :
+                    self.erreur("Chaque ligne prend une instruction")
+            else :
+                self.erreur(f"{self.token_courant()['valeur']} : type non pris en charge")
+
+            return le_type
+
+        ligne_depart: int = self.token_courant()["ligne"]
+        while(self.token_courant()["ligne"] == ligne_depart) :
+            if self.token_courant()["type"] == "identifiant" :
+                noms.append(self.token_courant()["valeur"])
+                self.consommer("identifiant")
+                if self.token_courant()["type"] == "declaration_type" :
+                    le_type = aide_moi()
+
+                else :
+                    if self.token_courant()["type"] == "separateur" :
+                        while (self.token_courant()["type"] == "separateur") :
+                            self.consommer("separateur")
+                            noms.append(self.token_courant()["valeur"])
+                            self.consommer("identifiant")
+                        le_type = aide_moi()
+                    else :
+                        self.erreur("Declaration invalide")
+            else :
+                self.consommer("mots_cles", "tableau")
+                info_tableau ["identifiant"] = self.token_courant()["valeur"]
+                self.consommer("identifiant")
+                self.consommer("PAREN_OUVRANT")
+                info_tableau ["taille"] = self.token_courant()["valeur"]
+                self.consommer("nombre")
+                self.consommer("PAREN_FERMANT")
+                info_tableau["type"] = aide_moi()
+                
+        
+
+
     def parse_bloc_variables(self) list[Declaration] :
         self.consommer("mots_cles", "variable")
+        while(self.token_courant()["type"] == "identifiant" or self.token_courant()["valeur"] == "tableau") :
+            self.parse_aide_variable()
         
 
 #------------PARSEUR-------------------------------------------
@@ -169,13 +224,11 @@ class Parametre:
 class DeclarationVariable:
     nom: str
     type: str
-    valeur_initiale: Expression | None = None
     
 @dataclass
 class DeclarationConstante:
     nom: str
     valeur: Expression
-    type: str | None = None
 
 @dataclass
 class DeclarationTableau:
