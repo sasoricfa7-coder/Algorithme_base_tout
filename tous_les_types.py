@@ -14,48 +14,46 @@ class Parseur:
         self.tokens: list[Token] = tokens
         self.position: int = 0
 
-    def token_courant(self) :
+    def token_courant(self) -> Token:
         return self.tokens[self.position]
 
-    def token_suivant(self) :
+    def token_suivant(self) -> Token:
         if self.position + 1 >= len(self.tokens) :
             self.erreur("Fin de fichier inattendue // Unexpected end of file")
         return self.tokens[self.position + 1]
 
-    def avancer(self) :
+    def avancer(self) -> None:
         self.position += 1
 
-    def verifier(self, type_: str, valeur = None) :
+    def verifier(self, type_: str, valeur = None) -> None:
         if self.tokens[self.position]["type"] != type_ :
             self.erreur(f"type : {type_} : c'est ce qui était attendu.")
         elif (valeur != None) and (self.tokens[self.position]["valeur"] != valeur) :
             self.erreur(f"valeur : {valeur} : c'est ce qui était attendu.")
 
-    def consommer(self, type_, valeur=None) :
+    def consommer(self, type_, valeur=None) -> None:
         self.verifier(type_, valeur)
         self.avancer()
 
-    def est_fin_bloc(self) :
+    def est_fin_bloc(self) -> bool:
         if self.tokens[self.position]["valeur"] in MOTS_FIN_BLOC :
             return True
         return False
 
-    def erreur(self, message) :
+    def erreur(self, message) -> None:
         erreur(message, self.tokens[self.position]["ligne"])
 
 
-    def parse_programme(self) :
+    def parse_programme(self) -> Algorithme:
         return self.parse_algorithme()
 
-    def parse_algorithme(self) :
+    def parse_algorithme(self) -> Algorithme:
         self.consommer("mots_cles", "algorithme")
         index_nom: int = self.position
         self.consommer("identifiant")
         # Les differents blocs pour recevoir les retours et former l'AST
         Fonction_bloc: list[Fonction] = []
         Procedure_bloc: list[Procedure] = []
-        Variable_bloc: list[DeclarationVariable] = []
-        Constante_bloc: list[DeclarationConstante] = []
         # Fin des blocs
         while (self.tokens[self.position]["valeur"] in ("fonction", "procedure")) :
             if self.tokens[self.position]["valeur"] == "fonction" :
@@ -63,6 +61,62 @@ class Parseur:
             else :
                 Procedure_bloc.append(self.parse_procedure())
 
+        declaration = self.parse_declaration()
+        corps_complet: list[Instruction] = self.parse_corps()
+
+        return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, declaration, corps_complet )
+
+    def parse_fonction(self) -> Fonction:
+        self.consommer( "mots_cles","fonction")
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        parametre: list[Parametre] = self.parse_parametres()
+        self.consommer("declaration_type")
+        type_retour: str = self.token_courant()["valeur"]
+        self.consommer("mots_cles")
+        declaration: Declaration = self.parse_declaration()
+        corps_complet: list[Instruction] = self.parse_corps()
+
+        return Fonction(nom, parametre, type_retour, declaration, corps_complet)
+
+    def parse_procedure(self) -> Procedure:
+        self.consommer( "mots_cles","procedure")
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        parametre: list[Parametre] = self.parse_parametres()
+        declaration: Declaration = self.parse_declaration()
+        corps_complet: list[Instruction] = self.parse_corps()
+
+        return Procedure(nom, parametre, declaration, corps_complet)
+
+    def parse_type(self) -> Parametre:
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("declaration_type")
+        type: str = self.token_courant()["valeur"]
+        if self.token_courant()["valeur"] not in ("entier", "reel", "caractere", "chaine", "booleen") :
+            self.erreur(f"{self.token_courant()['valeur']} type non pris en charge.")
+        self.consommer("mots_cles")
+
+        return Parametre(nom, type)
+
+    def parse_parametres(self) -> list[Parametre]:
+        self.consommer("PAREN_OUVRANT")
+        arguments: list[Parametre] = []
+        while(self.token_courant()["type"] != "PAREN_FERMANT") :
+            arguments.append(self.parse_type())
+            if self.token_courant()["type"] == "separateur" :
+                self.consommer("separateur")
+
+        self.consommer("PAREN_FERMANT")
+
+        return arguments
+        
+
+    def parse_declaration(self) -> list[Declaration]:
+        Variable_bloc: list[DeclarationVariable] = []
+        Constante_bloc: list[DeclarationConstante] = []
+        
         vus: set[str] = set()
         while self.token_courant()["valeur"] in ("variable", "constante") :
             mot = self.token_courant()["valeur"]
@@ -72,13 +126,12 @@ class Parseur:
             if mot == "variable" :
                 Variable_bloc += self.parse_bloc_variables()
             else :
-                Constante_bloc += self.parse_bloc_constantes()  
+                Constante_bloc += self.parse_bloc_constantes()
+        return Variable_bloc + Constante_bloc
 
-        corps_complet: list[Instruction] = self.parse_corps()
-
-        return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, Variable_bloc + Constante_bloc, corps_complet )
-
-    
+    def parse_bloc_variables(self) list[Declaration] :
+        self.consommer("mots_cles", "variable")
+        
 
 #------------PARSEUR-------------------------------------------
 
