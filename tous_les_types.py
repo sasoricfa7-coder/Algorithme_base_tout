@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-MAX: int = 3  # nombre max de mots pouvant former un mot-clé : "Fin tant que"
+MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"
 
 
 class Token(TypedDict):
@@ -19,3 +19,4 @@ class Langage(TypedDict):
     commentaire: list[str]
     separateur: list[str]
     declaration_type: list[str]
+    table_mots: dict[str, str]   # ✅ ajouté

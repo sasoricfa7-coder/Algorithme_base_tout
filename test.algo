@@ -1,2 +1,6 @@
-a mod b
-x mod C
+Algorithme test_com_err
+Debut
+    x ← 5
+    % commentaire jamais ferme
+    Ecrire(x)
+Fin
