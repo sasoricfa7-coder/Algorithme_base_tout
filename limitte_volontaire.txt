@@ -1,0 +1,12 @@
+Ta liste de limitations v1 s'allonge (et c'est très bien)
+À noter dans ta doc :
+
+Limitation v1	Raison
+Pas de tableaux 2D constants	Complexité inutile
+Pas de tableaux en paramètres	Comme en C
+Pas d'initialisation directe des variables	Évite les cas ambigus
+Pas de comparaison chaînée (a < b < c)	Pas nécessaire
+Pas d'affectation chaînée (a ← b ← c)	Pas nécessaire
+Une instruction par ligne	Simplicité
+a réservé	Compromis accepté
+Une limitation écrite n'est pas un défaut. C'est une décision. Et c'est ce qui distingue un langage pensé d'un langage bricolé.

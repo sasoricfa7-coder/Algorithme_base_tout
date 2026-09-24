@@ -144,13 +144,32 @@ class Parseur:
             else :
                 resultats.append(self.parse_aide_constante())
 
+        return resultats
+
     def parse_aide_constante(self) -> DeclarationConstante:
+        ligne_debut = self.token_courant()["ligne"]
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         valeur: Expression = self.parse_expression()
 
+        if self.token_courant()["ligne"] == ligne_debut:
+            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
+
         return DeclarationConstante(nom, valeur)
+
+    def aide_constante_tableau(self) -> DeclarationTableau:
+        ligne_debut = self.token_courant()["ligne"]
+        self.consommer("mots_cles", "tableau")
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("operateurs_affectation")
+        les_arguments = self.parse_arguments()
+
+        if self.token_courant()["ligne"] == ligne_debut:
+            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
+            
+        return DeclarationTableau(nom, None, None, les_arguments)
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
@@ -218,10 +237,63 @@ class Parseur:
 
         return resultats
 
-    def parse_instruction(self) -> Instruction :
+    def parse_pour(self) :
         pass
 
+    def parse_tant_que(self) :
+        pass
 
+    def parse_retourne(self) :
+        pass
+
+    def parse_affectation(self) :
+        pass
+
+    def parse_arguments(self) :
+        pass
+
+    def parse_instruction(self) -> Instruction : # parse_
+        if self.token_courant()["type"] == "identifiant" :
+            if self.token_suivant()["type"] == "operateurs_affectation" :
+                return self.parse_affectation()
+            elif (self.token_suivant()["type"] == "PAREN_OUVRANT") :
+                nom: str = self.token_courant()["valeur"]
+                self.consommer("identifiant")
+                les_arguments = self.parse_arguments()
+                if self.token_courant()["type"] == "operateurs_affectation" :
+                    self.consommer("operateurs_affectation")
+                    retour: Expression = self.parse_expression()
+                    return Affectation(Indexation(nom, les_arguments), retour)
+                else :
+                    return AppelInstruction(nom, les_arguments)
+            else :
+                self.erreur("Instruction invalide : identifiant tout seul")
+        else :
+            match self.token_courant()["valeur"] :
+                case "ecrire" : return self.parse_ecrire()
+                case "lire" : return self.parse_lire()
+                case "si" : return self.parse_si()
+                case "cas": return self.parse_cas()
+                case "pour": return self.parse_pour()
+                case "tant que" : return self.parse_tant_que()
+                case "repeter" : return self.parse_repeter()
+                case "retourne" : return self.parse_retourne()
+                _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
+
+    def parse_ecrire(self) :
+        pass
+
+    def parse_lire(self) :
+        pass
+        
+    def parse_si(self) :
+        pass
+
+    def parse_cas(self) :
+        pass
+
+    def parse_repeter(self) :
+        pass
 
 #------------PARSEUR-------------------------------------------
 
@@ -268,7 +340,7 @@ class DeclarationConstante:
 @dataclass
 class DeclarationTableau:
     nom: str
-    type: str
+    type: str | None = None
     dimensions: list[Expression] | None = None
     valeurs_initiales: list[Expression] | None = None
 
