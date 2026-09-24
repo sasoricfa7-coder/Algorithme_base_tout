@@ -413,6 +413,7 @@ class Parseur:
     def parse_comparaison(self) -> Expression:
         gauche: Expression = self.parse_additif()
         if self.token_courant()["type"] == "operateurs_comparaison" :
+            operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_comparaison")
             droite: Expression = self.parse_additif()
             gauche = OperationBinaire(operateur, gauche, droite)
@@ -437,13 +438,59 @@ class Parseur:
         return gauche
         
     def parse_puissance(self) -> Expression:
-        pass
+        gauche: Expression = self.parse_unaire()
+        while self.token_courant()["valeur"] == "^" :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_arihmetiques")
+            droite: Expression = self.parse_unaire()
+            gauche = OperationBinaire(operateur, gauche, droite)
+        return gauche
+        
     def parse_unaire(self) -> Expression:
-        pass
+        if self.token_courant()["valeur"] in ("+", "-") :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_arihmetiques")
+            operande: Expression = self.parse_unaire()
+            return OperationUnaire(operateur, operande)
+        return self.parse_primaire()
     def parse_primaire(self) -> Expression:
-        pass
+        token: Token = self.token_courant()
+        type_token: str = self.token_courant()["type"]
+        valeur_token: str = self.token_courant()["valeur"]
 
+        if type_token in ("reel", "entier") :
+            self.consommer("mots_cles")
+            return Nombre(valeur_token)
 
+        elif type_token == "chaine" :
+            self.consommer("mots_cles", "chaine")
+            return ChaineCaractere(valeur_token)
+
+        elif type_token == "caractere" :
+            self.consommer("mots_cles", "caractere")
+            return Caractere(valeur_token)
+
+        elif type_token == "valeur_booleen" :
+            self.consommer("mots_cles", "valeur_booleen")
+            return Booleen(valeur_token == "vrai")
+
+        elif type_token == "identifiant" :
+            nom: str = valeur_token
+            self.consommer("identifiant")
+
+            if self.token_courant()["type"] == "PAREN_OUVRANT" :
+                les_arguments: list[Expression] = self.parse_arguments()
+                return AppelFonction(nom, les_arguments)
+
+            return Identifiant(nom)
+
+        elif type_token == "PAREN_OUVRANT" :
+            self.consommer("PAREN_OUVRANT")
+            expr: Expression = self.parse_expression()
+            self.consommer("PAREN_FERMANT")
+            return expr
+        else :
+            self.erreur("Expression inattendu")
 
 #------------PARSEUR-------------------------------------------
 
