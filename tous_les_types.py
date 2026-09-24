@@ -217,40 +217,25 @@ class Parseur:
         
         return DeclarationTableau(nom, type_, dimensions)
 
-    def parse_corps(self) -> list[Instruction]:
-        self.consommer("mots_cles", "debut")
-        retour: list[Instruction] = self.parse_instructions()
-        self.consommer("mots_cles", "fin")
-        return retour
-
     def parse_instructions(self) -> list[Instruction]:
         resultats: list[Instruction] = []
         while not self.est_fin_bloc() :
             resultats.append(self.parse_instruction())
             self.fin_de_ligne()
-
-
         return resultats
 
-    def parse_pour(self) :
-        pass
-
-    def parse_tant_que(self) :
-        pass
-
-    def parse_retourne(self) :
-        pass
+    def parse_corps(self) : # Lui ne gère que les cas ou on est entourer debut ... fin
+        self.consommer("mots_cles", "debut")
+        corps: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "fin")
+        return corps
 
     def parse_affectation(self) -> Affectation:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         retour: Expression = self.parse_expression()
-        return Affectation(nom, retour)
-
-
-    def parse_arguments(self) :
-        pass
+        return Affectation(Identifiant(nom), retour)
 
     def parse_instruction(self) -> Instruction : # parse_
         if self.token_courant()["type"] == "identifiant" :
@@ -282,9 +267,9 @@ class Parseur:
 
     def parse_ecrire(self) -> Ecrire:
         self.consommer("mots_cles", "ecrire")
-        return self.arguments()
+        return Ecrire(self.parse_arguments())
 
-    def parse_cible(self) -> Expression:
+    def parse_cible(self) -> Identifiant | Indexation:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         if self.token_courant()["type"] == "PAREN_OUVRANT" :
@@ -295,11 +280,12 @@ class Parseur:
     def parse_lire(self) -> Lire:
         self.consommer("mots_cles", "lire")
         self.consommer("PAREN_OUVRANT")
-        cibles: list[Expression] = []
+        cibles: list[Identifiant | Indexation] = []
         cibles.append(self.parse_cible())
         while self.token_courant()["type"] == "separateur" :
             self.consommer("separateur")
             cibles.append(self.parse_cible())
+        self.consommer("PAREN_FERMANT")
         return Lire(cibles)
         
     def parse_si(self) -> Si:
@@ -315,26 +301,149 @@ class Parseur:
         self.consommer("mots_cles", "fin si")
         return Si(condition, alors, sinon)
 
-    def parse_branche_cas(self) :
+    def parse_branche_cas(self) -> BrancheCas:
+        valeur: Expression = self.parse_expression()
+        self.consommer("declaration_type")
+        if self.token_courant()["valeur"] in ("si", "cas", "pour", "tant que", "repeter") :
+            self.erreur("Un bloc ne peut pas tenir sur une ligne dans un Cas : entourer le dans un debut ... fin")
 
-    def parse_cas(self) :
+        corps: list[Instruction] = []
+        if self.token_courant()["valeur"] == "debut" :
+            corps = self.parse_corps()
+        else :
+            corps = [self.parse_instruction()]
+            self.fin_de_ligne()
+        return BrancheCas(valeur, corps)
+
+    def parse_cas(self) -> Cas:
         self.consommer("mots_cles", "cas")
-        nom: str = self.token_courant()["valeur"]
-        self.consommer("identifiant")
+        nom: Identifiant | Indexation = self.parse_cible()
         self.consommer("mots_cles", "vaut")
         les_branches: list[BrancheCas] = []
-        while self.token_courant()["valeur"] != "sinon" :
+        while self.token_courant()["valeur"] not in ("fin cas", "sinon") :
             les_branches.append(self.parse_branche_cas())
             
         if self.token_courant()["valeur"] != "sinon" :
             self.erreur("Le Sinon est obligatoire dans Cas")
             
         self.consommer("mots_cles", "sinon")
+        self.consommer("declaration_type")
         sinon: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin cas")
         return Cas(nom, les_branches, sinon)
-    def parse_repeter(self) :
+
+    def parse_pour(self) -> Pour:
+        self.consommer("mots_cles", "pour")
+        indice: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("operateurs_affectation")
+        debut: Expression = self.parse_expression()
+        self.consommer("mots_cles", "a")
+        fin: Expression = self.parse_expression()
+        self.consommer("mots_cles", "pas")
+        pas: Expression = self.parse_expression()
+        self.consommer("mots_cles", "faire")
+        corps: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "fin pour")
+
+        return Pour(Identifiant(indice), debut, fin, pas, corps)
+
+    def parse_tant_que(self) -> TantQue:
+        self.consommer("mots_cles", "tant que")
+        condition: Expression = self.parse_expression()
+        self.consommer("mots_cles","faire")
+        corps: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "fin tant que")
+        return TantQue(condition, corps)
+
+    def parse_repeter(self) -> Repeter:
+        self.consommer("mots_cles", "repeter")
+        corps: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "jusqu'a")
+        condition: Expression = self.parse_expression()
+        return Repeter(corps, condition)
+
+    def parse_retourne(self) -> Retourne:
+        self.consommer("mots_cles", "retourne")
+        valeur: Expression = self.parse_expression()
+        return Retourne(valeur)
+
+    def parse_arguments(self) -> list[Expression]:
+        self.consommer("PAREN_OUVRANT")
+        les_arguments: list[Expression] = []
+        les_arguments.append(self.parse_expression())
+        while self.token_courant()["type"] == "separateur" :
+            self.consommer("separateur")
+            les_arguments.append(self.parse_expression())
+
+        self.consommer("PAREN_FERMANT")
+        return les_arguments
+
+    def parse_expression(self) -> Expression:
+        return self.parse_ou_expr()
+    def parse_ou_expr(self) :
+        gauche: Expression = self.parse_et_expr()
+        
+        while self.token_courant()["valeur"] == "ou" :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_logiques", "ou") # je veux rester coherent
+            droite: Expression = self.parse_et_expr()
+            gauche = OperationBinaire(operateur, gauche, droite)
+
+        return gauche
+
+    def parse_et_expr(self) -> Expression:
+        gauche: Expression = self.parse_non_expr()
+        
+        while self.token_courant()["valeur"] == "et" :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_logiques", "et") # je veux rester coherent
+            droite: Expression = self.parse_non_expr()
+            gauche = OperationBinaire(operateur, gauche, droite)
+
+        return gauche
+
+    def parse_non_expr(self) -> Expression:
+        if self.token_courant()["valeur"] == "non" :
+            self.consommer("operateurs_logiques", "non")
+            operande: Expression = self.parse_non_expr()
+            return OperationUnaire("non", operande)
+        return self.parse_comparaison()
+
+    def parse_comparaison(self) -> Expression:
+        gauche: Expression = self.parse_additif()
+        if self.token_courant()["type"] == "operateurs_comparaison" :
+            self.consommer("operateurs_comparaison")
+            droite: Expression = self.parse_additif()
+            gauche = OperationBinaire(operateur, gauche, droite)
+        return gauche
+
+    def parse_additif(self) -> Expression:
+        gauche: Expression = self.parse_multiplicatif()
+        while self.token_courant()["valeur"] in ("+", "-") :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_arihmetiques")
+            droite: Expression = self.parse_multiplicatif()
+            gauche = OperationBinaire(operateur, gauche, droite)
+        return gauche
+        
+    def parse_multiplicatif(self) -> Expression:
+        gauche: Expression = self.parse_puissance()
+        while self.token_courant()["valeur"] in ("*", "/", "mod", "div") :
+            operateur: str = self.token_courant()["valeur"]
+            self.consommer("operateurs_arihmetiques")
+            droite: Expression = self.parse_puissance()
+            gauche = OperationBinaire(operateur, gauche, droite)
+        return gauche
+        
+    def parse_puissance(self) -> Expression:
         pass
+    def parse_unaire(self) -> Expression:
+        pass
+    def parse_primaire(self) -> Expression:
+        pass
+
+
 
 #------------PARSEUR-------------------------------------------
 
@@ -406,7 +515,7 @@ class Si:
 
 @dataclass
 class Cas:
-    expression: Expression
+    expression: Identifiant | Indexation
     branches: list[BrancheCas]
     sinon: list[Instruction] = field(default_factory=list)
 
@@ -420,7 +529,7 @@ class Pour:
     indice: Identifiant
     debut: Expression
     fin: Expression
-    pas: Expression | None = None
+    pas: Expression
     corps: list[Instruction]
 
 @dataclass
