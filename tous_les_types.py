@@ -50,6 +50,11 @@ class Parseur:
     def erreur(self, message) -> None:
         erreur(message, self.tokens[self.position]["ligne"])
 
+    def fin_de_ligne(self) -> None:
+        """Vérifie que le token courant est sur une autre ligne que le précédent."""
+        if self.tokens[self.position - 1]["ligne"] == self.tokens[self.position]["ligne"]:
+            self.erreur("Rien ne doit suivre un marqueur de fin de bloc sur la même ligne")
+
 
     def parse_programme(self) -> Algorithme:
         return self.parse_algorithme()
@@ -147,28 +152,22 @@ class Parseur:
         return resultats
 
     def parse_aide_constante(self) -> DeclarationConstante:
-        ligne_debut = self.token_courant()["ligne"]
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         valeur: Expression = self.parse_expression()
 
-        if self.token_courant()["ligne"] == ligne_debut:
-            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
-
+        self.fin_de_ligne()
         return DeclarationConstante(nom, valeur)
 
     def aide_constante_tableau(self) -> DeclarationTableau:
-        ligne_debut = self.token_courant()["ligne"]
         self.consommer("mots_cles", "tableau")
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         les_arguments = self.parse_arguments()
 
-        if self.token_courant()["ligne"] == ligne_debut:
-            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
-            
+        self.fin_de_ligne()
         return DeclarationTableau(nom, None, None, les_arguments)
         
 
@@ -184,7 +183,6 @@ class Parseur:
         return resultats
 
     def parse_aide_variable(self) -> list[DeclarationVariable]:
-        ligne_debut = self.token_courant()["ligne"]
         noms: list[str] = []
         noms.append(self.token_courant()["valeur"])
         self.consommer("identifiant")
@@ -197,13 +195,10 @@ class Parseur:
         if type_ not in LES_TYPES_PRIS :
             self.erreur(f"{type_} non pris en charge dans le langage EVA")
         self.consommer("mots_cles")
-        if self.token_courant()["ligne"] == ligne_debut :
-            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
-
+        
         return [DeclarationVariable(nom, type_) for nom in noms]
 
     def parse_aide_tableau(self) -> DeclarationTableau : # Tableau 1D et 2D uniquement
-        ligne_debut = self.token_courant()["ligne"]
         self.consommer("mots_cles", "tableau")
         nom: str = self.token_courant()["valeur"]
         dimensions: list[Expression] = []
@@ -219,9 +214,7 @@ class Parseur:
         if type_ not in LES_TYPES_PRIS :
             self.erreur(f"{type_} non pris en charge dans le langage EVA")
         self.consommer("mots_cles")
-        if self.token_courant()["ligne"] == ligne_debut :
-            self.erreur("chaque ligne ne doit contenir qu'une seule instruction")
-
+        
         return DeclarationTableau(nom, type_, dimensions)
 
     def parse_corps(self) -> list[Instruction]:
@@ -234,6 +227,8 @@ class Parseur:
         resultats: list[Instruction] = []
         while not self.est_fin_bloc() :
             resultats.append(self.parse_instruction())
+            self.fin_de_ligne()
+
 
         return resultats
 
@@ -246,8 +241,13 @@ class Parseur:
     def parse_retourne(self) :
         pass
 
-    def parse_affectation(self) :
-        pass
+    def parse_affectation(self) -> Affectation:
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("operateurs_affectation")
+        retour: Expression = self.parse_expression()
+        return Affectation(nom, retour)
+
 
     def parse_arguments(self) :
         pass
@@ -280,18 +280,59 @@ class Parseur:
                 case "retourne" : return self.parse_retourne()
                 _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
 
-    def parse_ecrire(self) :
-        pass
+    def parse_ecrire(self) -> Ecrire:
+        self.consommer("mots_cles", "ecrire")
+        return self.arguments()
 
-    def parse_lire(self) :
-        pass
+    def parse_cible(self) -> Expression:
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        if self.token_courant()["type"] == "PAREN_OUVRANT" :
+            indices = self.parse_arguments()
+            return Indexation(nom, indices)
+        return Identifiant(nom)
+
+    def parse_lire(self) -> Lire:
+        self.consommer("mots_cles", "lire")
+        self.consommer("PAREN_OUVRANT")
+        cibles: list[Expression] = []
+        cibles.append(self.parse_cible())
+        while self.token_courant()["type"] == "separateur" :
+            self.consommer("separateur")
+            cibles.append(self.parse_cible())
+        return Lire(cibles)
         
-    def parse_si(self) :
-        pass
+    def parse_si(self) -> Si:
+        self.consommer("mots_cles", "si")
+        condition: Expression = self.parse_expression()
+        self.consommer("mots_cles", "alors")
+        alors: list[Instruction] = self.parse_instructions()
+        sinon: list[Instruction] = []
+        if self.token_courant()["valeur"] == "sinon" :
+            self.consommer("mots_cles", "sinon")
+            sinon = self.parse_instructions()
+
+        self.consommer("mots_cles", "fin si")
+        return Si(condition, alors, sinon)
+
+    def parse_branche_cas(self) :
 
     def parse_cas(self) :
-        pass
-
+        self.consommer("mots_cles", "cas")
+        nom: str = self.token_courant()["valeur"]
+        self.consommer("identifiant")
+        self.consommer("mots_cles", "vaut")
+        les_branches: list[BrancheCas] = []
+        while self.token_courant()["valeur"] != "sinon" :
+            les_branches.append(self.parse_branche_cas())
+            
+        if self.token_courant()["valeur"] != "sinon" :
+            self.erreur("Le Sinon est obligatoire dans Cas")
+            
+        self.consommer("mots_cles", "sinon")
+        sinon: list[Instruction] = self.parse_instructions()
+        self.consommer("mots_cles", "fin cas")
+        return Cas(nom, les_branches, sinon)
     def parse_repeter(self) :
         pass
 
