@@ -73,8 +73,6 @@ class AnalyseurSemantique:
                     self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
                 else :
                     self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
-                
-
                     
     def visiter_corps(self):
         pass
@@ -539,9 +537,9 @@ class Parseur:
             elif isinstance(expr, Booleen):
                 return "booleen"
             elif isinstance(expr, OperationBinaire):
-                pass
+                pass # pour v2
             elif isinstance(expr, OperationUnaire):
-                pass
+                pass # v2
         else:
             if isinstance(expr, list) and len(expr) > 0:
                 premier_type = self.obtenir_type_expression(expr[0])
