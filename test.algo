@@ -1,6 +1,23 @@
-Algorithme test_com_err
+Algorithme Boucles_Valides_Complexes
+Variables
+    i, j, max_val, total : Entier
 Debut
-    x ← 5
-    % commentaire jamais ferme
-    Ecrire(x)
+    max_val ← 5
+    total ← 0
+    
+    % Bornes complexes avec expressions arithmétiques %
+    Pour i ← 10 - 8 à max_val * 2 pas 1 + 1 faire
+        Repeter
+            Lire(j)
+            total ← total + j
+            
+            Tant que j > 0 et total < 100 faire
+                j ← j - 1
+            Fin tant que
+            
+        Jusqu'a j <= 0 ou total >= 50
+    Fin pour
+    
+    Ecrire("Total final : ", total)
 Fin
+

@@ -181,7 +181,7 @@ def alpha(ligne: int, index: int, code_source: str, token: list[Token], fichier:
     while len(mots) < MAX:
         mot: str = ""
         while (index_Error(code_source, temp_i)
-               and (code_source[temp_i].isalnum() or code_source[temp_i] == "_")):
+               and (code_source[temp_i].isalnum() or code_source[temp_i] in ("_", "'"))):
             mot += code_source[temp_i]
             temp_i += 1
 

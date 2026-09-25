@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, is_dataclass, fields
 from typing import TypedDict, Union
 from erreur import erreur
 
@@ -79,14 +79,18 @@ class Parseur:
         return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, declaration, corps_complet )
 
     def parse_fonction(self) -> Fonction:
-        self.consommer( "mots_cles","fonction")
-        nom: str = self.token_courant()["valeur"]
+        self.consommer("mots_cles", "fonction")
+        nom: str = str(self.token_courant()["valeur"])
         self.consommer("identifiant")
         parametre: list[Parametre] = self.parse_parametres()
         self.consommer("declaration_type")
-        type_retour: str = self.token_courant()["valeur"]
+        
+        type_retour: str = str(self.token_courant()["valeur"])
+        if type_retour not in LES_TYPES_PRIS :
+            self.erreur(f"Type de retour '{type_retour}' non pris en charge.")
+            
         self.consommer("mots_cles")
-        declaration: Declaration = self.parse_declaration()
+        declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
 
         return Fonction(nom, parametre, type_retour, declaration, corps_complet)
@@ -263,7 +267,7 @@ class Parseur:
                 case "tant que" : return self.parse_tant_que()
                 case "repeter" : return self.parse_repeter()
                 case "retourne" : return self.parse_retourne()
-                _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
+                case _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
 
     def parse_ecrire(self) -> Ecrire:
         self.consommer("mots_cles", "ecrire")
@@ -439,11 +443,11 @@ class Parseur:
         
     def parse_puissance(self) -> Expression:
         gauche: Expression = self.parse_unaire()
-        while self.token_courant()["valeur"] == "^" :
-            operateur: str = self.token_courant()["valeur"]
-            self.consommer("operateurs_arihmetiques")
-            droite: Expression = self.parse_unaire()
-            gauche = OperationBinaire(operateur, gauche, droite)
+        if self.token_courant()["valeur"] == "^" :
+            operateur: str = str(self.token_courant()["valeur"])
+            self.consommer("operateurs_arihmetiques", "^")
+            droite: Expression = self.parse_puissance()  # Récursion à droite
+            return OperationBinaire(operateur, gauche, droite)
         return gauche
         
     def parse_unaire(self) -> Expression:
@@ -453,29 +457,30 @@ class Parseur:
             operande: Expression = self.parse_unaire()
             return OperationUnaire(operateur, operande)
         return self.parse_primaire()
+
     def parse_primaire(self) -> Expression:
         token: Token = self.token_courant()
-        type_token: str = self.token_courant()["type"]
-        valeur_token: str = self.token_courant()["valeur"]
+        type_token: str = token["type"]
+        valeur_token = token["valeur"]
 
-        if type_token in ("reel", "entier") :
-            self.consommer("mots_cles")
+        if type_token == "NOMBRE" :
+            self.consommer("NOMBRE")
             return Nombre(valeur_token)
 
-        elif type_token == "chaine" :
-            self.consommer("mots_cles", "chaine")
-            return ChaineCaractere(valeur_token)
+        elif type_token == "CHAINE_CARACTERE" :
+            self.consommer("CHAINE_CARACTERE")
+            return ChaineCaractere(str(valeur_token))
 
-        elif type_token == "caractere" :
-            self.consommer("mots_cles", "caractere")
-            return Caractere(valeur_token)
+        elif type_token == "CARACTERE" :
+            self.consommer("CARACTERE")
+            return Caractere(str(valeur_token))
 
         elif type_token == "valeur_booleen" :
-            self.consommer("mots_cles", "valeur_booleen")
+            self.consommer("valeur_booleen")
             return Booleen(valeur_token == "vrai")
 
         elif type_token == "identifiant" :
-            nom: str = valeur_token
+            nom: str = str(valeur_token)
             self.consommer("identifiant")
 
             if self.token_courant()["type"] == "PAREN_OUVRANT" :
@@ -490,7 +495,7 @@ class Parseur:
             self.consommer("PAREN_FERMANT")
             return expr
         else :
-            self.erreur("Expression inattendu")
+            self.erreur(f"Expression inattendue : token '{type_token}' ({valeur_token})")
 
 #------------PARSEUR-------------------------------------------
 
@@ -661,6 +666,39 @@ class Langage(TypedDict):
         normalisation: dict[str, str]                 # ✅ ajouté
         table_mots: dict[str, tuple[str, str]]        # ✅ type mis à jour
 
+
+def afficher_ast(node, indent="", last=True):
+    """Affiche un AST fait de dataclasses sous forme d'arbre ASCII."""
+    prefix = "└── " if last else "├── "
+    child_indent = indent + ("    " if last else "│   ")
+
+    if is_dataclass(node):
+        print(f"{indent}{prefix}\033[1;34m{node.__class__.__name__}\033[0m")
+        field_list = fields(node)
+        for i, field in enumerate(field_list):
+            val = getattr(node, field.name)
+            is_last_field = (i == len(field_list) - 1)
+            field_prefix = "└── " if is_last_field else "├── "
+            sub_child_indent = child_indent + ("    " if is_last_field else "│   ")
+            
+            print(f"{child_indent}{field_prefix}\033[33m{field.name}\033[0m:")
+            
+            if isinstance(val, list):
+                if not val:
+                    print(f"{sub_child_indent}└── []")
+                else:
+                    for j, item in enumerate(val):
+                        afficher_ast(item, sub_child_indent, j == len(val) - 1)
+            elif is_dataclass(val):
+                afficher_ast(val, sub_child_indent, True)
+            else:
+                print(f"{sub_child_indent}└── \033[32m{repr(val)}\033[0m")
+
+    elif isinstance(node, list):
+        for i, item in enumerate(node):
+            afficher_ast(item, indent, i == len(node) - 1)
+    else:
+        print(f"{indent}{prefix}\033[32m{repr(node)}\033[0m")
 
 
 Expression = Union[Nombre, ChaineCaractere, Caractere, Booleen, Identifiant,
