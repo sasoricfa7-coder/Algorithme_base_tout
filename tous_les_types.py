@@ -14,6 +14,157 @@ LES_TYPES_PRIS: tuple[str, ...] = (
     "chaine",
     "booleen",
 )
+#------------ANALYSEUR_SEMANTIQUE-------------------------------------------
+@dataclass
+class Symbole:
+    nom: str
+    type: str
+    est_constante: bool = False
+
+@dataclass
+class TableSymboles:
+    pile: list[dict[str, Symbole]] = field(default_factory=list)
+
+    def entrer_portee(self) -> None:
+        self.pile.append({})
+
+    def sortir_portee(self) -> None:
+        self.pile.pop()
+
+    def declarer(self, nom: str, symbole: Symbole) -> None:
+        if nom in self.pile[-1] :
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans ce bloc 🚫")
+        self.pile[-1][nom] = symbole
+
+    def rechercher(self, nom: str) -> Symbole | None :
+        for portee in reversed(self.pile):
+            if nom in portee:
+                return portee[nom]
+        return None
+
+    def erreur(self, message="") -> None:
+        erreur(message)
+
+@dataclass
+class AnalyseurSemantique:
+    ast: Algorithme
+    tables: TableSymboles = field(default_factory=TableSymboles)
+
+    def visiter_algorithme(self):
+        self.tables.entrer_portee()
+        self.visiter_fonctions()
+        self.visiter_procedures()
+        self.visiter_declarations(self.ast.declarations())
+        self.visiter_corps()
+        self.tables.sortir_portee()
+
+    def visiter_fonctions(self):
+        pass
+    def visiter_procedures(self):
+        pass
+    def visiter_declarations(self, declarations):
+        for decl in declarations:
+            if isinstance(decl, DeclarationVariable) :
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+            elif isinstance(decl, DeclarationConstante) :
+                self.tables.declarer(decl.nom, Symbole(decl.nom, self.type_inferer(decl.valeur), True))
+            else :
+                if decl.type == None :
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, self.type_inferer(decl.valeurs_initiales, True), True))
+                else :
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+                
+
+                    
+    def visiter_corps(self):
+        pass
+
+    def type_inferer(self, valeur, est_tableau: bool = False ) :
+        if not est_tableau :
+            if (len(str(valeur)) == 1) and (not str(valeur).isdigit()) :
+                return "caractere"
+                # Je suis en reflexion car corriger le parseur rendrait cette méthode inutile
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #------------PARSEUR-------------------------------------------
 class Parseur:
@@ -538,6 +689,7 @@ class DeclarationVariable:
 class DeclarationConstante:
     nom: str
     valeur: Expression
+    type: str | None = None
 
 @dataclass
 class DeclarationTableau:

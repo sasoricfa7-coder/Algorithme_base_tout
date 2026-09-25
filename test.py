@@ -1,3 +1,2 @@
-a = "    a     b    s "
-a = a.strip()
-print(a)
+pile: list[dict[str, str|float|int]] = []
+print(pile)
