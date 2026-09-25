@@ -67,10 +67,10 @@ class AnalyseurSemantique:
             if isinstance(decl, DeclarationVariable) :
                 self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
             elif isinstance(decl, DeclarationConstante) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, self.type_inferer(decl.valeur), True))
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
             else :
-                if decl.type == None :
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, self.type_inferer(decl.valeurs_initiales, True), True))
+                if decl.dimensions == None :
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
                 else :
                     self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
                 
@@ -79,12 +79,6 @@ class AnalyseurSemantique:
     def visiter_corps(self):
         pass
 
-    def type_inferer(self, valeur, est_tableau: bool = False ) :
-        if not est_tableau :
-            if (len(str(valeur)) == 1) and (not str(valeur).isdigit()) :
-                return "caractere"
-                # Je suis en reflexion car corriger le parseur rendrait cette méthode inutile
-        
 
 
 
@@ -313,7 +307,7 @@ class Parseur:
         valeur: Expression = self.parse_expression()
 
         self.fin_de_ligne()
-        return DeclarationConstante(nom, valeur)
+        return DeclarationConstante(nom, valeur, self.obtenir_type_expression(valeur))
 
     def aide_constante_tableau(self) -> DeclarationTableau:
         self.consommer("mots_cles", "tableau")
@@ -323,7 +317,7 @@ class Parseur:
         les_arguments = self.parse_arguments()
 
         self.fin_de_ligne()
-        return DeclarationTableau(nom, None, None, les_arguments)
+        return DeclarationTableau(nom, self.obtenir_type_expression(les_arguments, True), None, les_arguments)
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
@@ -533,6 +527,29 @@ class Parseur:
 
         self.consommer("PAREN_FERMANT")
         return les_arguments
+
+    def obtenir_type_expression(self, expr: Expression, est_tableau: bool = False) -> str:
+        if not est_tableau :
+            if isinstance(expr , Nombre) :
+                return "entier" if isinstance(expr.valeur, int) else "reel"
+            elif isinstance(expr, Caractere):
+                return "caractere"
+            elif isinstance(expr, ChaineCaractere):
+                return "chaine"
+            elif isinstance(expr, Booleen):
+                return "booleen"
+            elif isinstance(expr, OperationBinaire):
+                pass
+            elif isinstance(expr, OperationUnaire):
+                pass
+        else:
+            if isinstance(expr, list) and len(expr) > 0:
+                premier_type = self.obtenir_type_expression(expr[0])
+                for element in expr :
+                    if self.obtenir_type_expression(element) != premier_type :
+                        self.erreur("Tous les éléments d'un tableau doivent avoir le même type.")
+                return premier_type
+
 
     def parse_expression(self) -> Expression:
         return self.parse_ou_expr()
