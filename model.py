@@ -74,107 +74,99 @@ class AnalyseurSemantique:
                 else :
                     self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
 
+    def obtenir_type_expression(self, expr: Expression) -> str:
+        pass
+
                     
     def visiter_corps(self) -> None:
         for instruction in self.ast.corps:
-            self.visiter_instruction(instruction)
+            if isinstance(instruction, Affectation) :
+                symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
+                if symbole.est_constante :
+                    self.erreur("Une constante est immuable donc par consequent affectation impossible.")
+                if symbole.type != self.obtenir_type_expression(instruction.valeur):
+                    self.erreur("La valeur affecter n'est pas du même type que la variable.")
+                if isinstance(instruction.cible, Indexation):
+                    for indice in instruction.cible.indices :
+                        if symbole.type != indice :
+                            self.erreur("La valeur affecter au tableau est différent de son type.")
+            if isinstance(instruction, Ecrire) or isinstance(instruction, Lire):
+                instruction = instruction.arguments if isinstance(instruction, Ecrire) else instruction.cibles
+                for element in instruction :
+                    if isinstance(element, Identifiant) :
+                        symbole: Symbole = self.tables.rechercher(element.nom)
+                    elif isinstance(element, OperationBinaire) or isinstance(element, OperationUnaire):
+                        self.obtenir_type_expression(element) # ici je l'appelle afin que s'il rencontre un identifiant 
+                        # invalide il puisse lever une erreur
+                    elif isinstance(element, AppelFonction) or isinstance(element, Indexation):
+                        self.tables.rechercher(element.nom)
+                        if isinstance(element, AppelFonction):
+                            self.obtenir_type_expression(element.arguments)
+                        else:
+                            self.obtenir_type_expression(element.indices)
+                    
 
-    def visiter_instruction(self, instruction: Instruction) -> None:
-            if isinstance(instruction, Affectation):
-                self.visiter_affectation(instruction)
-            elif isinstance(instruction, Ecrire):
-                self.visiter_ecrire(instruction)
-            elif isinstance(instruction, Lire):
-                self.visiter_lire(instruction)
-            elif isinstance(instruction, Si):
-                self.visiter_si(instruction)
-            elif isinstance(instruction, TantQue):
-                self.visiter_tant_que(instruction)
-            elif isinstance(instruction, Pour):
-                self.visiter_pour(instruction)
-            elif isinstance(instruction, Retourne):
-                self.visiter_retourne(instruction)
-            elif isinstance(instruction, AppelInstruction):
-                self.visiter_appel_instruction(instruction)
 
-    def visiter_affectation(instruction: Affectation) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
-        if symbole.est_constante :
-            self.erreur("Une constante est immuable donc par consequent affectation impossible.")
-        if symbole.type != self.obtenir_type_expression(instruction.valeur): # ici je recupère deja le type que je compare
-            self.erreur("La valeur affecter n'est pas du même type que la variable.")
-        if isinstance(instruction.cible, Indexation):
-            for indice in instruction.cible.indices :
-                if symbole.type != indice :
-                    self.erreur("La valeur affecter au tableau est différent de son type.")
 
-        
-    def visiter_ecrire(instruction: Ecrire) -> None:
-        for element in instruction.arguments :
-            self.obtenir_type_expression(element)
-        
-    def visiter_lire(instruction: Lire) -> None:
-        for element in instruction.cibles :
-            symbole: Symbole = self.tables.rechercher(element.nom)
-            if symbole.est_constante:
-                self.erreur("Impossible de lire dans une constante.")
-            if isinstance(element, Indexation):
-                for args in element.indices:
-                    self.obtenir_type_expression(args)
-                
-            
-    def visiter_si(instruction: Si) -> None:
-        self.obtenir_type_expression(instruction.condition)
-        for instruction in instruction.alors:
-            self.visiter_instruction(instruction)
-        
-        for instruction in instruction.sinon:
-            self.visiter_instruction(instruction)
-            
-    def visiter_tant_que(instruction: TantQue) -> None:
-        self.obtenir_type_expression(instruction.condition)
-        for instruction in instruction.corps:
-            self.visiter_instruction(instruction)
 
-    def visiter_pour(instruction: Pour) -> None:
-        self.tables.rechercher(instruction.indice.nom)
-        self.obtenir_type_expression(instruction.debut)
-        self.obtenir_type_expression(instruction.fin)
-        self.obtenir_type_expression(instruction.pas)
 
-        for instruction in instruction.corps:
-            self.visiter_instruction(instruction)
-            
-    def visiter_retourne(instruction: Retourne) -> None:
-        self.obtenir_type_expression(instruction.valeur) # ici on ne dois pas oublier de verifier 
-        # que le retour est bien effectuer une fonction et non une procedure
-        
-    def visiter_appel_instruction(instruction: AppelFonction) -> None:
-        self.tables.rechercher(instruction.nom)
-        for element in instruction.arguments:
-            self.obtenir_type_expression(element)
-        
-    def obtenir_type_expression(self, expr: Expression) -> str:
-        if isinstance(expr, Nombre):
-            return "entier" if isinstance(expr.valeur, int) else "reel"
-        elif isinstance(expr, Caractere):
-            return "caractere"
-        elif isinstance(expr, ChaineCaractere):
-            return "chaine"
-        elif isinstance(expr, Booleen):
-            return "booleen"
-        elif isinstance(expr, Identifiant):
-            # C'est ici qu'on s'assure que la variable existe !
-            symbole = self.tables.rechercher(expr.nom)
-            return symbole.type
-        elif isinstance(expr, Indexation):
-            symbole = self.tables.rechercher(expr.nom)
-            return symbole.type
-        # Pour l'instant, on laisse le reste de côté pour la V1
-        self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
