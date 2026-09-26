@@ -49,6 +49,7 @@ class TableSymboles:
 class AnalyseurSemantique:
     ast: Algorithme
     tables: TableSymboles = field(default_factory=TableSymboles)
+    fonction_courante: Fonction | None = None
 
     def visiter_algorithme(self):
         self.tables.entrer_portee()
@@ -59,9 +60,37 @@ class AnalyseurSemantique:
         self.tables.sortir_portee()
 
     def visiter_fonctions(self):
-        pass
+        for fonction in self.ast.fonctions:
+            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour))
+            self.tables.entrer_portee()
+            self.fonction_courante = fonction
+
+            for param in fonction.parametres:
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+
+            self.visiter_declarations(fonction.declarations)
+
+            self.appel_instruction(fonction.corps)
+
+            self.fonction_courante = None
+            
+            self.tables.sortir_portee()
+            
     def visiter_procedures(self):
-        pass
+        for procedure in self.ast.procedures:
+            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure"))
+            self.tables.entrer_portee()
+            self.fonction_courante = None
+
+            for param in procedure.parametres:
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+
+            self.visiter_declarations(procedure.declarations)
+
+            self.appel_instruction(procedure.corps)
+            
+            self.tables.sortir_portee()
+        
     def visiter_declarations(self, declarations) -> None:
         for decl in declarations:
             if isinstance(decl, DeclarationVariable) :
@@ -92,12 +121,16 @@ class AnalyseurSemantique:
                 self.visiter_tant_que(instruction)
             elif isinstance(instruction, Pour):
                 self.visiter_pour(instruction)
+            elif isinstance(instruction, Cas): # ✅ Ajouté
+                self.visiter_cas(instruction)
             elif isinstance(instruction, Retourne):
                 self.visiter_retourne(instruction)
+            elif isinstance(instruction, Repeter): # ✅ Ajouté
+                self.visiter_repeter(instruction)
             elif isinstance(instruction, AppelInstruction):
                 self.visiter_appel_instruction(instruction)
 
-    def visiter_affectation(instruction: Affectation) -> None:
+    def visiter_affectation(self, instruction: Affectation) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
         if symbole.est_constante :
             self.erreur("Une constante est immuable donc par consequent affectation impossible.")
@@ -105,15 +138,15 @@ class AnalyseurSemantique:
             self.erreur("La valeur affecter n'est pas du même type que la variable.")
         if isinstance(instruction.cible, Indexation):
             for indice in instruction.cible.indices :
-                if symbole.type != indice :
-                    self.erreur("La valeur affecter au tableau est différent de son type.")
+                if self.obtenir_type_expression(indice) != "entier":
+                    self.erreur("L'indice d'un tableau doit être de type entier.")
 
         
-    def visiter_ecrire(instruction: Ecrire) -> None:
+    def visiter_ecrire(self, instruction: Ecrire) -> None:
         for element in instruction.arguments :
             self.obtenir_type_expression(element)
         
-    def visiter_lire(instruction: Lire) -> None:
+    def visiter_lire(self, instruction: Lire) -> None:
         for element in instruction.cibles :
             symbole: Symbole = self.tables.rechercher(element.nom)
             if symbole.est_constante:
@@ -123,37 +156,65 @@ class AnalyseurSemantique:
                     self.obtenir_type_expression(args)
                 
             
-    def visiter_si(instruction: Si) -> None:
+    def visiter_si(self, instruction: Si) -> None:
         self.obtenir_type_expression(instruction.condition)
         for instruction in instruction.alors:
             self.visiter_instruction(instruction)
-        
-        for instruction in instruction.sinon:
-            self.visiter_instruction(instruction)
-            
-    def visiter_tant_que(instruction: TantQue) -> None:
-        self.obtenir_type_expression(instruction.condition)
-        for instruction in instruction.corps:
-            self.visiter_instruction(instruction)
 
-    def visiter_pour(instruction: Pour) -> None:
+        self.appel_instruction(instruction.sinon)
+            
+    def visiter_tant_que(self, instruction: TantQue) -> None:
+        self.obtenir_type_expression(instruction.condition)
+
+        self.appel_instruction(instruction.corps)
+
+    def visiter_pour(self, instruction: Pour) -> None:
         self.tables.rechercher(instruction.indice.nom)
         self.obtenir_type_expression(instruction.debut)
         self.obtenir_type_expression(instruction.fin)
         self.obtenir_type_expression(instruction.pas)
 
-        for instruction in instruction.corps:
-            self.visiter_instruction(instruction)
+        self.appel_instruction(instruction.corps)
             
-    def visiter_retourne(instruction: Retourne) -> None:
-        self.obtenir_type_expression(instruction.valeur) # ici on ne dois pas oublier de verifier 
-        # que le retour est bien effectuer une fonction et non une procedure
+    def visiter_retourne(self, instruction: Retourne) -> None:
+        if self.fonction_courante is None:
+            self.erreur("L'instruction 'retourne' est interdite dans une procédure.")
+            
+        type_retour_attendu: str = self.fonction_courante.type_retour
+        type_retour_reel: str = self.obtenir_type_expression(instruction.valeur)
+
+        if type_retour_attendu != type_retour_reel:
+            self.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.")
+
         
-    def visiter_appel_instruction(instruction: AppelFonction) -> None:
+    def visiter_appel_instruction(self, instruction: AppelFonction) -> None:
         self.tables.rechercher(instruction.nom)
         for element in instruction.arguments:
             self.obtenir_type_expression(element)
-        
+
+    def visiter_branche_cas(self, type_: str, une_branche: BrancheCas) -> None:
+        if type_ != self.obtenir_type_expression(une_branche.valeur):
+            self.erreur("la comparaison à l'aide du cas se fait entre élément de même type.")
+
+        self.appel_instruction(une_branche.instructions)
+
+    def appel_instruction(self, grande_instruction: list[Instruction]) -> None:
+        if grande_instruction:
+            for instruction in grande_instruction:
+                self.visiter_instruction(instruction)
+
+    def visiter_cas(self, instruction: Cas) -> None:
+        symbole: Symbole = self.tables.rechercher(instruction.nom)
+        for element in instruction.branches:
+            self.visiter_branche_cas(symbole.type, element)
+        if instruction.sinon :
+            self.appel_instruction(instruction.sinon)
+            
+    def visiter_repeter(self, instruction) -> None:
+        self.appel_instruction(instruction.corps)
+        if not isinstance(self.obtenir_type_expression(instruction.condition), bool) :
+            self.erreur("Une condition doit toujours donner un booléen.")
+    
     def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
@@ -170,7 +231,29 @@ class AnalyseurSemantique:
         elif isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
             return symbole.type
-        # Pour l'instant, on laisse le reste de côté pour la V1
+        elif isinstance(expr, OperationBinaire):
+            type_gauche: str = self.obtenir_type_expression(expr.gauche)
+            type_droite: str = self.obtenir_type_expression(expr.droite)
+            if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
+                if type_gauche == "reel" or type_droite == "reel":
+                    return "reel"
+                return "entier"
+            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
+                return "booleen"
+            elif expr.operateur in ("et", "ou"):
+                return "booleen"
+            else:
+                self.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
+        elif isinstance(expr, OperationUnaire):
+            type_operande: str = self.obtenir_type_expression(expr.operande)
+            operateur: str = expr.operateur
+
+            if type_operande == "booleen" and operateur == "non":
+                return "booleen"
+            elif type_operande in ("entier", "reel"):
+                return "entier" if type_operande == "entier" else "reel"
+            self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
+
         self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
         
         
