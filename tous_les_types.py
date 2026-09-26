@@ -20,6 +20,7 @@ class Symbole:
     nom: str
     type: str
     est_constante: bool = False
+    parametres: list[str] = field(default_factory=list)
 
 @dataclass
 class TableSymboles:
@@ -61,7 +62,7 @@ class AnalyseurSemantique:
 
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
-            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour))
+            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]))
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
@@ -78,7 +79,7 @@ class AnalyseurSemantique:
             
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure"))
+            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres]))
             self.tables.entrer_portee()
             self.fonction_courante = None
 
@@ -186,12 +187,6 @@ class AnalyseurSemantique:
         if type_retour_attendu != type_retour_reel:
             self.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.")
 
-        
-    def visiter_appel_instruction(self, instruction: AppelFonction) -> None:
-        self.tables.rechercher(instruction.nom)
-        for element in instruction.arguments:
-            self.obtenir_type_expression(element)
-
     def visiter_branche_cas(self, type_: str, une_branche: BrancheCas) -> None:
         if type_ != self.obtenir_type_expression(une_branche.valeur):
             self.erreur("la comparaison à l'aide du cas se fait entre élément de même type.")
@@ -214,6 +209,18 @@ class AnalyseurSemantique:
         self.appel_instruction(instruction.corps)
         if not isinstance(self.obtenir_type_expression(instruction.condition), bool) :
             self.erreur("Une condition doit toujours donner un booléen.")
+
+    def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
+        symbole: Symbole = self.tables.rechercher(instruction.nom)
+        arguments: list = []
+        for element in instruction.arguments:
+            arguments.append(self.obtenir_type_expression(element))
+        if len(arguments) == len(symbole.parametres):
+            for i, j in zip(arguments, symbole.parametres):
+                if i != j:
+                    self.erreur("Les types declarer au niveaux des arguments d'une procédure doivent être respecter à l'appel")
+        else:
+            self.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
     
     def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
@@ -235,12 +242,19 @@ class AnalyseurSemantique:
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
             if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
+                if expr.operateur in ("/", "div", "mod"):
+                    if isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
+                        self.erreur("Division par zéro détectée avant compilation")
+                        
                 if type_gauche == "reel" or type_droite == "reel":
                     return "reel"
-                return "entier"
-            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
+                elif type_gauche == "entier" and type_droite == "entier":
+                    return "entier"
+                else:
+                    self.erreur("Operation incoherente et non supporter par le langage")
+            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">=") and (type_gauche == "booleen") and (type_droite == "booleen"):
                 return "booleen"
-            elif expr.operateur in ("et", "ou"):
+            elif expr.operateur in ("et", "ou") and (type_gauche == "booleen") and (type_droite == "booleen"):
                 return "booleen"
             else:
                 self.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
@@ -253,8 +267,21 @@ class AnalyseurSemantique:
             elif type_operande in ("entier", "reel"):
                 return "entier" if type_operande == "entier" else "reel"
             self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
+        elif isinstance(expr, AppelFonction):
+            symbole: Symbole = self.tables.rechercher(expr.nom)
+            arguments: list = []
+            for element in expr.arguments:
+                arguments.append(self.obtenir_type_expression(element))
+            if len(arguments) == len(symbole.parametres):
+                for i, j in zip(arguments, symbole.parametres):
+                    if i != j:
+                        self.erreur("Les types declarer au niveaux des arguments d'une fonction doivent être respecter à l'appel")
+                return symbole.type
+            else:
+                self.erreur("Le nombre de paramètre des fonctions doivent être egale au nombre passer en paramètre")
 
-        self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
+        else:
+            self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
         
         
         
