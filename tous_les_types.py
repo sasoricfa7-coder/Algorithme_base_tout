@@ -32,6 +32,7 @@ class Symbole:
 @dataclass
 class TableSymboles:
     pile: list[dict[str, Symbole]] = field(default_factory=list)
+    symboles_globaux: set[str] = field(default_factory=set)
 
     def entrer_portee(self) -> None:
         self.pile.append({})
@@ -45,9 +46,9 @@ class TableSymboles:
         self.pile.pop()
 
     def declarer(self, nom: str, symbole: Symbole) -> None:
-        for portee_actuelle in self.pile:
-            if nom in portee_actuelle:
-                self.erreur(f"Le symbole '{nom}' est déjà déclaré dans une portée supérieure (Masquage interdit) 🚫")
+        if nom in self.symboles_globaux:
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫")
+        self.symboles_globaux.add(nom)
         self.pile[-1][nom] = symbole
 
     def rechercher(self, nom: str) -> Symbole:
@@ -67,9 +68,9 @@ class AnalyseurSemantique:
 
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
+        self.visiter_declarations(self.ast.declarations)
         self.visiter_fonctions()
         self.visiter_procedures()
-        self.visiter_declarations(self.ast.declarations)
         self.visiter_corps()
         self.tables.sortir_portee()
 
@@ -107,7 +108,6 @@ class AnalyseurSemantique:
                     retour_sinon: bool = self.verifier_chemins_retour(inst.sinon)
                     if retour_alors and retour_sinon:
                         return True
-                return False
                     
             elif isinstance(inst, Cas):
                 tous_retournent: bool = True
@@ -452,7 +452,9 @@ class AnalyseurSemantique:
             type_operande: str = self.obtenir_type_expression(expr.operande)
             operateur: str = expr.operateur
 
-            if type_operande == "booleen" and operateur == "non":
+            if operateur == "non":
+                if type_operande != "booleen":
+                    self.tables.erreur(f"L'opérateur 'non' requiert un booleen, pas un '{type_operande}' 🚫")
                 return "booleen"
             elif type_operande in ("entier", "reel"):
                 return "entier" if type_operande == "entier" else "reel"

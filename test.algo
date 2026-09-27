@@ -1,10 +1,14 @@
-Algorithme test
-
-Fonction somme(n: entier) : entier
+Algorithme test_operateurs
+fonction afficher(z: entier, s: reel) : booleen
 debut
-	retourne n
+	Ecrire(z, s)
+	retourner VRAI
 fin
-
+variable 
+x : entier
+r : reel
 debut
-	Ecrire(somme(3))
+	x ← 1
+	r ← 2.9
+	Ecrire(afficher(x, r))
 fin
