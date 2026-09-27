@@ -1,4 +1,4 @@
-%Algorithme grand_test_complet
+Algorithme grand_test_complet
 
 Fonction calculer_factorielle(n : entier) : entier
 Debut
@@ -69,9 +69,4 @@ Debut
 
     afficher_bilan(nom_etudiant, moyenne_finale, statut)
 Fin
-%
-Algorithme test
-début
-	Ecrire("test")
 
-fin

@@ -21,6 +21,7 @@ class Symbole:
     type: str
     est_constante: bool = False
     parametres: list[str] = field(default_factory=list)
+    nature: str = "variable"
 
 @dataclass
 class TableSymboles:
@@ -52,17 +53,17 @@ class AnalyseurSemantique:
     tables: TableSymboles = field(default_factory=TableSymboles)
     fonction_courante: Fonction | None = None
 
-    def visiter_algorithme(self):
+    def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
         self.visiter_fonctions()
         self.visiter_procedures()
-        self.visiter_declarations(self.ast.declarations())
+        self.visiter_declarations(self.ast.declarations)
         self.visiter_corps()
         self.tables.sortir_portee()
 
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
-            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]))
+            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]), "fonction")
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
@@ -74,12 +75,12 @@ class AnalyseurSemantique:
             self.appel_instruction(fonction.corps)
 
             self.fonction_courante = None
-            
+
             self.tables.sortir_portee()
-            
+
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in fonction.parametres]))
+            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres]), "procedure")
             self.tables.entrer_portee()
             self.fonction_courante = None
 
@@ -89,81 +90,84 @@ class AnalyseurSemantique:
             self.visiter_declarations(procedure.declarations)
 
             self.appel_instruction(procedure.corps)
-            
+
             self.tables.sortir_portee()
-        
+
     def visiter_declarations(self, declarations) -> None:
         for decl in declarations:
             if isinstance(decl, DeclarationVariable) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="variable"))
             elif isinstance(decl, DeclarationConstante) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="constante"))
             else :
-                if decl.dimensions == None :
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
+                if decl.dimensions is None :
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="tableau"))
                 else :
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="tableau"))
 
-                    
+
     def visiter_corps(self) -> None:
         for instruction in self.ast.corps:
             self.visiter_instruction(instruction)
 
     def visiter_instruction(self, instruction: Instruction) -> None:
-            if isinstance(instruction, Affectation):
-                self.visiter_affectation(instruction)
-            elif isinstance(instruction, Ecrire):
-                self.visiter_ecrire(instruction)
-            elif isinstance(instruction, Lire):
-                self.visiter_lire(instruction)
-            elif isinstance(instruction, Si):
-                self.visiter_si(instruction)
-            elif isinstance(instruction, TantQue):
-                self.visiter_tant_que(instruction)
-            elif isinstance(instruction, Pour):
-                self.visiter_pour(instruction)
-            elif isinstance(instruction, Cas): # ✅ Ajouté
-                self.visiter_cas(instruction)
-            elif isinstance(instruction, Retourne):
-                self.visiter_retourne(instruction)
-            elif isinstance(instruction, Repeter): # ✅ Ajouté
-                self.visiter_repeter(instruction)
-            elif isinstance(instruction, AppelInstruction):
-                self.visiter_appel_instruction(instruction)
+        if isinstance(instruction, Affectation):
+            self.visiter_affectation(instruction)
+        elif isinstance(instruction, Ecrire):
+            self.visiter_ecrire(instruction)
+        elif isinstance(instruction, Lire):
+            self.visiter_lire(instruction)
+        elif isinstance(instruction, Si):
+            self.visiter_si(instruction)
+        elif isinstance(instruction, TantQue):
+            self.visiter_tant_que(instruction)
+        elif isinstance(instruction, Pour):
+            self.visiter_pour(instruction)
+        elif isinstance(instruction, Cas): # ✅ Ajouté
+            self.visiter_cas(instruction)
+        elif isinstance(instruction, Retourne):
+            self.visiter_retourne(instruction)
+        elif isinstance(instruction, Repeter): # ✅ Ajouté
+            self.visiter_repeter(instruction)
+        elif isinstance(instruction, AppelInstruction):
+            self.visiter_appel_instruction(instruction)
 
     def visiter_affectation(self, instruction: Affectation) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
+        if symbole.nature == "procedure":
+            self.erreur(f"On ne peut pas affecter une procedure vu quel ne retourne rien.{symbole.nom} ")
         if symbole.est_constante :
-            self.erreur("Une constante est immuable donc par consequent affectation impossible.")
+            self.tables.erreur("Une constante est immuable donc par consequent affectation impossible.")
         if symbole.type != self.obtenir_type_expression(instruction.valeur): # ici je recupère deja le type que je compare
-            self.erreur("La valeur affecter n'est pas du même type que la variable.")
+            self.tables.erreur("La valeur affecter n'est pas du même type que la variable.")
         if isinstance(instruction.cible, Indexation):
             for indice in instruction.cible.indices :
                 if self.obtenir_type_expression(indice) != "entier":
-                    self.erreur("L'indice d'un tableau doit être de type entier.")
+                    self.tables.erreur("L'indice d'un tableau doit être de type entier.")
 
-        
+
     def visiter_ecrire(self, instruction: Ecrire) -> None:
         for element in instruction.arguments :
             self.obtenir_type_expression(element)
-        
+
     def visiter_lire(self, instruction: Lire) -> None:
         for element in instruction.cibles :
             symbole: Symbole = self.tables.rechercher(element.nom)
             if symbole.est_constante:
-                self.erreur("Impossible de lire dans une constante.")
+                self.tables.erreur("Impossible de lire dans une constante.")
             if isinstance(element, Indexation):
                 for args in element.indices:
                     self.obtenir_type_expression(args)
-                
-            
+
+
     def visiter_si(self, instruction: Si) -> None:
         self.obtenir_type_expression(instruction.condition)
         for instruction in instruction.alors:
             self.visiter_instruction(instruction)
 
-        self.appel_instruction(instruction.sinon)
-            
+        for inst in instruction.sinon:
+            self.visiter_instruction(inst)
+
     def visiter_tant_que(self, instruction: TantQue) -> None:
         self.obtenir_type_expression(instruction.condition)
 
@@ -176,20 +180,20 @@ class AnalyseurSemantique:
         self.obtenir_type_expression(instruction.pas)
 
         self.appel_instruction(instruction.corps)
-            
+
     def visiter_retourne(self, instruction: Retourne) -> None:
         if self.fonction_courante is None:
-            self.erreur("L'instruction 'retourne' est interdite dans une procédure.")
-            
+            self.tables.erreur("L'instruction 'retourne' est interdite dans une procédure.")
+
         type_retour_attendu: str = self.fonction_courante.type_retour
         type_retour_reel: str = self.obtenir_type_expression(instruction.valeur)
 
         if type_retour_attendu != type_retour_reel:
-            self.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.")
+            self.tables.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.")
 
     def visiter_branche_cas(self, type_: str, une_branche: BrancheCas) -> None:
         if type_ != self.obtenir_type_expression(une_branche.valeur):
-            self.erreur("la comparaison à l'aide du cas se fait entre élément de même type.")
+            self.tables.erreur("la comparaison à l'aide du cas se fait entre élément de même type.")
 
         self.appel_instruction(une_branche.instructions)
 
@@ -204,11 +208,11 @@ class AnalyseurSemantique:
             self.visiter_branche_cas(symbole.type, element)
         if instruction.sinon :
             self.appel_instruction(instruction.sinon)
-            
+
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
         if not isinstance(self.obtenir_type_expression(instruction.condition), bool) :
-            self.erreur("Une condition doit toujours donner un booléen.")
+            self.tables.erreur("Une condition doit toujours donner un booléen.")
 
     def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.nom)
@@ -218,47 +222,51 @@ class AnalyseurSemantique:
         if len(arguments) == len(symbole.parametres):
             for i, j in zip(arguments, symbole.parametres):
                 if i != j:
-                    self.erreur("Les types declarer au niveaux des arguments d'une procédure doivent être respecter à l'appel")
+                    self.tables.erreur("Les types declarer au niveaux des arguments d'une procédure doivent être respecter à l'appel")
         else:
-            self.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
-    
+            self.tables.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
+
     def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
-        elif isinstance(expr, Caractere):
+        if isinstance(expr, Caractere):
             return "caractere"
-        elif isinstance(expr, ChaineCaractere):
+        if isinstance(expr, ChaineCaractere):
             return "chaine"
-        elif isinstance(expr, Booleen):
+        if isinstance(expr, Booleen):
             return "booleen"
-        elif isinstance(expr, Identifiant):
+        if isinstance(expr, Identifiant):
             # C'est ici qu'on s'assure que la variable existe !
             symbole = self.tables.rechercher(expr.nom)
             return symbole.type
-        elif isinstance(expr, Indexation):
+        if isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
             return symbole.type
-        elif isinstance(expr, OperationBinaire):
+        if isinstance(expr, OperationBinaire):
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
             if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
                 if expr.operateur in ("/", "div", "mod"):
                     if isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
-                        self.erreur("Division par zéro détectée avant compilation")
+                        self.tables.erreur("Division par zéro détectée avant compilation")
+                    if expr.operateur in ("div", "mod"):
+                        return "entier"
+                    if expr.operateur == "/":
+                        return "reel"
                         
                 if type_gauche == "reel" or type_droite == "reel":
                     return "reel"
                 elif type_gauche == "entier" and type_droite == "entier":
                     return "entier"
                 else:
-                    self.erreur("Operation incoherente et non supporter par le langage")
-            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">=") and (type_gauche == "booleen") and (type_droite == "booleen"):
+                    self.tables.erreur("Operation incoherente et non supporter par le langage")
+            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
                 return "booleen"
             elif expr.operateur in ("et", "ou") and (type_gauche == "booleen") and (type_droite == "booleen"):
                 return "booleen"
             else:
-                self.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
-        elif isinstance(expr, OperationUnaire):
+                self.tables.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
+        if isinstance(expr, OperationUnaire):
             type_operande: str = self.obtenir_type_expression(expr.operande)
             operateur: str = expr.operateur
 
@@ -266,14 +274,34 @@ class AnalyseurSemantique:
                 return "booleen"
             elif type_operande in ("entier", "reel"):
                 return "entier" if type_operande == "entier" else "reel"
-            self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
-        elif isinstance(expr, AppelFonction):
+            self.tables.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
+        if isinstance(expr, AppelFonction):
             symbole: Symbole = self.tables.rechercher(expr.nom)
-            for element in expr.arguments:
-                self.obtenir_type_expression(element)
-            return symbole.type
-        else:
-            self.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
+            
+            # Cas 1 : C'est en fait un tableau
+            if symbole.nature == "tableau":
+                for element in expr.arguments:
+                    if self.obtenir_type_expression(element) != "entier":
+                        self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
+                return symbole.type
+
+            elif symbole.nature == "procedure":
+                self.tables.erreur(f"Impossible d'utiliser la procédure '{expr.nom}' dans une expression car elle ne retourne aucune valeur.")
+
+            # Cas 2 : C'est bien une fonction
+            elif symbole.nature == "fonction":
+                arguments: list = []
+                for element in expr.arguments:
+                    arguments.append(self.obtenir_type_expression(element))
+                if len(arguments) == len(symbole.parametres):
+                    for i, j in zip(arguments, symbole.parametres):
+                        if i != j:
+                            self.tables.erreur(f"Erreur de type dans l'appel de '{expr.nom}' : attendu {j}, reçu {i}.")
+                    return symbole.type
+                else:
+                    self.tables.erreur(f"La fonction '{expr.nom}' attend {len(symbole.parametres)} argument(s), mais {len(arguments)} ont été fournis.")
+            else:
+                self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau appelable.")   
         
         
         

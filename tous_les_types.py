@@ -21,6 +21,12 @@ class Symbole:
     type: str
     est_constante: bool = False
     parametres: list[str] = field(default_factory=list)
+    nature: str = "variable"
+    nb_dimensions: int = 0
+    # --- NOUVEAUTÉS ---
+    est_initialise: bool = False
+    est_utilise: bool = False
+    est_verrouille: bool = False
 
 @dataclass
 class TableSymboles:
@@ -30,11 +36,17 @@ class TableSymboles:
         self.pile.append({})
 
     def sortir_portee(self) -> None:
+        portee_actuelle: dict = self.pile[-1]
+
+        for nom, symbole in portee_actuelle.items():
+            if not self.est_utilise and symbole.nature in ("variable", "constante", "tableau"):
+                self.erreur(f"Le symbole '{nom}' est déclaré mais jamais utilisé 🚫")
         self.pile.pop()
 
     def declarer(self, nom: str, symbole: Symbole) -> None:
-        if nom in self.pile[-1] :
-            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans ce bloc 🚫")
+        for portee_actuelle in self.pile:
+            if nom in portee_actuelle:
+                self.erreur(f"Le symbole '{nom}' est déjà déclaré dans une portée supérieure (Masquage interdit) 🚫")
         self.pile[-1][nom] = symbole
 
     def rechercher(self, nom: str) -> Symbole:
@@ -62,7 +74,7 @@ class AnalyseurSemantique:
 
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
-            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]))
+            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]), "fonction")
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
@@ -73,13 +85,39 @@ class AnalyseurSemantique:
 
             self.appel_instruction(fonction.corps)
 
+            if not self.verifier_chemins_retour(fonction.corps):
+                self.tables.erreur(f"La fonction '{fonction.nom}' ne garantit pas de 'retourne' dans tous ses chemins d'exécution.")
+            
             self.fonction_courante = None
 
             self.tables.sortir_portee()
 
+    def verifier_chemins_retour(self, instructions: list[Instruction]) -> bool:
+        """Parcourt les instructions pour garantir qu'un retour est inévitable."""
+        for inst in instructions:
+            if isinstance(inst, Retourne):
+                return True
+            elif isinstance(inst, Si):
+                if inst.sinon:
+                    retour_alors: bool = self.verifier_chemins_retour(inst.alors)
+                    retour_sinon: bool = self.verifier_chemins_retour(inst.sinon)
+                    if retour_alors and retour_sinon:
+                        return True
+                return False
+                    
+            elif isinstance(inst, Cas):
+                tous_retournent: bool = True
+                for branche in inst.branches:
+                    if not self.verifier_chemins_retour(branche.instructions):
+                        tous_retournent = False
+                        break
+                if tous_retournent and inst.sinon and self.verifier_chemins_retour(inst.sinon):
+                    return True
+                return False
+
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres]))
+            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres]), "procedure")
             self.tables.entrer_portee()
             self.fonction_courante = None
 
@@ -95,14 +133,16 @@ class AnalyseurSemantique:
     def visiter_declarations(self, declarations) -> None:
         for decl in declarations:
             if isinstance(decl, DeclarationVariable) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="variable"))
             elif isinstance(decl, DeclarationConstante) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
+                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="constante"))
             else :
                 if decl.dimensions is None :
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True))
+                    nb_dim: int = 1
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="tableau", nb_dimensions=nb_dim))
                 else :
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type))
+                    nb_dim = len(decl.dimensions)
+                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="tableau", nb_dimensions=nb_dim))
 
 
     def visiter_corps(self) -> None:
@@ -133,15 +173,32 @@ class AnalyseurSemantique:
 
     def visiter_affectation(self, instruction: Affectation) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
+
+        if symbole.est_verrouille:
+            self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
+
+        if symbole.nature == "procedure":
+            self.erreur(f"On ne peut pas affecter une procedure vu quel ne retourne rien.{symbole.nom} ")
+
+        if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
+            self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un un conseil utiliser une boucle.")
+
         if symbole.est_constante :
             self.tables.erreur("Une constante est immuable donc par consequent affectation impossible.")
+
         if symbole.type != self.obtenir_type_expression(instruction.valeur): # ici je recupère deja le type que je compare
             self.tables.erreur("La valeur affecter n'est pas du même type que la variable.")
+
         if isinstance(instruction.cible, Indexation):
+            if symbole.nature != "tableau":
+                self.tables.erreur(f"'{instruction.cible.nom}' n'est pas un tableau, indexation impossible.")
+            if len(instruction.cible.indices) != len(symbole.nb_dimensions):
+                self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
             for indice in instruction.cible.indices :
                 if self.obtenir_type_expression(indice) != "entier":
                     self.tables.erreur("L'indice d'un tableau doit être de type entier.")
 
+        symbole.est_initialise = True
 
     def visiter_ecrire(self, instruction: Ecrire) -> None:
         for element in instruction.arguments :
@@ -156,27 +213,33 @@ class AnalyseurSemantique:
                 for args in element.indices:
                     self.obtenir_type_expression(args)
 
+            symbole.est_initialise = True
+
 
     def visiter_si(self, instruction: Si) -> None:
-        self.obtenir_type_expression(instruction.condition)
-        for instruction in instruction.alors:
-            self.visiter_instruction(instruction)
+        if self.obtenir_type_expression(instruction.condition) != "booleen":
+            self.erreur("Une condition doit toujours produire un booleen")
+        self.appel_instruction(instruction.alors)
 
-        """for instruction in instruction.sinon:
-            self.visiter_instruction(instruction)""" # j'ai eu un problème ici a l'execution : AttributeError: 'Retourne' object has no attribute 'sinon'
+        self.appel_instruction(instruction.sinon)
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
-        self.obtenir_type_expression(instruction.condition)
+        if self.obtenir_type_expression(instruction.condition) != "booleen":
+            self.erreur("la condition de la boucle Tant que doit toujours produire un booleen")
 
         self.appel_instruction(instruction.corps)
 
     def visiter_pour(self, instruction: Pour) -> None:
-        self.tables.rechercher(instruction.indice.nom)
+        symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
+        symbole.est_initialise = True
+        symbole.est_verrouille = True
+        
         self.obtenir_type_expression(instruction.debut)
         self.obtenir_type_expression(instruction.fin)
         self.obtenir_type_expression(instruction.pas)
 
         self.appel_instruction(instruction.corps)
+        symbole.est_verrouille = False
 
     def visiter_retourne(self, instruction: Retourne) -> None:
         if self.fonction_courante is None:
@@ -213,6 +276,9 @@ class AnalyseurSemantique:
 
     def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.nom)
+        if symbole.nature != "procedure":
+            self.tables.erreur(f"L'identifiant '{instruction.nom}' n'est pas une procédure appelable.")
+            
         arguments: list = []
         for element in instruction.arguments:
             arguments.append(self.obtenir_type_expression(element))
@@ -246,6 +312,10 @@ class AnalyseurSemantique:
                 if expr.operateur in ("/", "div", "mod"):
                     if isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
                         self.tables.erreur("Division par zéro détectée avant compilation")
+                    if expr.operateur in ("div", "mod"):
+                        return "entier"
+                    if expr.operateur == "/":
+                        return "reel"
                         
                 if type_gauche == "reel" or type_droite == "reel":
                     return "reel"
@@ -270,19 +340,33 @@ class AnalyseurSemantique:
             self.tables.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
         if isinstance(expr, AppelFonction):
             symbole: Symbole = self.tables.rechercher(expr.nom)
-            arguments: list = []
-            for element in expr.arguments:
-                arguments.append(self.obtenir_type_expression(element))
-            if len(arguments) == len(symbole.parametres):
-                for i, j in zip(arguments, symbole.parametres):
-                    if i != j:
-                        self.tables.erreur("Les types declarer au niveaux des arguments d'une fonction doivent être respecter à l'appel")
+            
+            # Cas 1 : C'est en fait un tableau
+            if symbole.nature == "tableau":
+                if len(expr.arguments) != symbole.nb_dimensions:
+                    self.tables.erreur(f"Le tableau '{expr.nom}' attend {symbole.nb_dimensions} dimension(s).")
+                for element in expr.arguments:
+                    if self.obtenir_type_expression(element) != "entier":
+                        self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
                 return symbole.type
-            else:
-                self.tables.erreur("Le nombre de paramètre des fonctions doivent être egale au nombre passer en paramètre")
 
-        else:
-            self.tables.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")    
+            elif symbole.nature == "procedure":
+                self.tables.erreur(f"Impossible d'utiliser la procédure '{expr.nom}' dans une expression car elle ne retourne aucune valeur.")
+
+            # Cas 2 : C'est bien une fonction
+            elif symbole.nature == "fonction":
+                arguments: list = []
+                for element in expr.arguments:
+                    arguments.append(self.obtenir_type_expression(element))
+                if len(arguments) == len(symbole.parametres):
+                    for i, j in zip(arguments, symbole.parametres):
+                        if i != j:
+                            self.tables.erreur(f"Erreur de type dans l'appel de '{expr.nom}' : attendu {j}, reçu {i}.")
+                    return symbole.type
+                else:
+                    self.tables.erreur(f"La fonction '{expr.nom}' attend {len(symbole.parametres)} argument(s), mais {len(arguments)} ont été fournis.")
+            else:
+                self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau appelable.")   
         
         
         
