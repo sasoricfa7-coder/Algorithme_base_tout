@@ -69,17 +69,29 @@ class AnalyseurSemantique:
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
         self.visiter_declarations(self.ast.declarations)
-        self.visiter_fonctions()
-        self.visiter_procedures()
-        self.visiter_corps()
-        self.tables.sortir_portee()
-
-    def visiter_fonctions(self):
+        
+        # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
         for fonction in self.ast.fonctions:
             self.tables.declarer(
                 fonction.nom, 
                 Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres], nature="fonction", est_initialise=True)
             )
+        for procedure in self.ast.procedures:
+            self.tables.declarer(
+                procedure.nom, 
+                Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres], nature="procedure", est_initialise=True)
+            )
+
+        # Passe 2 : Analyser les corps des fonctions et procédures
+        self.visiter_fonctions()
+        self.visiter_procedures()
+        
+        # Analyse du corps principal
+        self.visiter_corps()
+        self.tables.sortir_portee()
+
+    def visiter_fonctions(self):
+        for fonction in self.ast.fonctions:
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
@@ -117,15 +129,10 @@ class AnalyseurSemantique:
                         break
                 if tous_retournent and inst.sinon and self.verifier_chemins_retour(inst.sinon):
                     return True
-                return False
         return False
 
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(
-                procedure.nom, 
-                Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres], nature="procedure", est_initialise=True)
-            )
 
             self.tables.entrer_portee()
             self.fonction_courante = None
@@ -310,13 +317,20 @@ class AnalyseurSemantique:
 
     def visiter_pour(self, instruction: Pour) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
+        
+        if symbole.type != "entier":
+            self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫")
+
         symbole.est_initialise = True
         symbole.est_utilise = True
         symbole.est_verrouille = True
         
-        self.obtenir_type_expression(instruction.debut)
-        self.obtenir_type_expression(instruction.fin)
-        self.obtenir_type_expression(instruction.pas)
+        type_debut = self.obtenir_type_expression(instruction.debut)
+        type_fin = self.obtenir_type_expression(instruction.fin)
+        type_pas = self.obtenir_type_expression(instruction.pas)
+
+        if type_debut != "entier" or type_fin != "entier" or type_pas != "entier":
+            self.tables.erreur("Les bornes (début, fin) et le pas d'une boucle 'pour' doivent tous être de type entier. 🚫")
 
         self.appel_instruction(instruction.corps)
         symbole.est_verrouille = False
@@ -443,8 +457,12 @@ class AnalyseurSemantique:
                 if type_gauche != type_droite:
                     self.tables.erreur(f"Comparaison impossible : on ne peut pas comparer un(e) '{type_gauche}' avec un(e) '{type_droite}'. 🚫")
                 return "booleen"
-            elif expr.operateur in ("et", "ou") and (type_gauche == "booleen") and (type_droite == "booleen"):
+
+            elif expr.operateur in ("et", "ou"):
+                if type_gauche != "booleen" or type_droite != "booleen":
+                    self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des opérandes booléens, pas '{type_gauche}' et '{type_droite}'. 🚫")
                 return "booleen"
+            
             else:
                 self.tables.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
 
@@ -598,7 +616,7 @@ class Parseur:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         parametre: list[Parametre] = self.parse_parametres()
-        declaration: Declaration = self.parse_declaration()
+        declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
 
         return Procedure(nom, parametre, declaration, corps_complet)
@@ -660,7 +678,8 @@ class Parseur:
         valeur: Expression = self.parse_expression()
 
         self.fin_de_ligne()
-        return DeclarationConstante(nom, valeur, self.obtenir_type_expression(valeur))
+        # ✅ Déléguer le type de la constante à l'analyseur sémantique
+        return DeclarationConstante(nom, valeur, None)
 
     def aide_constante_tableau(self) -> DeclarationTableau:
         self.consommer("mots_cles", "tableau")
@@ -892,9 +911,18 @@ class Parseur:
             elif isinstance(expr, Booleen):
                 return "booleen"
             elif isinstance(expr, OperationBinaire):
-                pass # pour v2
+                type_g = self.obtenir_type_expression(expr.gauche)
+                type_d = self.obtenir_type_expression(expr.droite)
+                if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
+                    return "reel" if "reel" in (type_g, type_d) or expr.operateur == "/" else "entier"
+                elif expr.operateur in ("=", "<>", "<", ">", "<=", ">=", "et", "ou"):
+                    return "booleen"
             elif isinstance(expr, OperationUnaire):
-                pass # v2
+                if expr.operateur == "non":
+                    return "booleen"
+                return self.obtenir_type_expression(expr.operande)
+            else:
+                self.erreur("Erreur interne.")
         else:
             if isinstance(expr, list) and len(expr) > 0:
                 premier_type = self.obtenir_type_expression(expr[0])
@@ -902,6 +930,7 @@ class Parseur:
                     if self.obtenir_type_expression(element) != premier_type :
                         self.erreur("Tous les éléments d'un tableau doivent avoir le même type.")
                 return premier_type
+            self.erreur("Erreur interne.")
 
 
     def parse_expression(self) -> Expression:
