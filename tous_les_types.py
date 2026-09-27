@@ -83,7 +83,7 @@ class AnalyseurSemantique:
             self.fonction_courante = fonction
 
             for param in fonction.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
 
             self.visiter_declarations(fonction.declarations)
 
@@ -131,7 +131,7 @@ class AnalyseurSemantique:
             self.fonction_courante = None
 
             for param in procedure.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
 
             self.visiter_declarations(procedure.declarations)
 
