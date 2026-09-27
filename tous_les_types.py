@@ -273,6 +273,8 @@ class AnalyseurSemantique:
             symbole: Symbole = self.tables.rechercher(element.nom)
             if symbole.est_constante:
                 self.tables.erreur("Impossible de lire dans une constante.")
+            if symbole.est_verrouille:
+                self.tables.erreur(f"Impossible de modifier '{symbole.nom}' via 'lire' car c'est l'indice d'une boucle 'pour' en cours d'exécution. 🚫")
             if isinstance(element, Indexation):
                 for args in element.indices:
                     self.obtenir_type_expression(args)
@@ -311,9 +313,16 @@ class AnalyseurSemantique:
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.tables.erreur("la condition de la boucle Tant que doit toujours produire un booleen")
+            self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
+
+        # Sauvegarde de l'état (la boucle pouvant s'exécuter 0 fois)
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
 
         self.appel_instruction(instruction.corps)
+
+        # Restauration pour la suite du programme
+        for nom, est_init in etat_initial.items():
+            self.tables.pile[-1][nom].est_initialise = est_init
 
     def visiter_pour(self, instruction: Pour) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
@@ -486,6 +495,8 @@ class AnalyseurSemantique:
             if symbole.nature == "tableau":
                 if len(expr.arguments) != symbole.nb_dimensions:
                     self.tables.erreur(f"Le tableau '{expr.nom}' attend {symbole.nb_dimensions} dimension(s).")
+                if not symbole.est_initialise:
+                    self.tables.erreur(f"Le tableau '{expr.nom}' est lu avant d'avoir été initialisé ! 🚫")
                 for element in expr.arguments:
                     if self.obtenir_type_expression(element) != "entier":
                         self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
@@ -892,10 +903,11 @@ class Parseur:
     def parse_arguments(self) -> list[Expression]:
         self.consommer("PAREN_OUVRANT")
         les_arguments: list[Expression] = []
-        les_arguments.append(self.parse_expression())
-        while self.token_courant()["type"] == "separateur" :
-            self.consommer("separateur")
+        if self.token_courant()["type"] != "PAREN_FERMANT":
             les_arguments.append(self.parse_expression())
+            while self.token_courant()["type"] == "separateur":
+                self.consommer("separateur")
+                les_arguments.append(self.parse_expression())
 
         self.consommer("PAREN_FERMANT")
         return les_arguments
