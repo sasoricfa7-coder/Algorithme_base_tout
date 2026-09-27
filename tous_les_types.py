@@ -27,6 +27,7 @@ class Symbole:
     est_initialise: bool = False
     est_utilise: bool = False
     est_verrouille: bool = False
+    dimensions_statiques: list[int] = field(default_factory=list)
 
 @dataclass
 class TableSymboles:
@@ -39,7 +40,7 @@ class TableSymboles:
         portee_actuelle: dict = self.pile[-1]
 
         for nom, symbole in portee_actuelle.items():
-            if not self.est_utilise and symbole.nature in ("variable", "constante", "tableau"):
+            if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau"):
                 self.erreur(f"Le symbole '{nom}' est déclaré mais jamais utilisé 🚫")
         self.pile.pop()
 
@@ -74,7 +75,10 @@ class AnalyseurSemantique:
 
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
-            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]), "fonction")
+            self.tables.declarer(
+                fonction.nom, 
+                Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres], nature="fonction", est_initialise=True)
+            )
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
@@ -114,10 +118,15 @@ class AnalyseurSemantique:
                 if tous_retournent and inst.sinon and self.verifier_chemins_retour(inst.sinon):
                     return True
                 return False
+        return False
 
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(procedure.nom, Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres]), "procedure")
+            self.tables.declarer(
+                procedure.nom, 
+                Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres], nature="procedure", est_initialise=True)
+            )
+
             self.tables.entrer_portee()
             self.fonction_courante = None
 
@@ -132,17 +141,61 @@ class AnalyseurSemantique:
 
     def visiter_declarations(self, declarations) -> None:
         for decl in declarations:
-            if isinstance(decl, DeclarationVariable) :
+            if isinstance(decl, DeclarationVariable):
                 self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="variable"))
-            elif isinstance(decl, DeclarationConstante) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="constante"))
-            else :
-                if decl.dimensions is None :
-                    nb_dim: int = 1
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="tableau", nb_dimensions=nb_dim))
-                else :
+
+            elif isinstance(decl, DeclarationConstante):
+                type_constante = self.obtenir_type_expression(decl.valeur)
+                self.tables.declarer(
+                    decl.nom,
+                    Symbole(
+                        nom=decl.nom,
+                        type=type_constante,
+                        est_constante=True,
+                        nature="constante",
+                        est_initialise=True
+                    )
+                )
+
+            else:
+                # Gestion des tableaux (DeclarationTableau)
+                dims_statiques: list[int] = []
+
+                if decl.dimensions is None:
+                    # Tableau constant initialisé par une liste d'éléments
+                    nb_dim = 1
+                    if decl.valeurs_initiales:
+                        dims_statiques.append(len(decl.valeurs_initiales))
+                    
+                    self.tables.declarer(
+                        decl.nom,
+                        Symbole(
+                            nom=decl.nom,
+                            type=decl.type,
+                            est_constante=True,
+                            nature="tableau",
+                            nb_dimensions=nb_dim,
+                            est_initialise=True,
+                            dimensions_statiques=dims_statiques
+                        )
+                    )
+                else:
+                    # Tableau standard déclaré avec des dimensions
                     nb_dim = len(decl.dimensions)
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="tableau", nb_dimensions=nb_dim))
+                    for dim in decl.dimensions:
+                        if isinstance(dim, Nombre):
+                            dims_statiques.append(int(dim.valeur))
+
+                    self.tables.declarer(
+                        decl.nom,
+                        Symbole(
+                            nom=decl.nom,
+                            type=decl.type,
+                            nature="tableau",
+                            nb_dimensions=nb_dim,
+                            dimensions_statiques=dims_statiques
+                        )
+                    )
 
 
     def visiter_corps(self) -> None:
@@ -178,7 +231,7 @@ class AnalyseurSemantique:
             self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
 
         if symbole.nature == "procedure":
-            self.erreur(f"On ne peut pas affecter une procedure vu quel ne retourne rien.{symbole.nom} ")
+            self.tables.erreur(f"On ne peut pas affecter une procedure vu qu'elle ne retourne rien. {symbole.nom} ")
 
         if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
             self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un un conseil utiliser une boucle.")
@@ -192,8 +245,12 @@ class AnalyseurSemantique:
         if isinstance(instruction.cible, Indexation):
             if symbole.nature != "tableau":
                 self.tables.erreur(f"'{instruction.cible.nom}' n'est pas un tableau, indexation impossible.")
-            if len(instruction.cible.indices) != len(symbole.nb_dimensions):
+
+            self.visiter_indexation_statique(symbole, instruction.cible)
+
+            if len(instruction.cible.indices) != symbole.nb_dimensions:
                 self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
+
             for indice in instruction.cible.indices :
                 if self.obtenir_type_expression(indice) != "entier":
                     self.tables.erreur("L'indice d'un tableau doit être de type entier.")
@@ -218,20 +275,43 @@ class AnalyseurSemantique:
 
     def visiter_si(self, instruction: Si) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.erreur("Une condition doit toujours produire un booleen")
-        self.appel_instruction(instruction.alors)
+            self.tables.erreur("Une condition doit toujours produire un booleen")
 
-        self.appel_instruction(instruction.sinon)
+        # Sauvegarde des états d'initialisation avant le bloc Si
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+
+        # Visite du bloc 'alors'
+        self.appel_instruction(instruction.alors)
+        etat_apres_alors = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+
+        # Restauration pour le bloc 'sinon'
+        for nom, est_init in etat_initial.items():
+            self.tables.pile[-1][nom].est_initialise = est_init
+
+        # Visite du bloc 'sinon'
+        if instruction.sinon:
+            self.appel_instruction(instruction.sinon)
+            etat_apres_sinon = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+            
+            # Intersection : Initialisé après le Si SEULEMENT si initialisé dans Alors ET Sinon
+            for nom in etat_initial:
+                self.tables.pile[-1][nom].est_initialise = etat_apres_alors[nom] and etat_apres_sinon[nom]
+        else:
+            # Sans sinon, l'initialisation dans 'alors' ne garantit rien pour la suite
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
+
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.erreur("la condition de la boucle Tant que doit toujours produire un booleen")
+            self.tables.erreur("la condition de la boucle Tant que doit toujours produire un booleen")
 
         self.appel_instruction(instruction.corps)
 
     def visiter_pour(self, instruction: Pour) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
         symbole.est_initialise = True
+        symbole.est_utilise = True
         symbole.est_verrouille = True
         
         self.obtenir_type_expression(instruction.debut)
@@ -259,19 +339,39 @@ class AnalyseurSemantique:
 
     def appel_instruction(self, grande_instruction: list[Instruction]) -> None:
         if grande_instruction:
+            retour_rencontrer: bool = False
             for instruction in grande_instruction:
+                if retour_rencontrer:
+                    self.tables.erreur("Code inaccessible détecté après une instruction 'retourne' 🚫")
+                    
                 self.visiter_instruction(instruction)
+                if isinstance(instruction, Retourne):
+                    retour_rencontrer = True
+
+    def visiter_indexation_statique(self, symbole: Symbole, indexation: Indexation):
+        # Si les indices sont des nombres littéraux et que les dimensions sont connues
+        for i, indice_expr in enumerate(indexation.indices):
+            if isinstance(indice_expr, Nombre) and i < len(symbole.dimensions_statiques):
+                taille_max = symbole.dimensions_statiques[i]
+                if indice_expr.valeur < 1 or indice_expr.valeur > taille_max:
+                    self.tables.erreur(
+                        f"Débordement de tableau détecté à la compilation : "
+                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max}] pour '{symbole.nom}' 🚫"
+                    )
 
     def visiter_cas(self, instruction: Cas) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.nom)
+        # Récupère le type qu'il s'agisse d'une variable simple ou d'un élément de tableau
+        type_expression = self.obtenir_type_expression(instruction.expression)
+        
         for element in instruction.branches:
-            self.visiter_branche_cas(symbole.type, element)
-        if instruction.sinon :
+            self.visiter_branche_cas(type_expression, element)
+            
+        if instruction.sinon:
             self.appel_instruction(instruction.sinon)
 
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
-        if not isinstance(self.obtenir_type_expression(instruction.condition), bool) :
+        if self.obtenir_type_expression(instruction.condition) != "booleen" :
             self.tables.erreur("Une condition doit toujours donner un booléen.")
 
     def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
@@ -292,19 +392,35 @@ class AnalyseurSemantique:
     def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
+
         if isinstance(expr, Caractere):
             return "caractere"
+
         if isinstance(expr, ChaineCaractere):
             return "chaine"
+
         if isinstance(expr, Booleen):
             return "booleen"
+
         if isinstance(expr, Identifiant):
             # C'est ici qu'on s'assure que la variable existe !
             symbole = self.tables.rechercher(expr.nom)
+            if not symbole.est_initialise:
+                self.tables.erreur(f"La variable '{expr.nom}' est lue avant d'avoir été initialisée ! 🚫")
+
+            symbole.est_utilise = True
             return symbole.type
+
         if isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
+            if not symbole.est_initialise:
+                self.tables.erreur(f"La variable '{expr.nom}' est lue avant d'avoir été initialisée ! 🚫")
+                
+            self.visiter_indexation_statique(symbole, expr)
+            
+            symbole.est_utilise = True
             return symbole.type
+
         if isinstance(expr, OperationBinaire):
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
@@ -324,11 +440,14 @@ class AnalyseurSemantique:
                 else:
                     self.tables.erreur("Operation incoherente et non supporter par le langage")
             elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
+                if type_gauche != type_droite:
+                    self.tables.erreur(f"Comparaison impossible : on ne peut pas comparer un(e) '{type_gauche}' avec un(e) '{type_droite}'. 🚫")
                 return "booleen"
             elif expr.operateur in ("et", "ou") and (type_gauche == "booleen") and (type_droite == "booleen"):
                 return "booleen"
             else:
                 self.tables.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
+
         if isinstance(expr, OperationUnaire):
             type_operande: str = self.obtenir_type_expression(expr.operande)
             operateur: str = expr.operateur
@@ -338,8 +457,10 @@ class AnalyseurSemantique:
             elif type_operande in ("entier", "reel"):
                 return "entier" if type_operande == "entier" else "reel"
             self.tables.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
+
         if isinstance(expr, AppelFonction):
             symbole: Symbole = self.tables.rechercher(expr.nom)
+            symbole.est_utilise = True
             
             # Cas 1 : C'est en fait un tableau
             if symbole.nature == "tableau":
