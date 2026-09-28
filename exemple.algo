@@ -1,0 +1,13 @@
+Algorithme TEST % ICI le bloc d'entête%
+%Le bloc de création des fonctions ou procedure peut importe l'ordre
+Exemple:
+Fonction (x: entier):
+%Bloc de declaration des constantes ou variables ^propre qu'a cette fonction%
+debut
+corps de cette fonction
+fin
+%
+%Le bloc de declaration des constantes ou variables%
+Debut
+%Le corps de l'algorithme%
+Fin
