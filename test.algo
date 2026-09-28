@@ -1,8 +1,8 @@
 Algorithme test_operateurs
-procedure afficher()
+procedure afficher(x: chaine)
 debut
-	Ecrire("VRAI")
+	Ecrire(x)
 fin
 debut
-	afficher()
+	afficher("A")
 fin
