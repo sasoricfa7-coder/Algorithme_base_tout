@@ -171,14 +171,20 @@ class AnalyseurSemantique:
                 if decl.dimensions is None:
                     # Tableau constant initialisé par une liste d'éléments
                     nb_dim = 1
+                    type_tableau = None
                     if decl.valeurs_initiales:
                         dims_statiques.append(len(decl.valeurs_initiales))
-                    
+                        # Déduction du type et validation des éléments par le sémantique
+                        type_tableau = self.obtenir_type_expression(decl.valeurs_initiales[0])
+                        for elem in decl.valeurs_initiales[1:]:
+                            if self.obtenir_type_expression(elem) != type_tableau:
+                                self.tables.erreur("Tous les éléments d'un tableau constant doivent être du même type.")
+
                     self.tables.declarer(
                         decl.nom,
                         Symbole(
                             nom=decl.nom,
-                            type=decl.type,
+                            type=type_tableau,
                             est_constante=True,
                             nature="tableau",
                             nb_dimensions=nb_dim,
@@ -383,14 +389,28 @@ class AnalyseurSemantique:
                     )
 
     def visiter_cas(self, instruction: Cas) -> None:
-        # Récupère le type qu'il s'agisse d'une variable simple ou d'un élément de tableau
         type_expression = self.obtenir_type_expression(instruction.expression)
         
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+        etats_branches = []
+
         for element in instruction.branches:
+            # Restauration de l'état initial avant chaque branche
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
+                
             self.visiter_branche_cas(type_expression, element)
-            
+            etats_branches.append({nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()})
+
         if instruction.sinon:
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
             self.appel_instruction(instruction.sinon)
+            etats_branches.append({nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()})
+
+        # Une variable n'est initialisée que si elle l'est dans TOUTES les branches et le sinon
+        for nom in etat_initial:
+            self.tables.pile[-1][nom].est_initialise = all(branche[nom] for branche in etats_branches)
 
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
@@ -438,43 +458,45 @@ class AnalyseurSemantique:
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
                 self.tables.erreur(f"La variable '{expr.nom}' est lue avant d'avoir été initialisée ! 🚫")
+
+            if len(expr.indices) != symbole.nb_dimensions:
+                self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s).")
+
+            for indice in expr.indices:
+                if self.obtenir_type_expression(indice) != "entier":
+                    self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
                 
             self.visiter_indexation_statique(symbole, expr)
-            
             symbole.est_utilise = True
             return symbole.type
 
         if isinstance(expr, OperationBinaire):
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
+
             if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
-                if expr.operateur in ("/", "div", "mod"):
-                    if isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
-                        self.tables.erreur("Division par zéro détectée avant compilation")
-                    if expr.operateur in ("div", "mod"):
-                        return "entier"
-                    if expr.operateur == "/":
-                        return "reel"
-                        
+                if expr.operateur in ("/", "div", "mod") and isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
+                    self.tables.erreur("Division par zéro détectée avant compilation")
+
+                if expr.operateur in ("div", "mod"):
+                    if type_gauche != "entier" or type_droite != "entier":
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des entiers, pas '{type_gauche}' et '{type_droite}'.")
+                    return "entier"
+
+                if expr.operateur == "/":
+                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
+                        self.tables.erreur(f"L'opérateur '/' exige des types numériques, pas '{type_gauche}' et '{type_droite}'.")
+                    return "reel"
+
                 if type_gauche == "reel" or type_droite == "reel":
+                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
+                        self.tables.erreur("Opération arithmétique impossible sur des types non numériques.")
                     return "reel"
                 elif type_gauche == "entier" and type_droite == "entier":
                     return "entier"
                 else:
-                    self.tables.erreur("Operation incoherente et non supporter par le langage")
-            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
-                if type_gauche != type_droite:
-                    self.tables.erreur(f"Comparaison impossible : on ne peut pas comparer un(e) '{type_gauche}' avec un(e) '{type_droite}'. 🚫")
-                return "booleen"
-
-            elif expr.operateur in ("et", "ou"):
-                if type_gauche != "booleen" or type_droite != "booleen":
-                    self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des opérandes booléens, pas '{type_gauche}' et '{type_droite}'. 🚫")
-                return "booleen"
-            
-            else:
-                self.tables.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
-
+                    self.tables.erreur("Opération incohérente et non supportée par le langage.")
+        
         if isinstance(expr, OperationUnaire):
             type_operande: str = self.obtenir_type_expression(expr.operande)
             operateur: str = expr.operateur
@@ -500,6 +522,8 @@ class AnalyseurSemantique:
                 for element in expr.arguments:
                     if self.obtenir_type_expression(element) != "entier":
                         self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
+                        
+                self.visiter_indexation_statique(symbole, Indexation(expr.nom, expr.arguments))
                 return symbole.type
 
             elif symbole.nature == "procedure":
@@ -700,7 +724,7 @@ class Parseur:
         les_arguments = self.parse_arguments()
 
         self.fin_de_ligne()
-        return DeclarationTableau(nom, self.obtenir_type_expression(les_arguments, True), None, les_arguments)
+        return DeclarationTableau(nom, None, None, les_arguments)
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
