@@ -27,10 +27,12 @@ class Symbole:
     est_initialise: bool = False
     est_utilise: bool = False
     est_verrouille: bool = False
+    dimensions_statiques: list[int] = field(default_factory=list)
 
 @dataclass
 class TableSymboles:
     pile: list[dict[str, Symbole]] = field(default_factory=list)
+    symboles_globaux: set[str] = field(default_factory=set)
 
     def entrer_portee(self) -> None:
         self.pile.append({})
@@ -44,9 +46,9 @@ class TableSymboles:
         self.pile.pop()
 
     def declarer(self, nom: str, symbole: Symbole) -> None:
-        for portee_actuelle in self.pile:
-            if nom in portee_actuelle:
-                self.erreur(f"Le symbole '{nom}' est déjà déclaré dans une portée supérieure (Masquage interdit) 🚫")
+        if nom in self.symboles_globaux:
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫")
+        self.symboles_globaux.add(nom)
         self.pile[-1][nom] = symbole
 
     def rechercher(self, nom: str) -> Symbole:
@@ -66,20 +68,35 @@ class AnalyseurSemantique:
 
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
+        self.visiter_declarations(self.ast.declarations)
+        
+        # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
+        for fonction in self.ast.fonctions:
+            self.tables.declarer(
+                fonction.nom, 
+                Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres], nature="fonction", est_initialise=True)
+            )
+        for procedure in self.ast.procedures:
+            self.tables.declarer(
+                procedure.nom, 
+                Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres], nature="procedure", est_initialise=True)
+            )
+
+        # Passe 2 : Analyser les corps des fonctions et procédures
         self.visiter_fonctions()
         self.visiter_procedures()
-        self.visiter_declarations(self.ast.declarations)
+        
+        # Analyse du corps principal
         self.visiter_corps()
         self.tables.sortir_portee()
 
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
-            self.tables.declarer(fonction.nom, Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres]), nature="fonction", est_initialise=True)
             self.tables.entrer_portee()
             self.fonction_courante = fonction
 
             for param in fonction.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
 
             self.visiter_declarations(fonction.declarations)
 
@@ -103,7 +120,6 @@ class AnalyseurSemantique:
                     retour_sinon: bool = self.verifier_chemins_retour(inst.sinon)
                     if retour_alors and retour_sinon:
                         return True
-                return False
                     
             elif isinstance(inst, Cas):
                 tous_retournent: bool = True
@@ -113,16 +129,16 @@ class AnalyseurSemantique:
                         break
                 if tous_retournent and inst.sinon and self.verifier_chemins_retour(inst.sinon):
                     return True
-                return False
+        return False
 
     def visiter_procedures(self):
         for procedure in self.ast.procedures:
-            self.tables.declarer(procedure.nom, Symbole(procedure.nom, type="procedure", False, [p.type for p in procedure.parametres]), nature="procedure", est_initialise=True)
+
             self.tables.entrer_portee()
             self.fonction_courante = None
 
             for param in procedure.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type))
+                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
 
             self.visiter_declarations(procedure.declarations)
 
@@ -132,17 +148,67 @@ class AnalyseurSemantique:
 
     def visiter_declarations(self, declarations) -> None:
         for decl in declarations:
-            if isinstance(decl, DeclarationVariable) :
+            if isinstance(decl, DeclarationVariable):
                 self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="variable"))
-            elif isinstance(decl, DeclarationConstante) :
-                self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="constante", est_initialise=True))
-            else :
-                if decl.dimensions is None :
-                    nb_dim: int = 1
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, True, nature="tableau", nb_dimensions=nb_dim, est_initialise=True))
-                else :
+
+            elif isinstance(decl, DeclarationConstante):
+                type_constante = self.obtenir_type_expression(decl.valeur)
+                self.tables.declarer(
+                    decl.nom,
+                    Symbole(
+                        nom=decl.nom,
+                        type=type_constante,
+                        est_constante=True,
+                        nature="constante",
+                        est_initialise=True
+                    )
+                )
+
+            else:
+                # Gestion des tableaux (DeclarationTableau)
+                dims_statiques: list[int] = []
+
+                if decl.dimensions is None:
+                    # Tableau constant initialisé par une liste d'éléments
+                    nb_dim = 1
+                    type_tableau = None
+                    if decl.valeurs_initiales:
+                        dims_statiques.append(len(decl.valeurs_initiales))
+                        # Déduction du type et validation des éléments par le sémantique
+                        type_tableau = self.obtenir_type_expression(decl.valeurs_initiales[0])
+                        for elem in decl.valeurs_initiales[1:]:
+                            if self.obtenir_type_expression(elem) != type_tableau:
+                                self.tables.erreur("Tous les éléments d'un tableau constant doivent être du même type.")
+
+                    self.tables.declarer(
+                        decl.nom,
+                        Symbole(
+                            nom=decl.nom,
+                            type=type_tableau,
+                            est_constante=True,
+                            nature="tableau",
+                            nb_dimensions=nb_dim,
+                            est_initialise=True,
+                            dimensions_statiques=dims_statiques
+                        )
+                    )
+                else:
+                    # Tableau standard déclaré avec des dimensions
                     nb_dim = len(decl.dimensions)
-                    self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="tableau", nb_dimensions=nb_dim))
+                    for dim in decl.dimensions:
+                        if isinstance(dim, Nombre):
+                            dims_statiques.append(int(dim.valeur))
+
+                    self.tables.declarer(
+                        decl.nom,
+                        Symbole(
+                            nom=decl.nom,
+                            type=decl.type,
+                            nature="tableau",
+                            nb_dimensions=nb_dim,
+                            dimensions_statiques=dims_statiques
+                        )
+                    )
 
 
     def visiter_corps(self) -> None:
@@ -178,7 +244,7 @@ class AnalyseurSemantique:
             self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
 
         if symbole.nature == "procedure":
-            self.erreur(f"On ne peut pas affecter une procedure vu quel ne retourne rien.{symbole.nom} ")
+            self.tables.erreur(f"On ne peut pas affecter une procedure vu qu'elle ne retourne rien. {symbole.nom} ")
 
         if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
             self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un un conseil utiliser une boucle.")
@@ -192,8 +258,12 @@ class AnalyseurSemantique:
         if isinstance(instruction.cible, Indexation):
             if symbole.nature != "tableau":
                 self.tables.erreur(f"'{instruction.cible.nom}' n'est pas un tableau, indexation impossible.")
-            if len(instruction.cible.indices) != len(symbole.nb_dimensions):
+
+            self.visiter_indexation_statique(symbole, instruction.cible)
+
+            if len(instruction.cible.indices) != symbole.nb_dimensions:
                 self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
+
             for indice in instruction.cible.indices :
                 if self.obtenir_type_expression(indice) != "entier":
                     self.tables.erreur("L'indice d'un tableau doit être de type entier.")
@@ -209,6 +279,8 @@ class AnalyseurSemantique:
             symbole: Symbole = self.tables.rechercher(element.nom)
             if symbole.est_constante:
                 self.tables.erreur("Impossible de lire dans une constante.")
+            if symbole.est_verrouille:
+                self.tables.erreur(f"Impossible de modifier '{symbole.nom}' via 'lire' car c'est l'indice d'une boucle 'pour' en cours d'exécution. 🚫")
             if isinstance(element, Indexation):
                 for args in element.indices:
                     self.obtenir_type_expression(args)
@@ -218,25 +290,62 @@ class AnalyseurSemantique:
 
     def visiter_si(self, instruction: Si) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.erreur("Une condition doit toujours produire un booleen")
-        self.appel_instruction(instruction.alors)
+            self.tables.erreur("Une condition doit toujours produire un booleen")
 
-        self.appel_instruction(instruction.sinon)
+        # Sauvegarde des états d'initialisation avant le bloc Si
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+
+        # Visite du bloc 'alors'
+        self.appel_instruction(instruction.alors)
+        etat_apres_alors = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+
+        # Restauration pour le bloc 'sinon'
+        for nom, est_init in etat_initial.items():
+            self.tables.pile[-1][nom].est_initialise = est_init
+
+        # Visite du bloc 'sinon'
+        if instruction.sinon:
+            self.appel_instruction(instruction.sinon)
+            etat_apres_sinon = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+            
+            # Intersection : Initialisé après le Si SEULEMENT si initialisé dans Alors ET Sinon
+            for nom in etat_initial:
+                self.tables.pile[-1][nom].est_initialise = etat_apres_alors[nom] and etat_apres_sinon[nom]
+        else:
+            # Sans sinon, l'initialisation dans 'alors' ne garantit rien pour la suite
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
+
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.erreur("la condition de la boucle Tant que doit toujours produire un booleen")
+            self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
+
+        # Sauvegarde de l'état (la boucle pouvant s'exécuter 0 fois)
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
 
         self.appel_instruction(instruction.corps)
 
+        # Restauration pour la suite du programme
+        for nom, est_init in etat_initial.items():
+            self.tables.pile[-1][nom].est_initialise = est_init
+
     def visiter_pour(self, instruction: Pour) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
+        
+        if symbole.type != "entier":
+            self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫")
+
         symbole.est_initialise = True
+        symbole.est_utilise = True
         symbole.est_verrouille = True
         
-        self.obtenir_type_expression(instruction.debut)
-        self.obtenir_type_expression(instruction.fin)
-        self.obtenir_type_expression(instruction.pas)
+        type_debut = self.obtenir_type_expression(instruction.debut)
+        type_fin = self.obtenir_type_expression(instruction.fin)
+        type_pas = self.obtenir_type_expression(instruction.pas)
+
+        if type_debut != "entier" or type_fin != "entier" or type_pas != "entier":
+            self.tables.erreur("Les bornes (début, fin) et le pas d'une boucle 'pour' doivent tous être de type entier. 🚫")
 
         self.appel_instruction(instruction.corps)
         symbole.est_verrouille = False
@@ -259,15 +368,49 @@ class AnalyseurSemantique:
 
     def appel_instruction(self, grande_instruction: list[Instruction]) -> None:
         if grande_instruction:
+            retour_rencontrer: bool = False
             for instruction in grande_instruction:
+                if retour_rencontrer:
+                    self.tables.erreur("Code inaccessible détecté après une instruction 'retourne' 🚫")
+                    
                 self.visiter_instruction(instruction)
+                if isinstance(instruction, Retourne):
+                    retour_rencontrer = True
+
+    def visiter_indexation_statique(self, symbole: Symbole, indexation: Indexation):
+        # Si les indices sont des nombres littéraux et que les dimensions sont connues
+        for i, indice_expr in enumerate(indexation.indices):
+            if isinstance(indice_expr, Nombre) and i < len(symbole.dimensions_statiques):
+                taille_max = symbole.dimensions_statiques[i]
+                if indice_expr.valeur < 1 or indice_expr.valeur > taille_max:
+                    self.tables.erreur(
+                        f"Débordement de tableau détecté à la compilation : "
+                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max}] pour '{symbole.nom}' 🚫"
+                    )
 
     def visiter_cas(self, instruction: Cas) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.nom)
+        type_expression = self.obtenir_type_expression(instruction.expression)
+        
+        etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
+        etats_branches = []
+
         for element in instruction.branches:
-            self.visiter_branche_cas(symbole.type, element)
-        if instruction.sinon :
+            # Restauration de l'état initial avant chaque branche
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
+                
+            self.visiter_branche_cas(type_expression, element)
+            etats_branches.append({nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()})
+
+        if instruction.sinon:
+            for nom, est_init in etat_initial.items():
+                self.tables.pile[-1][nom].est_initialise = est_init
             self.appel_instruction(instruction.sinon)
+            etats_branches.append({nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()})
+
+        # Une variable n'est initialisée que si elle l'est dans TOUTES les branches et le sinon
+        for nom in etat_initial:
+            self.tables.pile[-1][nom].est_initialise = all(branche[nom] for branche in etats_branches)
 
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
@@ -315,41 +458,52 @@ class AnalyseurSemantique:
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
                 self.tables.erreur(f"La variable '{expr.nom}' est lue avant d'avoir été initialisée ! 🚫")
+
+            if len(expr.indices) != symbole.nb_dimensions:
+                self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s).")
+
+            for indice in expr.indices:
+                if self.obtenir_type_expression(indice) != "entier":
+                    self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
+                
+            self.visiter_indexation_statique(symbole, expr)
             symbole.est_utilise = True
             return symbole.type
 
         if isinstance(expr, OperationBinaire):
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
+
             if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
-                if expr.operateur in ("/", "div", "mod"):
-                    if isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
-                        self.tables.erreur("Division par zéro détectée avant compilation")
-                    if expr.operateur in ("div", "mod"):
-                        return "entier"
-                    if expr.operateur == "/":
-                        return "reel"
-                        
+                if expr.operateur in ("/", "div", "mod") and isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
+                    self.tables.erreur("Division par zéro détectée avant compilation")
+
+                if expr.operateur in ("div", "mod"):
+                    if type_gauche != "entier" or type_droite != "entier":
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des entiers, pas '{type_gauche}' et '{type_droite}'.")
+                    return "entier"
+
+                if expr.operateur == "/":
+                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
+                        self.tables.erreur(f"L'opérateur '/' exige des types numériques, pas '{type_gauche}' et '{type_droite}'.")
+                    return "reel"
+
                 if type_gauche == "reel" or type_droite == "reel":
+                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
+                        self.tables.erreur("Opération arithmétique impossible sur des types non numériques.")
                     return "reel"
                 elif type_gauche == "entier" and type_droite == "entier":
                     return "entier"
                 else:
-                    self.tables.erreur("Operation incoherente et non supporter par le langage")
-            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
-                if type_gauche != type_droite:
-                    self.tables.erreur(f"Comparaison impossible : on ne peut pas comparer un(e) '{type_gauche}' avec un(e) '{type_droite}'. 🚫")
-                return "booleen"
-            elif expr.operateur in ("et", "ou") and (type_gauche == "booleen") and (type_droite == "booleen"):
-                return "booleen"
-            else:
-                self.tables.erreur(f"Opérateur binaire non pris en charge : {expr.operateur}")
-
+                    self.tables.erreur("Opération incohérente et non supportée par le langage.")
+        
         if isinstance(expr, OperationUnaire):
             type_operande: str = self.obtenir_type_expression(expr.operande)
             operateur: str = expr.operateur
 
-            if type_operande == "booleen" and operateur == "non":
+            if operateur == "non":
+                if type_operande != "booleen":
+                    self.tables.erreur(f"L'opérateur 'non' requiert un booleen, pas un '{type_operande}' 🚫")
                 return "booleen"
             elif type_operande in ("entier", "reel"):
                 return "entier" if type_operande == "entier" else "reel"
@@ -357,14 +511,19 @@ class AnalyseurSemantique:
 
         if isinstance(expr, AppelFonction):
             symbole: Symbole = self.tables.rechercher(expr.nom)
+            symbole.est_utilise = True
             
             # Cas 1 : C'est en fait un tableau
             if symbole.nature == "tableau":
                 if len(expr.arguments) != symbole.nb_dimensions:
                     self.tables.erreur(f"Le tableau '{expr.nom}' attend {symbole.nb_dimensions} dimension(s).")
+                if not symbole.est_initialise:
+                    self.tables.erreur(f"Le tableau '{expr.nom}' est lu avant d'avoir été initialisé ! 🚫")
                 for element in expr.arguments:
                     if self.obtenir_type_expression(element) != "entier":
                         self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être de type entier.")
+                        
+                self.visiter_indexation_statique(symbole, Indexation(expr.nom, expr.arguments))
                 return symbole.type
 
             elif symbole.nature == "procedure":
@@ -492,7 +651,7 @@ class Parseur:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         parametre: list[Parametre] = self.parse_parametres()
-        declaration: Declaration = self.parse_declaration()
+        declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
 
         return Procedure(nom, parametre, declaration, corps_complet)
@@ -554,7 +713,8 @@ class Parseur:
         valeur: Expression = self.parse_expression()
 
         self.fin_de_ligne()
-        return DeclarationConstante(nom, valeur, self.obtenir_type_expression(valeur))
+        # ✅ Déléguer le type de la constante à l'analyseur sémantique
+        return DeclarationConstante(nom, valeur, None)
 
     def aide_constante_tableau(self) -> DeclarationTableau:
         self.consommer("mots_cles", "tableau")
@@ -564,7 +724,7 @@ class Parseur:
         les_arguments = self.parse_arguments()
 
         self.fin_de_ligne()
-        return DeclarationTableau(nom, self.obtenir_type_expression(les_arguments, True), None, les_arguments)
+        return DeclarationTableau(nom, None, None, les_arguments)
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
@@ -767,10 +927,11 @@ class Parseur:
     def parse_arguments(self) -> list[Expression]:
         self.consommer("PAREN_OUVRANT")
         les_arguments: list[Expression] = []
-        les_arguments.append(self.parse_expression())
-        while self.token_courant()["type"] == "separateur" :
-            self.consommer("separateur")
+        if self.token_courant()["type"] != "PAREN_FERMANT":
             les_arguments.append(self.parse_expression())
+            while self.token_courant()["type"] == "separateur":
+                self.consommer("separateur")
+                les_arguments.append(self.parse_expression())
 
         self.consommer("PAREN_FERMANT")
         return les_arguments
@@ -786,9 +947,18 @@ class Parseur:
             elif isinstance(expr, Booleen):
                 return "booleen"
             elif isinstance(expr, OperationBinaire):
-                pass # pour v2
+                type_g = self.obtenir_type_expression(expr.gauche)
+                type_d = self.obtenir_type_expression(expr.droite)
+                if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
+                    return "reel" if "reel" in (type_g, type_d) or expr.operateur == "/" else "entier"
+                elif expr.operateur in ("=", "<>", "<", ">", "<=", ">=", "et", "ou"):
+                    return "booleen"
             elif isinstance(expr, OperationUnaire):
-                pass # v2
+                if expr.operateur == "non":
+                    return "booleen"
+                return self.obtenir_type_expression(expr.operande)
+            else:
+                self.erreur("Erreur interne.")
         else:
             if isinstance(expr, list) and len(expr) > 0:
                 premier_type = self.obtenir_type_expression(expr[0])
@@ -796,6 +966,7 @@ class Parseur:
                     if self.obtenir_type_expression(element) != premier_type :
                         self.erreur("Tous les éléments d'un tableau doivent avoir le même type.")
                 return premier_type
+            self.erreur("Erreur interne.")
 
 
     def parse_expression(self) -> Expression:
