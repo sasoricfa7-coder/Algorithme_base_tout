@@ -1,39 +1,73 @@
 import json
 import sys
-from erreur import gestion as erreur
+from erreur import aide_remonter, erreur
+from utils import sans_accents
 import os
 
+
 def verificateur() -> str:
-    if len(sys.argv) < 2 :
-        erreur("Aucun fichier indiquer.")
+    if len(sys.argv) < 2:
+        erreur("Aucun fichier indiqué // No file provided 📁")
     nom: str = sys.argv[1]
 
-    if not os.path.isfile(nom) :
-        erreur(f"Le fichier {nom} n'existe pas.")
+    if not os.path.isfile(nom):
+        erreur(f"Le fichier {nom} n'existe pas // File {nom} not found 🔍")
 
     return nom
 
-def charger_code(nom: str) -> str :
-    with open(nom, "r", encoding="utf-8") as f :
+
+def charger_code(nom: str) -> str:
+    with open(nom, "r", encoding="utf-8") as f:
         return f.read()
-        
 
 
 def charger_json(nom: str) -> dict:
-    with open(nom, "r", encoding="utf-8") as f :
+    with open(nom, "r", encoding="utf-8") as f:
         contenu = json.load(f)
     return contenu
 
-def main() :
+
+def construire_table(le_json: dict) -> dict[str, tuple[str, str]]:
+    """
+    Construit une table unique : mot normalisé -> (type, valeur_canonique).
+    La valeur_canonique est la forme singulière/standard à stocker dans le token.
+    """
+    # 1. Normaliser la table de normalisation (accents + minuscules)
+    normalisation_brute: dict[str, str] = le_json.get("normalisation", {})
+    normalisation: dict[str, str] = {
+        sans_accents(alias): sans_accents(canonique)
+        for alias, canonique in normalisation_brute.items()
+    }
+
+    # 2. Construire la table principale
+    table: dict[str, tuple[str, str]] = {}
+    for cle, type_ in (
+        ("mots_cles",               "mots_cles"),
+        ("operateurs_logiques",     "operateurs_logiques"),
+        ("operateurs_arihmetiques", "operateurs_arihmetiques"),
+        ("valeur_booleen",          "valeur_booleen"),
+    ):
+        for mot in le_json[cle]:
+            mot_norm = sans_accents(mot)
+            canonique = normalisation.get(mot_norm, mot_norm)
+            table[mot_norm] = (type_, canonique)
+
+    return table
+
+
+def main() -> tuple[str, dict]:
     nom: str = verificateur()
     code_source: str = charger_code(nom)
-    fichier_json: dict[str , str] = charger_json("langage.json")
+    fichier_json: dict = charger_json("langage.json")
 
     if code_source.strip() == "":
-        erreur(f"{nom} est vide")
-    
+        erreur(f"{nom} est vide // {nom} is empty 🕳️")
+
+    # ✅ pré-calcul unique : la table sera réutilisée à chaque appel d'alpha
+    fichier_json["table_mots"] = construire_table(fichier_json)
+
     return code_source, fichier_json
 
-    
-if __name__=="__main__" :
+
+if __name__ == "__main__":
     main()

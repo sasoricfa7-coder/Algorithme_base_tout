@@ -1,0 +1,172 @@
+# FICHE DE DIRECTION — EVA
+
+## 1. Objectif principal d'EVA
+
+EVA est un langage de programmation basé sur le pseudo-code algorithmique en français.
+
+Mon objectif principal n'est pas de créer un langage qui remplace C, Python, C#, etc.
+
+EVA doit être un TRANSPILATEUR MULTI-CIBLES.
+
+L'idée est :
+
+    J'écris mon programme une seule fois en EVA
+                    ↓
+              EVA le traduit
+                    ↓
+       vers le langage demandé
+
+Exemples :
+
+    programme.eva → C
+    programme.eva → Python
+    programme.eva → C#
+    programme.eva → autres langages plus tard
+
+## 2. Motivation concrète
+
+À l'université, différents cours peuvent imposer différents langages.
+
+Par exemple :
+
+    Devoir en C
+        → j'écris en EVA
+        → EVA produit du C
+
+    Devoir en Python
+        → j'écris en EVA
+        → EVA produit du Python
+
+    Devoir en C#
+        → j'écris en EVA
+        → EVA produit du C#
+
+Je veux donc éviter de devoir réécrire manuellement mes programmes dans chaque syntaxe.
+
+EVA devient une couche commune entre moi et les langages imposés.
+
+## 3. Conséquence architecturale
+
+Il ne faut PAS concevoir EVA comme :
+
+    EVA → C
+
+où le C serait considéré comme la destination définitive.
+
+Il faut concevoir :
+
+                         ┌──→ C
+                         │
+    EVA → représentation intermédiaire → Python
+                         │
+                         ├──→ C#
+                         │
+                         └──→ autres langages
+
+Le premier backend pourra être C, mais C n'est que LE PREMIER BACKEND.
+
+## 4. Architecture générale souhaitée
+
+Frontend EVA :
+
+    Code EVA
+       ↓
+    Lexer
+       ↓
+    Parser
+       ↓
+    AST
+       ↓
+    Analyse sémantique
+       ↓
+    Représentation intermédiaire EVA (IR)
+
+Puis les backends :
+
+    EVA IR
+       │
+       ├── Backend C
+       ├── Backend Python
+       ├── Backend C#
+       └── Backend futur...
+
+Chaque backend est responsable uniquement de produire le langage cible.
+
+## 5. Principe important
+
+Le frontend EVA doit rester indépendant des langages cibles.
+
+Par exemple, le parser ne doit pas être construit spécifiquement pour produire du C.
+
+L'AST et/ou l'IR doivent représenter les concepts du langage EVA :
+
+    variables
+    constantes
+    affectations
+    conditions
+    boucles
+    fonctions
+    procédures
+    tableaux
+    expressions
+    appels
+    retours
+    etc.
+
+Ensuite, chaque backend traduit ces concepts vers sa propre syntaxe.
+
+## 6. Interpréteur
+
+Un interpréteur EVA n'est PAS l'objectif principal du projet.
+
+Il pourrait éventuellement être ajouté plus tard pour faciliter les tests ou permettre une exécution directe des programmes EVA.
+
+Mais la priorité actuelle est :
+
+    EVA → IR → langage cible
+
+## 7. Premier objectif concret
+
+Le premier backend sera probablement le C.
+
+Donc la prochaine grande étape est de construire quelque chose comme :
+
+    AST / IR EVA
+          ↓
+    Générateur C
+          ↓
+       fichier .c
+          ↓
+    GCC / Clang
+          ↓
+     programme compilé
+
+Une fois ce pipeline fonctionnel, l'architecture devra permettre d'ajouter d'autres backends sans refaire le frontend EVA.
+
+## 8. Philosophie du projet
+
+Je veux conserver la philosophie générale d'EVA :
+
+    simplicité absolue
+    modularité
+    langage entièrement en français
+    réutilisation du pseudo-code algorithmique existant
+    ne pas compliquer EVA inutilement
+
+Je ne veux donc pas transformer EVA en énorme projet de type GCC/LLVM.
+
+L'objectif est de construire progressivement un transpileur simple, propre et extensible.
+
+## 9. Décision à retenir
+
+LA DIRECTION D'EVA EST :
+
+        EVA = TRANSPILATEUR MULTI-CIBLES
+
+et non :
+
+        EVA = simple compilateur vers C
+
+Le C sera le premier backend, pas la destination finale.
+
+Toutes les prochaines décisions d'architecture doivent respecter cette direction.
