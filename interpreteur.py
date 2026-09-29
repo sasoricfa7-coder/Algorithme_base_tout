@@ -90,8 +90,8 @@ class Interpreteur:
             return valeur_retour
 
         if isinstance(un_cas, Indexation):
-            tableau = self.env_courant(un_cas.nom)
-            indices = self.evaluer_expression(un_cas.arguments)
+            tableau = self.env_courant.obtenir(un_cas.nom)
+            indices = self.evaluer_expression(un_cas.indices)
             if not isinstance(indices, int):
                 self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours être des entiers.")
             return tableau[indices]
