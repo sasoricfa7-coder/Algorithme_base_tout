@@ -1,8 +1,8 @@
 Algorithme test_operateurs
 variable
-	age: entier
+	i: entier
 debut
-	Ecrire("Entrez votre age : ")
-	lire(age)
-	Ecrire("Vous êtes nées en ", 2026 - age)
+	pour i ← 0 à 3 pas -1 faire
+		ecrire(i)
+	fin pour
 fin

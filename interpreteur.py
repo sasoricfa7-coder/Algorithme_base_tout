@@ -242,11 +242,7 @@ class Interpreteur:
                     courant = self.env_courant.obtenir(nom_indice)
                     self.env_courant.modifier(nom_indice, courant + val_pas)
             elif val_pas < 0:
-                while self.env_courant.obtenir(nom_indice) >= val_fin:
-                    for sub_inst in inst.corps:
-                        self.executer_instruction(sub_inst)
-                    courant = self.env_courant.obtenir(nom_indice)
-                    self.env_courant.modifier(nom_indice, courant + val_pas)
+                self.env_courant.erreur("dans la boucle pour le pas doit être toujours positif")
 
         elif isinstance(inst, TantQue):
             while self.evaluer_expression(inst.condition):
