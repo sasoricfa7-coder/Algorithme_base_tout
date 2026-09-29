@@ -162,16 +162,15 @@ class Interpreteur:
                 self.env_courant.modifier(nom, valeur)
             else:
                 tableau: list = self.env_courant.obtenir(nom)
-                indice: int = self.evaluer_expression(inst.cible.indices)
-                    
+                indice: int = self.evaluer_expression(inst.cible.indices[0])
                 tableau[indice] = valeur
                 self.env_courant.modifier(nom, tableau)
+
         elif isinstance(inst, Ecrire): 
             self.ecrire(inst)
 
         elif isinstance(inst, Lire):
             for cible in inst.cibles:
-                # Récupération du nom selon qu'il s'agit d'un Identifiant ou d'une Indexation
                 nom = cible.nom
                 saisie = input()
                 
@@ -191,21 +190,97 @@ class Interpreteur:
                                 self.env_courant.erreur(f"{nom} est un reel et ne peut pas recevoir {saisie}")
                         saisie = float(saisie)
                     case "booleen":
-                        self.env_courant.erreur("On ne peux pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
+                        self.env_courant.erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
                     case "caractere":
                         if len(saisie) != 1:
-                            self.env_courant.erreur(f"{nom} est un caractère et ne peux recevoir qu'un seul élément")
+                            self.env_courant.erreur(f"{nom} est un caractère et ne peut recevoir qu'un seul élément")
         
                 if isinstance(cible, Identifiant):
                     self.env_courant.modifier(nom, saisie)
                 else:
-                    # Cas d'un tableau : cible est une Indexation
                     tableau = self.env_courant.obtenir(nom)
                     indice = self.evaluer_expression(cible.indices[0])
                     tableau[indice] = saisie
                     self.env_courant.modifier(nom, tableau)
+
         elif isinstance(inst, Si):
-            pass
+            condition = self.evaluer_expression(inst.condition)
+            if condition:
+                for sub_inst in inst.alors:
+                    self.executer_instruction(sub_inst)
+            elif inst.sinon:
+                for sub_inst in inst.sinon:
+                    self.executer_instruction(sub_inst)
+
+        elif isinstance(inst, Cas):
+            valeur_cible = self.evaluer_expression(inst.expression)
+            trouve = False
+            for branche in inst.branches:
+                valeur_branche = self.evaluer_expression(branche.valeur)
+                if valeur_cible == valeur_branche:
+                    trouve = True
+                    for sub_inst in branche.instructions:
+                        self.executer_instruction(sub_inst)
+                    break
+            if not trouve and inst.sinon:
+                for sub_inst in inst.sinon:
+                    self.executer_instruction(sub_inst)
+
+        elif isinstance(inst, Pour):
+            nom_indice = inst.indice.nom
+            val_debut = self.evaluer_expression(inst.debut)
+            val_fin = self.evaluer_expression(inst.fin)
+            val_pas = self.evaluer_expression(inst.pas)
+
+            self.env_courant.definir(nom_indice, val_debut)
+
+            if val_pas > 0:
+                while self.env_courant.obtenir(nom_indice) <= val_fin:
+                    for sub_inst in inst.corps:
+                        self.executer_instruction(sub_inst)
+                    courant = self.env_courant.obtenir(nom_indice)
+                    self.env_courant.modifier(nom_indice, courant + val_pas)
+            elif val_pas < 0:
+                while self.env_courant.obtenir(nom_indice) >= val_fin:
+                    for sub_inst in inst.corps:
+                        self.executer_instruction(sub_inst)
+                    courant = self.env_courant.obtenir(nom_indice)
+                    self.env_courant.modifier(nom_indice, courant + val_pas)
+
+        elif isinstance(inst, TantQue):
+            while self.evaluer_expression(inst.condition):
+                for sub_inst in inst.corps:
+                    self.executer_instruction(sub_inst)
+
+        elif isinstance(inst, Repeter):
+            while True:
+                for sub_inst in inst.corps:
+                    self.executer_instruction(sub_inst)
+                if self.evaluer_expression(inst.condition):
+                    break
+
+        elif isinstance(inst, Retourne):
+            valeur = self.evaluer_expression(inst.valeur)
+            raise SignalRetour(valeur)
+
+        elif isinstance(inst, AppelInstruction):
+            procedure: Procedure = self.procedures[inst.nom]
+            arguments = [self.evaluer_expression(arg) for arg in inst.arguments]
+
+            ancien_env = self.env_courant
+            env_proc = Environnement(parent=None)
+            self.env_courant = env_proc
+
+            for parametre, arg in zip(procedure.parametres, arguments):
+                self.env_courant.definir(parametre.nom, arg)
+
+            for decl in procedure.declarations:
+                self.executer_instruction(decl)
+
+            for sub_inst in procedure.corps:
+                self.executer_instruction(sub_inst)
+
+            self.env_courant = ancien_env
                             
                                 
 
