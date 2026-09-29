@@ -68,13 +68,32 @@ class Interpreteur:
         if isinstance(un_cas, AppelFonction):
             noeud: Fonction = self.fonctions[un_cas.nom]
             arguments = []
+            valeur_retour = ""
             for arg in un_cas.arguments:
                 arguments.append(self.evaluer_expression(arg))
             ancien_env = self.env_courant
             env_fonction = Environnement(parent=None)
+            self.env_courant = env_fonction
+
+            for parametre, arg in zip(noeud.parametres, arguments):
+                self.env_courant.definir(parametre, arg)
+            for decl in noeud.declarations:
+                self.executer_instruction(decl)
+
+            try:
+                for inst in noeud.corps:
+                    self.executer_instruction(inst)
+            except SignalRetour as e:
+                valeur_retour = e.valeur
+
+            self.env_courant = ancien_env
+            return valeur_retour
 
         if isinstance(un_cas, Indexation):
-            pass
+            indices  = self.evaluer_expression(un_cas.indices)
+            if not isinstance(indices, int):
+                self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours êtres des entiers.")
+            return indices
 
     def operation_binaire(self, gauche, droite, operateur):
         def verifie_zero(droite) -> None:
