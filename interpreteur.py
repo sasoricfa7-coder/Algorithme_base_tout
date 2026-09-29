@@ -40,10 +40,12 @@ class Interpreteur:
             valeur = False if valeur=="faux" else True
         self.env_courant.definir(nom, valeur)
 
-    def ecrire(self, arg) -> None:
-        print(arg, end="")
+    def ecrire(self, inst) -> None:
+        for arg in inst.arguments:
+            print(self.evaluer_expression(arg), end="")
+        print()
 
-    def aide_operation_binaire(self, un_cas):
+    def evaluer_expression(self, un_cas):
         if isinstance(un_cas, Nombre) or isinstance(un_cas, ChaineCaractere) or isinstance(un_cas, Caractere) or isinstance(un_cas, Booleen):
             if isinstance(un_cas, Booleen):
                 retour = False if un_cas.valeur=="faux" else True
@@ -52,7 +54,9 @@ class Interpreteur:
         if isinstance(un_cas, Identifiant):
             return self.env_courant.obtenir(un_cas.nom)
         if isinstance(un_cas, OperationBinaire):
-            return self.aide_operation_binaire(un_cas)
+            gauche = self.evaluer_expression(un_cas.gauche)
+            droite = self.evaluer_expression(un_cas.droite)
+            return self.operation_binaire(gauche, droite, un_cas.operateur)
         if isinstance(un_cas, OperationUnaire):
             pass # je me dis même que ce cas est impossible.
         if isinstance(un_cas, AppelFonction):
@@ -61,8 +65,7 @@ class Interpreteur:
             pass
 
     def operation_binaire(self, gauche, droite, operateur):
-        gauche = self.aide_operation_binaire(gauche)
-        droite = self.aide_operation_binaire(droite)
+        def verifie_
         match operateur:
             case "+": resultat = gauche + droite
             case "-": resultat = gauche - droite
@@ -79,6 +82,7 @@ class Interpreteur:
             case "<>": resultat = gauche != droite
             case "et": resultat = gauche and droite
             case "ou": resultat = gauche or droite
+        return resultat
 
     def executer_instruction(self, inst: Instruction) -> None:
         if isinstance(inst, DeclarationConstante):
@@ -96,12 +100,9 @@ class Interpreteur:
                 self.definir(inst.cible.nom, inst.valeur)
             else:
                 pass # je ne sais comment faire ca
-        elif isinstance(inst, Ecrire):
-            for arg in inst.arguments:
-                if isinstance(arg, Identifiant):
-                    self.ecrire(self.env_courant.obtenir(arg.nom))
-                elif isinstance(arg, OperationBinaire):
-                    
+        elif isinstance(inst, Ecrire): 
+            self.ecrire(inst)
+                                
 
             print()
         
