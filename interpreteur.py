@@ -43,6 +43,7 @@ class Interpreteur:
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
             print(self.evaluer_expression(arg), end="")
+        print()
 
     def evaluer_expression(self, un_cas):
         if isinstance(un_cas, Nombre) or isinstance(un_cas, ChaineCaractere) or isinstance(un_cas, Caractere) or isinstance(un_cas, Booleen):

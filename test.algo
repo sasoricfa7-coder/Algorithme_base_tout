@@ -1,5 +1,8 @@
 Algorithme test_operateurs
-
+variable
+	age: entier
 debut
-	Ecrire("Hello world")
+	Ecrire("Entrez votre age : ")
+	lire(age)
+	Ecrire("Vous êtes nées en ", 2026 - age)
 fin
