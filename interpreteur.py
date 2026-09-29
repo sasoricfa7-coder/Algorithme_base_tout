@@ -91,7 +91,7 @@ class Interpreteur:
 
         if isinstance(un_cas, Indexation):
             tableau = self.env_courant.obtenir(un_cas.nom)
-            indices = self.evaluer_expression(un_cas.indices)
+            indices = self.evaluer_expression(un_cas.indices[0])
             if not isinstance(indices, int):
                 self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours être des entiers.")
             return tableau[indices]
@@ -170,30 +170,40 @@ class Interpreteur:
             self.ecrire(inst)
 
         elif isinstance(inst, Lire):
-            saisie = input()
-            match self.tout_type[inst.cibles.nom]:
-                case "entier": 
-                    for i in saisie:
-                        if not i.isdigit():
-                            self.env_courant.erreur(f"{inst.cibles.nom} est un entier et ne peut pas recevoir {saisie}")
-                    saisie = int(saisie)
-                case "reel":
-                    valide: int = 0
-                    for i in saisie:
-                        if i == ".":
-                            valide += 1
-                            continue
-                        if not i.isdigit() or valide > 1:
-                            self.env_courant.erreur(f"{inst.cibles.nom} est un reel et ne peut pas recevoir {saisie}")
-                    saisie = float(saisie)
-
-                case "booleen":
-                    self.env_courant.erreur("On ne peux pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
-                case "caractere":
-                    if len(saisie) != 1:
-                        self.env_courant.erreur(f"{inst.cibles.nom} est un caractère et ne peux recevoir qu'un seul élément")
-            self.env_courant.modifier(inst.cibles.nom, saisie)
-
+            for cible in inst.cibles:
+                # Récupération du nom selon qu'il s'agit d'un Identifiant ou d'une Indexation
+                nom = cible.nom
+                saisie = input()
+                
+                match self.tout_type[nom]:
+                    case "entier": 
+                        for i in saisie:
+                            if not i.isdigit():
+                                self.env_courant.erreur(f"{nom} est un entier et ne peut pas recevoir {saisie}")
+                        saisie = int(saisie)
+                    case "reel":
+                        valide: int = 0
+                        for i in saisie:
+                            if i == ".":
+                                valide += 1
+                                continue
+                            if not i.isdigit() or valide > 1:
+                                self.env_courant.erreur(f"{nom} est un reel et ne peut pas recevoir {saisie}")
+                        saisie = float(saisie)
+                    case "booleen":
+                        self.env_courant.erreur("On ne peux pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
+                    case "caractere":
+                        if len(saisie) != 1:
+                            self.env_courant.erreur(f"{nom} est un caractère et ne peux recevoir qu'un seul élément")
+        
+                if isinstance(cible, Identifiant):
+                    self.env_courant.modifier(nom, saisie)
+                else:
+                    # Cas d'un tableau : cible est une Indexation
+                    tableau = self.env_courant.obtenir(nom)
+                    indice = self.evaluer_expression(cible.indices[0])
+                    tableau[indice] = saisie
+                    self.env_courant.modifier(nom, tableau)
         elif isinstance(inst, Si):
             pass
                             
