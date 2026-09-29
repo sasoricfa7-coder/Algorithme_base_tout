@@ -15,7 +15,7 @@ class SignalRetour(Exception):
         super().__init__(str(valeur))
 
 class Interpreteur:
-    def __init__(self, env_global=None, env_courant=env_global, fonctions={}, procedures={}):
+    def __init__(self, env_global=None, env_courant=None, fonctions={}, procedures={}):
         self.env_global = Environnement() if env_global is None else env_global
         self.env_courant = self.env_global if env_courant is None else env_courant
         self.fonctions: dict[str, Fonction] = fonctions

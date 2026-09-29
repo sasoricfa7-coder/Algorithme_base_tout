@@ -1,8 +1,5 @@
 Algorithme test_operateurs
-procedure afficher(x: chaine)
+
 debut
-	Ecrire(x)
-fin
-debut
-	afficher("A")
+	Ecrire("Hello world")
 fin
