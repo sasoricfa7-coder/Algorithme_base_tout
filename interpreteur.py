@@ -17,9 +17,9 @@ class SignalRetour(Exception):
 class Interpreteur:
     def __init__(self, env_global=None, env_courant=env_global, fonctions={}, procedures={}):
         self.env_global = Environnement() if env_global is None else env_global
-        self.env_courant = env_courant
+        self.env_courant = self.env_global if env_courant is None else env_courant
         self.fonctions: dict[str, Fonction] = fonctions
-        self. procedures: dict[str, Procedure] = procedures
+        self.procedures: dict[str, Procedure] = procedures
         self.tout_type: dict[str, str] = {}
 
     def interpreter(self, ast: Algorithme) -> None:
@@ -76,7 +76,7 @@ class Interpreteur:
             self.env_courant = env_fonction
 
             for parametre, arg in zip(noeud.parametres, arguments):
-                self.env_courant.definir(parametre, arg)
+                self.env_courant.definir(parametre.nom, arg)
             for decl in noeud.declarations:
                 self.executer_instruction(decl)
 
@@ -90,10 +90,11 @@ class Interpreteur:
             return valeur_retour
 
         if isinstance(un_cas, Indexation):
-            indices  = self.evaluer_expression(un_cas.indices)
+            tableau = self.env_courant(un_cas.nom)
+            indices = self.evaluer_expression(un_cas.arguments)
             if not isinstance(indices, int):
-                self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours êtres des entiers.")
-            return indices
+                self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours être des entiers.")
+            return tableau[indices]
 
     def operation_binaire(self, gauche, droite, operateur):
         def verifie_zero(droite) -> None:
@@ -152,7 +153,7 @@ class Interpreteur:
                 dimension = self.evaluer_expression(inst.dimensions)
                 for i in range(dimension):
                     tableau.append(valeur)
-                self.env_courant.definir(inst.nom, tableau)
+            self.env_courant.definir(inst.nom, tableau)
                 
         elif isinstance(inst, Affectation):
             valeur = self.evaluer_expression(inst.valeur)
@@ -162,7 +163,6 @@ class Interpreteur:
             else:
                 tableau: list = self.env_courant.obtenir(nom)
                 indice: int = self.evaluer_expression(inst.cible.indices)
-                if isinstance(indice, int):
                     
                 tableau[indice] = valeur
                 self.env_courant.modifier(nom, tableau)
@@ -185,13 +185,14 @@ class Interpreteur:
                             continue
                         if not i.isdigit() or valide > 1:
                             self.env_courant.erreur(f"{inst.cibles.nom} est un reel et ne peut pas recevoir {saisie}")
+                    saisie = float(saisie)
 
                 case "booleen":
                     self.env_courant.erreur("On ne peux pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
                 case "caractere":
                     if len(saisie) != 1:
                         self.env_courant.erreur(f"{inst.cibles.nom} est un caractère et ne peux recevoir qu'un seul élément")
-            self.env_courant.modifier(inst.nom, saisie)
+            self.env_courant.modifier(inst.cibles.nom, saisie)
 
         elif isinstance(inst, Si):
             pass
