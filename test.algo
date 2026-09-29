@@ -1,8 +1,6 @@
-Algorithme test_operateurs
-variable
-	i: entier
-debut
-	pour i ← 0 à 3 pas -1 faire
-		ecrire(i)
-	fin pour
-fin
+ALGORITHMES TEST
+DEBUT
+	TANT QUE VRAI faire
+	EcrIRE(faux et vrai)
+	FIN TANT QUE
+FIN
