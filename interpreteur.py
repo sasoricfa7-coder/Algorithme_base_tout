@@ -1,6 +1,5 @@
 from __future__ import annotations
 from environnement import Environnement
-from dataclasses import dataclass, field
 from erreur import erreur
 from tous_les_types import (
     Algorithme, Fonction, Procedure, DeclarationVariable, DeclarationConstante,
@@ -15,12 +14,12 @@ class SignalRetour(Exception):
         self.valeur = valeur
         super().__init__(str(valeur))
 
-@dataclass
 class Interpreteur:
-    env_global = Environnement()
-    env_courant = env_global
-    fonctions: dict[str, Fonction] = field(default_factory=dict)
-    procedures: dict[str, Procedure] = field(default_factory=dict)
+    def __init__(self, env_global=None, env_courant=env_global, fonctions={}, procedures={}):
+        self.env_global = Environnement() if env_global is None else env_global
+        self.env_courant = env_courant
+        self.fonctions: dict[str, Fonction] = fonctions
+        self. procedures: dict[str, Procedure] = procedures
 
     def interpreter(self, ast: Algorithme) -> None:
         for fonction in ast.fonctions:
@@ -58,22 +57,33 @@ class Interpreteur:
             droite = self.evaluer_expression(un_cas.droite)
             return self.operation_binaire(gauche, droite, un_cas.operateur)
         if isinstance(un_cas, OperationUnaire):
-            pass # je me dis même que ce cas est impossible.
+            operande = self.evaluer_expression(un_cas.operande)
+            if un_cas.operateur == "-":
+                return -1 * operande
+            return not operande
         if isinstance(un_cas, AppelFonction):
-            pass
+            
         if isinstance(un_cas, Indexation):
             pass
 
     def operation_binaire(self, gauche, droite, operateur):
-        def verifie_
+        def verifie_zero(droite) -> None:
+            if droite == 0 or droite == 0.0:
+                self.erreur("Division par zero detecter à l'execution")
         match operateur:
             case "+": resultat = gauche + droite
             case "-": resultat = gauche - droite
             case "*": resultat = gauche * droite
-            case "/": resultat = gauche / droite
+            case "/": 
+                verifie_zero(droite)
+                resultat = gauche / droite
             case "^": resultat = gauche ** droite
-            case "div": resultat = gauche // droite
-            case "mod": resultat = gauche % droite
+            case "div": 
+                verifie_zero(droite)
+                resultat = gauche // droite
+            case "mod": 
+                verifie_zero(droite)
+                resultat = gauche % droite
             case "=": resultat = gauche == droite
             case "<": resultat = gauche < droite
             case "<=": resultat = gauche <= droite
@@ -96,10 +106,7 @@ class Interpreteur:
                 case _ "caractere": valeur = ''
             self.definir(inst.nom, valeur)
         elif isinstance(inst, Affectation):
-            if isinstance(inst.cible, Identifiant):
-                self.definir(inst.cible.nom, inst.valeur)
-            else:
-                pass # je ne sais comment faire ca
+            
         elif isinstance(inst, Ecrire): 
             self.ecrire(inst)
                                 
