@@ -1,6 +1,11 @@
 ALGORITHMES TEST
+procedure test()
 DEBUT
-	TANT QUE VRAI faire
-	EcrIRE(faux et vrai)
-	FIN TANT QUE
+	Ecrire("TEST")
+FIN
+variables
+	x, y: réels
+DEBUT
+	Lire(x, y)
+	Ecrire(x, " , ",y)
 FIN

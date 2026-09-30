@@ -85,29 +85,29 @@ Produit : Fonction(nom, parametres, type_retour, declarations, corps)
 3.1 VARIABLES
 --------------------------------------------------------------------------------
 
-<declaration_variable> →  <liste_noms> ":" <type> [ "←" <expression> ]
+<declaration_variable> →  <liste_noms> ":" <type>
 
 <liste_noms> →  <nom> { "," <nom> }
 
 Exemples :
   X : entier
   X, Y, Z : reel
-  X : entier ← 0
-  A, B : reel ← 3.14
+  X : entier
+  A, B : reel
 
 Produit : un DeclarationVariable par nom de la liste.
-          DeclarationVariable(nom, type, valeur_initiale)
+          DeclarationVariable(nom, type)
 
 
 3.2 CONSTANTES
 --------------------------------------------------------------------------------
 
-<declaration_constante> →  <nom> [ ":" <type> ] "←" <expression>
+<declaration_constante> →  <nom> "←" <expression>
 
 Exemples :
   PI ← 3.14
-  PI : reel ← 3.14
   MAX ← 100
+  nom ← "sasori"
 
 Produit : DeclarationConstante(nom, valeur, type)
           type peut être None si non précisé.
@@ -119,24 +119,26 @@ Produit : DeclarationConstante(nom, valeur, type)
 Déclaration dans le bloc VARIABLES :
 
   <declaration_tableau> →  "tableau" <nom> "(" <dimensions> ")" ":" <type>
-                           [ "←" "(" <liste_expressions> ")" ]
 
 Déclaration dans le bloc CONSTANTES :
 
-  <declaration_tableau_const> →  "tableau" <nom> ":" <type>
+  <declaration_tableau_const> →  "tableau" <nom>
                                  "←" "(" <liste_expressions> ")"
 
 <dimensions>        →  <expression> { "," <expression> }   (1 ou 2 dimensions)
 <liste_expressions> →  <expression> { "," <expression> }
 
 Exemples :
+variables:
   Tableau T(5) : entier
-  Tableau T(5) : entier ← (1, 2, 3, 4, 5)
+  Tableau T(5) : entier
   Tableau M(3, 3) : reel
-  Tableau JOURS : chaine ← ("Lundi", "Mardi", "Mercredi")
+constantes:
+  Tableau JOURS ← ("Lundi", "Mardi", "Mercredi")
 
 Produit : DeclarationTableau(nom, type, dimensions, valeurs_initiales)
           dimensions = None pour un tableau constant.
+          type = None pour un tableau constant
 
 
 ================================================================================
@@ -213,7 +215,7 @@ Produit : Si(condition, alors, sinon)
 
 <cas> →  "cas" <expression> "vaut"
          { <branche_cas> }
-         [ "sinon" ":" <instructions> ]
+         "sinon" ":" <instructions>
          "fin cas"
 
 <branche_cas> →  <expression> ":" <bloc_ou_instruction>
@@ -227,8 +229,7 @@ Règles :
   - Le bloc Debut ... Fin d'une branche ne produit PAS de nœud AST.
     Les instructions sont mises directement dans branche.instructions.
   - Le Sinon n'a JAMAIS besoin de Debut/Fin.
-  - Le Sinon n'a pas de "valeur", juste les instructions jusqu'à Fin Cas.
-
+  - Le Sinon est obligatoire
 Exemples :
 
   Cas n vaut
@@ -266,7 +267,7 @@ Produit : Cas(expression, branches, sinon)
           "fin pour"
 
 Contraintes :
-  - Le "pas" est OBLIGATOIRE.
+  - Le "pas" est OBLIGATOIRE et toujours un entier positif.
 
 Produit : Pour(indice, debut, fin, pas, corps)
 
@@ -410,6 +411,13 @@ Exemples :
   Ce sont des tokens consommés par le parseur pour savoir où il en est.
   L'information structurelle est portée par les nœuds eux-mêmes.
 
+Le langage est insensible à la casse et aux accents : à egale a
+algortihme egale algorithmes egale ALGOTIHME
+
+le nom d'une donnée doit être unique dans tout le code. Donc même des fonctions ou procedure differente ne doivent 
+pas avoir des données portants le même nom.
+
+Données declarer mais inutiliser est inacceptable : même fonction et procedure
 
 ================================================================================
 7. NOEUDS AST PRODUITS
