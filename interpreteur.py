@@ -182,14 +182,10 @@ class Interpreteur:
                                 self.env_courant.erreur(f"{nom} est un entier et ne peut pas recevoir {saisie}")
                         saisie = int(saisie)
                     case "reel":
-                        valide: int = 0
-                        for i in saisie:
-                            if i == ".":
-                                valide += 1
-                                continue
-                            if not i.isdigit() or valide > 1:
-                                self.env_courant.erreur(f"{nom} est un reel et ne peut pas recevoir {saisie}")
-                        saisie = float(saisie)
+                        try:
+                            saisie = float(saisie)  # ✅ Accepte à la fois "12" et "12.5"
+                        except ValueError:
+                            self.env_courant.erreur(f"{nom} est un réel et ne peut pas recevoir {saisie}")
                     case "booleen":
                         self.env_courant.erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
                     case "caractere":
