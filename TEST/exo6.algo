@@ -1,14 +1,14 @@
 Algorithmes notes
 variables
-v1, v2, v3, v4, v5: réel
-S, M: réel
+v1, v2, v3, v4, v5: entier
+S, M: entier
 
 debut
 	Ecrire("Entrez 5 notes successives : ")
 	lire(v1, v2, v3, v4, v5)
 
 	s ← v1 + v2 + v3 + v4 + v5
-	m ← s / 5
+	m ← s div 5 %Attention ici a ne pas utiliser / car il produit un réel%
 
-	Ecrire("la somme = ", s, "La moyenne = ", m)
+	Ecrire("la somme = ", s, " La moyenne = ", m)
 fin
