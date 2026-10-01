@@ -1,0 +1,16 @@
+ALGORITHMES ECHANGE_VALEUR
+
+VARIABLES
+	X, Y, C: ENTIER
+
+DEBUT
+	ECRIRE("ENTREZ SUCCESSIVEMENT X ET Y : ")
+	LIRE(X, Y)
+	ECRIRE("X = ", X, " Y = ", Y)
+
+	C ← X
+	X ← Y
+	Y ← C
+
+	ECRIRE("X = ", X, " Y = ", Y)
+FIN

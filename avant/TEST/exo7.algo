@@ -1,0 +1,16 @@
+algorithmes volume
+
+constantes
+	PI ← 3.141
+
+variables
+	rayon, volume: réel
+
+debut
+	Ecrire("Entrez le rayon : ")
+	lire(rayon)
+
+	volume ← (4 * PI * rayon^3) / 3
+
+	Ecrire("Le volume de la sphère = ", volume)
+fin

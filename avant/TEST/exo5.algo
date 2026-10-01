@@ -1,0 +1,16 @@
+Algorithmes operations
+variables
+X, Y: réel
+
+debut
+	Ecrire("Entrez successivement la valeur de X puis de Y : ")
+	LIRE(x, y)
+
+	Ecrire(x, " + ", y, " = ", x+y)
+	Ecrire(x, " - ", y, " = ", x-y)
+	Ecrire(x, " / ", y, " = ", x/y)
+	Ecrire(x, " * ", y, " = ", x*y)
+	Ecrire(x, " mod ", y, " = ", x mod y)
+	Ecrire(x, " div ", y, " = ", x div y)
+	
+fin

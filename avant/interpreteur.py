@@ -137,7 +137,7 @@ class Interpreteur:
 
         if isinstance(inst, DeclarationConstante):
             self.tout_type[inst.nom] = inst.type
-            self.env_courant.definir(inst.nom, self.evaluer_expression(inst.valeur))
+            self.env_courant.definir(inst.nom, inst.valeur)
 
         elif isinstance(inst, DeclarationVariable):
             self.tout_type[inst.nom] = inst.type

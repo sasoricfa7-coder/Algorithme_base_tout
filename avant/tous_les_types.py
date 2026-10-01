@@ -479,7 +479,7 @@ class AnalyseurSemantique:
                     self.tables.erreur("Division par zéro détectée avant compilation")
 
                 if expr.operateur in ("div", "mod"):
-                    if type_gauche != "entier" or type_droite != "entier":
+                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
                         self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des entiers, pas '{type_gauche}' et '{type_droite}'.")
                     return "entier"
 

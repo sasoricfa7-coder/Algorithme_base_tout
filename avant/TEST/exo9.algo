@@ -1,0 +1,11 @@
+algorithmes echange_valeur
+variables
+	x, y: entier
+
+debut
+	ecrire("entrez x et y ")
+	lire(x, y)
+
+	ecrire("x = ", x, " y = ", y)
+	ecrire("x = ", y, " y = ", x)
+fin

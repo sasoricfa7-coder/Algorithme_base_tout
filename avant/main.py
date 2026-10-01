@@ -2,6 +2,7 @@ from avant_lexer import main as avant_lexer
 from lexer import main as lexer
 from tous_les_types import Parseur, afficher_ast, AnalyseurSemantique
 import pprint as p
+from interpreteur import Interpreteur
 
 """LANGAGE EVA"""
 code_source: str
@@ -15,4 +16,5 @@ parseur = Parseur(token)
 ast = parseur.parse_programme()
 ANA_SEMAN = AnalyseurSemantique(ast)
 ANA_SEMAN.visiter_algorithme()
-afficher_ast(ast)
+interprete = Interpreteur()
+interprete.interpreter(ast)

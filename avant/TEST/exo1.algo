@@ -1,0 +1,14 @@
+Algorithme TEST
+variables
+	X: entier
+	B: entier
+	C: entier
+
+debut
+	X ← 23
+	B ← X + 2
+	C ← B
+	Ecrire(X)
+	Ecrire(b)
+	Ecrire(C)
+fin
