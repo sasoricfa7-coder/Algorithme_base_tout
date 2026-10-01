@@ -1,1 +1,1 @@
-print(type(4))
+print(5*5)

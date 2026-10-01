@@ -1,11 +1,7 @@
-ALGORITHMES TEST
-procedure test()
-DEBUT
-	Ecrire("TEST")
-FIN
+Algorithme TEST
 variables
-	x, y: réels
-DEBUT
-	Lire(x, y)
-	Ecrire(x, " , ",y)
-FIN
+rayon: reel
+debut
+	Lire(rayon)
+	Ecrire(rayon*2*3.14)
+fin

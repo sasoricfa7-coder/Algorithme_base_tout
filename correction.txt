@@ -1,3 +1,6 @@
 les fonctions et procedures declarer mais inutilser doit declencher une erreur grave.
 Le nom de l'Algorithme doit être unique dans tout le programme aucune données ne doit avoir ce nom
 Un réel ne peux pas recevoir un entier or moi je le veux.
+
+# L'exo 5 l'utilisateur ne peux pas entrer un nombre précédé d'un signe
+
