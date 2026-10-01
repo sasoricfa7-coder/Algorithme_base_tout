@@ -1,0 +1,10 @@
+Algorithme MESSAGE_ACCUEIL
+variables 
+nom: chaine 
+age: entier
+
+debut
+	Ecrire("Entrez votre nom puis, votre age : ")
+	Lire(nom, age)
+	Ecrire("Bonjour ", nom, " tu as ", age, " ans. Bienvenu à SAINT JOSEPH.")
+fin
