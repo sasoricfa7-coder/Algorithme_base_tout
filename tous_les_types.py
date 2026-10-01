@@ -90,6 +90,16 @@ class AnalyseurSemantique:
         self.visiter_corps()
         self.tables.sortir_portee()
 
+    def contient_identifiant(self, expr) -> bool:
+        """Vérifie si une expression contient un identifiant (variable ou constante)."""
+        if isinstance(expr, Identifiant):
+            return True
+        if isinstance(expr, OperationBinaire):
+            return self.contient_identifiant(expr.gauche) or self.contient_identifiant(expr.droite)
+        if isinstance(expr, OperationUnaire):
+            return self.contient_identifiant(expr.operande)
+        return False
+
     def visiter_fonctions(self):
         for fonction in self.ast.fonctions:
             self.tables.entrer_portee()
@@ -152,6 +162,10 @@ class AnalyseurSemantique:
                 self.tables.declarer(decl.nom, Symbole(decl.nom, decl.type, nature="variable"))
 
             elif isinstance(decl, DeclarationConstante):
+                # ✅ Empêche l'initialisation d'une constante par un autre Identifiant
+                if self.contient_identifiant(decl.valeur):
+                    self.tables.erreur(f"La constante '{decl.nom}' doit être initialisée par une valeur littérale directe, pas par une autre constante ou variable.")
+
                 type_constante = self.obtenir_type_expression(decl.valeur)
                 self.tables.declarer(
                     decl.nom,
@@ -252,8 +266,11 @@ class AnalyseurSemantique:
         if symbole.est_constante :
             self.tables.erreur("Une constante est immuable donc par consequent affectation impossible.")
 
-        if symbole.type != self.obtenir_type_expression(instruction.valeur): # ici je recupère deja le type que je compare
-            self.tables.erreur("La valeur affecter n'est pas du même type que la variable.")
+        type_affecte = self.obtenir_type_expression(instruction.valeur)
+        if symbole.type != type_affecte:
+            # ✅ Règle : Un Entier peut être affecté dans un Réel, mais pas l'inverse.
+            if not (symbole.type == "reel" and type_affecte == "entier"):
+                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{symbole.type}'.")
 
         if isinstance(instruction.cible, Indexation):
             if symbole.nature != "tableau":
