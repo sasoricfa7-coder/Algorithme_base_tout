@@ -1,0 +1,12 @@
+algorithmes calcul_surface_rectangle
+variables
+longueur, largeur, surface: réél
+
+debut
+	Ecrire("Entrez la longueur, puis la largeur : ")
+	Lire(longueur, largeur)
+
+	surface ← longueur*largeur
+
+	Ecrire("La surface de ce rectangle = ", surface)
+fin

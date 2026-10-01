@@ -1,0 +1,9 @@
+Algorithmes puissance
+variables
+X, Y, p: réel
+debut
+	Ecrire("Entrez successivement x et y : ")
+	Lire(x, y)
+	P ← x^y
+	Ecrire(x,"^", y, " = ", P)
+fin
