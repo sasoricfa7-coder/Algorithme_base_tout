@@ -41,7 +41,7 @@ class TableSymboles:
         portee_actuelle: dict = self.pile[-1]
 
         for nom, symbole in portee_actuelle.items():
-            if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau"):
+            if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau", "fonction", "procedure"):
                 self.erreur(f"Le symbole '{nom}' est déclaré mais jamais utilisé 🚫")
         self.pile.pop()
 
@@ -68,6 +68,7 @@ class AnalyseurSemantique:
 
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
+        self.tables.symboles_globaux.add(self.ast.nom)
         self.visiter_declarations(self.ast.declarations)
         
         # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
