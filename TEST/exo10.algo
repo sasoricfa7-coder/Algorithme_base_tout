@@ -7,8 +7,7 @@ debut
 	Ecrire("S = ", ((56263 mod 3600) mod 60))
 fin
  version stables
-% 
-%J'essai ce cas tordu sur les constantes pour voir jusqu'ou va le langage%
+% %J'essai ce cas tordu sur les constantes pour voir jusqu'ou va le langage%
 algorithmes temps
 constantes
 t ← 56263
