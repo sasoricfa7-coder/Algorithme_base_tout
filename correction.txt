@@ -1,3 +1,5 @@
 # Exo 11: les conditions posent problèmes car obtenir type ne fais pas son travail correctement. : comparaison un seul signe ca va
 mais x * y > 0 ne marche pas.
 voici j'ai du mettre un cas else qui renvoi booleen en attendant.
+# c'est bizare je me demande si c'est une bonne chose ou pas :  mais une simple affectation on va dire que la variables est inutiliser. Est ce bien 
+ou pas ?? 

@@ -1,0 +1,25 @@
+algorithme categorie_age
+variables
+	age: entiers
+	type: chaine
+
+debut
+	ecrire("entrez votre age")
+	lire(age)
+
+	si	age > 12 alors
+		type ← "Cadet"
+	sinon
+		si age >= 10 alors
+			type ← "Minime"
+		sinon
+			si age >= 8 alors
+				type ← "Pupille"
+			sinon
+				type ← "Poussin"
+			fin si
+		fin si
+	fin si
+
+	ecrire(type)
+fin
