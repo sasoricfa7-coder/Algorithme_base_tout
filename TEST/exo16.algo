@@ -1,0 +1,27 @@
+algorithmes equation_second_degré
+variable
+z, b, c, D, s0, s1, s2: réel
+debut
+	Ecrire("Entrez successivement z, b et c")
+	lire(z, b, c)
+
+	S0 ← 0 %Sans ca , ca va pas executer%
+	S1 ← 0
+	S2 ← 0
+
+	d ← b^2 -4 * z * c
+	si	d < 0 alors
+		Ecrire("Cette equation n'admet pas de solution dans R")
+	sinon
+		si d = 0 alors
+			s0 ← (-b) / 2 * z
+		sinon
+			s1 ← (-b - d) / 2 * z %Ne pouvant pas faire racine donc je l'ai laisser tomber.% 
+			s2 ← (-b + d) / 2 * z
+		fin si
+	fin si
+	Ecrire("S0 = ", s0)
+	Ecrire("S1 = ", s1)
+	Ecrire("S2 = ", s2)
+fin
+

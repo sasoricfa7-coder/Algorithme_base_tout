@@ -1,0 +1,28 @@
+algorithmes nbrs_jours
+variables
+	mois: chaines
+
+debut
+	Ecrire("Entrez le nom du mois en minuscule et sans accent.")
+	lire(mois)
+
+	cas mois vaut
+		"janvier" : 
+			debut
+				Ecrire("31 jours")
+			fin
+		"fevrier" : Ecrire("31 jours")
+		"mars" : Ecrire("31 jours")
+%		"avril"
+		"mai"
+		"juin"
+		"juillet"
+		"août"
+		"septembre"
+		"octobre"
+		"novembre"
+		"decembre"%
+		sinon:
+			Ecrire("Entrez incorrect verifier l'orthographe.")
+	fin cas
+fin

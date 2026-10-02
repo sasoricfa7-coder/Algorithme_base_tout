@@ -1,0 +1,22 @@
+algorithmes impôt
+variables
+	age: entier
+	sexe: caractère
+
+debut
+	Ecrire("Entrez votre age : ")
+	lire(age)
+
+	Ecrire("Entrez M si vous êtes masculin , sinon F")
+	lire(sexe)
+
+	si age > 20 alors
+		Ecrire("Vous payer les impôts.")
+	sinon
+		si age >= 18 et sexe = 'F' alors
+			Ecrire("Vous payer les impôts.")
+		sinon
+			Ecrire("Vous ne payer pas les impôts.")
+		fin si
+	fin si
+fin

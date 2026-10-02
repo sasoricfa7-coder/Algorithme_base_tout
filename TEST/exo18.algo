@@ -1,0 +1,20 @@
+algorithme PRIX
+variables
+	PHT: réel
+	categorie: caractere
+
+debut
+	Ecrire("Entrez le prix hors taxe")
+	lire(pht)
+
+	Ecrire("Entrez la categorie du produits")
+	lire(categorie)
+
+	cas categorie vaut
+		'A' : Ecrire("TTC = ", pht + pht * 7 / 100)
+		'B' : Ecrire("TTC = ", pht + pht * 20 / 100)
+		'C' : Ecrire("TTC = ", pht + pht * 25 / 100)
+		sinon:
+			Ecrire("Inconnu")
+	fin cas
+fin

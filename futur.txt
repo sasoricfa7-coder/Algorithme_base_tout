@@ -1,0 +1,1 @@
+revoir le mot clé à pour la boucle pour car son utilisation est fréquente donc si le langage savais faire la différence ca aiderait beaucoup.

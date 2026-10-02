@@ -1,0 +1,27 @@
+Algorithmes mini_calculatrice
+%variables
+	n1, n2: entier
+	operateur: caractère
+
+debut
+	Ecrire("Entrez successivement deux nombres entiers")
+	lire(n1, n2)
+
+	Ecrire("Entrez l'operations souhaiter entre : + - / * ")
+
+	cas operateur vaut
+		'+' : debut 
+			Ecrire("somme")
+			Ecrire(n1 + n2) 
+			fin
+	fin cas
+fin
+%
+constante
+	operateur ← '+'
+debut
+	si operateur = '+' alors
+		Ecrire(operateur)
+	fin si
+	
+fin
