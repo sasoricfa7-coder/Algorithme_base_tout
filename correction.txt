@@ -1,4 +1,3 @@
-les fonctions et procedures declarer mais inutilser doit declencher une erreur grave.
 Le nom de l'Algorithme doit être unique dans tout le programme aucune données ne doit avoir ce nom
 Un réel ne peux pas recevoir un entier or moi je le veux.
 

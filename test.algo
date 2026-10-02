@@ -1,7 +1,13 @@
 Algorithme TEST
+procedure TEST()
+debut
+	Ecrire("Bonjour")
+fin
+
 variables
 rayon: reel
 debut
 	Lire(rayon)
 	Ecrire(rayon*2*3.14)
+	TEST()
 fin

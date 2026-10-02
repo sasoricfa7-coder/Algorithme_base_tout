@@ -42,12 +42,20 @@ class TableSymboles:
 
         for nom, symbole in portee_actuelle.items():
             if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau", "fonction", "procedure"):
-                self.erreur(f"Le symbole '{nom}' est déclaré mais jamais utilisé 🚫")
+
+                match symbole.nature:
+                    case "variable": vrai_nom = "La variable"
+                    case "constante": vrai_nom = "La constante"
+                    case "tableau": vrai_nom = "Le tableau"
+                    case "fonction": vrai_nom = "La fonction"
+                    case "procedure": vrai_nom = "La procedure"
+                    case _ : vrai_nom = symbole
+                self.erreur(f"{vrai_nom}  '{nom}' est déclaré mais jamais utilisé 🚫")
         self.pile.pop()
 
     def declarer(self, nom: str, symbole: Symbole) -> None:
         if nom in self.symboles_globaux:
-            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫")
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫 : NB: aucune donnée ne doit avoir le nom de votre algortihme.")
         self.symboles_globaux.add(nom)
         self.pile[-1][nom] = symbole
 
@@ -449,6 +457,7 @@ class AnalyseurSemantique:
                     self.tables.erreur("Les types declarer au niveaux des arguments d'une procédure doivent être respecter à l'appel")
         else:
             self.tables.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
+        symbole.est_utilise = True
 
     def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
