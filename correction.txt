@@ -1,0 +1,3 @@
+# Exo 11: les conditions posent problèmes car obtenir type ne fais pas son travail correctement. : comparaison un seul signe ca va
+mais x * y > 0 ne marche pas.
+voici j'ai du mettre un cas else qui renvoi booleen en attendant.

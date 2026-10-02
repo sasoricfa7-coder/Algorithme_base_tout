@@ -1,0 +1,19 @@
+ALGORITHMES ECHANGE_COND
+VARIABLES
+	X, Y, S, P: ENTIERS
+
+DEBUT
+	ECRIRE("ENTREZ X ET Y")
+	LIRE(X, Y)
+	ECRIRE("X = ", X, " Y = ", Y)
+
+	SI X * Y > 0 ALORS
+		ECRIRE("X = ", Y, " Y = ", X)
+	SINON
+		S ← X + Y
+		P ← X * Y
+		X ← S
+		Y ← p
+		ECRIRE("SOMME = ", X, " PRODUIT = ", Y)
+	FIN SI
+FIN

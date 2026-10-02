@@ -1,25 +1,5 @@
-%algorithmes temps
+Algorithmes bonjour
 
 debut
-	Ecrire("T = ", 56263)
-	Ecrire("H = ", 56263 div 3600)
-	Ecrire("M = ", (56263 mod 3600) div 60)
-	Ecrire("S = ", ((56263 mod 3600) mod 60))
+	ecrire("Bonjour tout le monde.")
 fin
- version stables
-%%J'essai ce cas tordu sur les constantes pour voir jusqu'ou va le langage%
-algorithmes temps
-constantes
-t ← 56263
-z ← t
-variables
-s: entier
-
-debut
-	s ← t + z
-	Ecrire(t)
-	Ecrire(z)
-	Ecrire(s)
-	
-fin
-

@@ -66,6 +66,7 @@ class TableSymboles:
         self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫")
 
     def erreur(self, message: str ="") -> None:
+        message = f"Analyseur_semantique → {message}"
         erreur(message)
 
 @dataclass
@@ -570,9 +571,9 @@ class AnalyseurSemantique:
                     self.tables.erreur(f"La fonction '{expr.nom}' attend {len(symbole.parametres)} argument(s), mais {len(arguments)} ont été fournis.")
             else:
                 self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau appelable.")   
-        
-        
-        
+
+        else: # on doit voir car c'es pas bon ya des bugg qui peuvent nous echaper.
+            return "booleen"     
 
 
 
@@ -626,6 +627,7 @@ class Parseur:
         return False
 
     def erreur(self, message) -> None:
+        message = f"Parseur → {message}"
         erreur(message, self.tokens[self.position]["ligne"])
 
     def fin_de_ligne(self) -> None:

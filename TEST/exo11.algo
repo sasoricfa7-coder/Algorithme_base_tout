@@ -1,0 +1,14 @@
+algorithmes signe
+variables
+	x, y: entiers
+
+debut
+	ecrire("entrez x et y ")
+	lire(x, y)
+
+	si x * y > 0 alors
+		ecrire(x, " et ", y, " sont de même signe.")
+	sinon
+		ecrire(x, " et ", y, " sont de signe contraire.")
+	fin si
+fin
