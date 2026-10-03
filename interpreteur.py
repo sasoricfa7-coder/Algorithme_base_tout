@@ -67,6 +67,18 @@ class Interpreteur:
             return not operande
 
         if isinstance(un_cas, AppelFonction):
+
+            if un_cas.nom == "racine":
+                if len(un_cas.arguments) != 1:
+                    self.env_courant.erreur("La fonction 'racine' prend exactement un argument.")
+                valeur = self.evaluer_expression(un_cas.arguments[0])
+                if not isinstance(valeur, (int, float)):
+                    self.env_courant.erreur("L'argument de 'racine' doit être un nombre.")
+                if valeur < 0:
+                    self.env_courant.erreur("Impossible de calculer la racine carrée d'un nombre négatif.")
+                import math
+                return math.sqrt(valeur)
+        
             noeud: Fonction = self.fonctions[un_cas.nom]
             arguments = []
             valeur_retour = ""
