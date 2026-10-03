@@ -19,7 +19,7 @@ class Interpreteur:
         self.env_global = Environnement() if env_global is None else env_global
         self.env_courant = self.env_global if env_courant is None else env_courant
         self.fonctions: dict[str, Fonction] = fonctions
-        self.procedures: dict[str, Procedure] = procedures
+        self.procedures: dict[str, Procedure] = procedures  
         self.tout_type: dict[str, str] = {}
 
     def interpreter(self, ast: Algorithme) -> None:
@@ -228,21 +228,26 @@ class Interpreteur:
 
         elif isinstance(inst, Cas):
             valeur_cible = self.evaluer_expression(inst.expression)
+            
+            # Récupération du type EVA de la cible (via tout_type ou le type du nœud)
+            type_cible = None
+            if isinstance(inst.expression, Identifiant):
+                type_cible = self.tout_type.get(inst.expression.nom)
+        
             trouve = False
             for branche in inst.branches:
-                if isinstance(inst.expression, Identifiant):
-                    type_nom = self.tout_type.get(inst.expression.nom)
-                    if type_nom == "caractere" and isinstance(branche.valeur, ChaineCaractere):
-                        continue
-                    elif type_nom == "chaine" and isinstance(branche.valeur, Caractere):
-                        continue
-
                 valeur_branche = self.evaluer_expression(branche.valeur)
+                
+                # Vérification optionnelle de sécurité à l'exécution
+                if type_cible == "caractere" and not isinstance(branche.valeur, Caractere):
+                    erreur("Incompatibilité de type à l'exécution : la branche doit être un caractère entre simples quotes ' '.")
+        
                 if valeur_cible == valeur_branche:
                     trouve = True
                     for sub_inst in branche.instructions:
                         self.executer_instruction(sub_inst)
                     break
+        
             if not trouve and inst.sinon:
                 for sub_inst in inst.sinon:
                     self.executer_instruction(sub_inst)

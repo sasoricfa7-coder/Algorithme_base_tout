@@ -396,12 +396,14 @@ class AnalyseurSemantique:
 
     def visiter_branche_cas(self, type_: str, une_branche: BrancheCas) -> None:
         type_branche = self.obtenir_type_expression(une_branche.valeur)
+        
+        # Interdiction stricte : un 'caractere' ne peut pas être comparé à une 'chaine' "A"
         if type_ != type_branche:
             self.tables.erreur(
                 f"Incompatibilité de type dans la structure 'cas' : "
-                f"l'expression cible est de type '{type_}' mais la branche propose une valeur de type '{type_branche}' 🚫"
+                f"l'expression cible est de type '{type_}', mais la branche propose une valeur de type '{type_branche}' 🚫"
             )
-
+    
         self.appel_instruction(une_branche.instructions)
 
     def appel_instruction(self, grande_instruction: list[Instruction]) -> None:
@@ -471,43 +473,68 @@ class AnalyseurSemantique:
             self.tables.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
         symbole.est_utilise = True
 
-    def obtenir_type_expression(self, expr: Expression, est_tableau: bool = False) -> str:
-        if not est_tableau:
-            if isinstance(expr, Nombre):
-                return "entier" if isinstance(expr.valeur, int) else "reel"
-            elif isinstance(expr, Caractere):
-                return "caractere"
-            elif isinstance(expr, ChaineCaractere):
-                return "chaine"
-            elif isinstance(expr, Booleen):
+    def obtenir_type_expression(self, expr: Expression) -> str:
+        if isinstance(expr, Nombre):
+            return "entier" if isinstance(expr.valeur, int) else "reel"
+        elif isinstance(expr, Caractere):
+            return "caractere"
+        elif isinstance(expr, ChaineCaractere):
+            return "chaine"
+        elif isinstance(expr, Booleen):
+            return "booleen"
+        elif isinstance(expr, Identifiant):
+            symbole = self.tables.rechercher(expr.nom)
+            if not symbole.est_initialise:
+                self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫")
+            symbole.est_utilise = True
+            return symbole.type
+        elif isinstance(expr, Indexation):
+            symbole = self.tables.rechercher(expr.nom)
+            if not symbole.est_initialise:
+                self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫")
+            symbole.est_utilise = True
+            for indice in expr.indices:
+                if self.obtenir_type_expression(indice) != "entier":
+                    self.tables.erreur("L'indice d'un tableau doit être un entier.")
+            return symbole.type
+        elif isinstance(expr, AppelFonction):
+            if expr.nom == "racine":
+                if len(expr.arguments) != 1:
+                    self.tables.erreur("La fonction 'racine' prend exactement un argument.")
+                type_arg = self.obtenir_type_expression(expr.arguments[0])
+                if type_arg not in ("entier", "reel"):
+                    self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.")
+                return "reel"
+            symbole = self.tables.rechercher(expr.nom)
+            symbole.est_utilise = True
+            return symbole.type
+        elif isinstance(expr, OperationBinaire):
+            type_g = self.obtenir_type_expression(expr.gauche)
+            type_d = self.obtenir_type_expression(expr.droite)
+            
+            if expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
                 return "booleen"
-            elif isinstance(expr, (Identifiant, Indexation, AppelFonction)):
-                return "inconnu"
-            elif isinstance(expr, OperationBinaire):
-                if expr.operateur in ("=", "<>", "<", ">", "<=", ">=", "et", "ou"):
-                    return "booleen"
-                type_g = self.obtenir_type_expression(expr.gauche)
-                type_d = self.obtenir_type_expression(expr.droite)
-                if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
-                    return "reel" if "reel" in (type_g, type_d) or expr.operateur == "/" else "entier"
-                return "inconnu"
-            elif isinstance(expr, OperationUnaire):
-                if expr.operateur == "non":
-                    return "booleen"
-                return self.obtenir_type_expression(expr.operande)
-            else:
-                return "inconnu"
-        else:
-            if isinstance(expr, list) and len(expr) > 0:
-                premier_type = self.obtenir_type_expression(expr[0])
-                for element in expr:
-                    type_elem = self.obtenir_type_expression(element)
-                    if type_elem != "inconnu" and premier_type != "inconnu" and type_elem != premier_type:
-                        self.erreur("Tous les éléments d'un tableau doivent avoir le même type.")
-                return premier_type if premier_type != "inconnu" else "entier"
-            self.erreur("Tableau vide ou mal formé.")
-
-
+            elif expr.operateur in ("et", "ou"):
+                if type_g != "booleen" or type_d != "booleen":
+                    self.tables.erreur(f"Les opérateurs 'et'/'ou' exigent des booléens, pas '{type_g}' et '{type_d}'.")
+                return "booleen"
+            elif expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
+                if expr.operateur == "/":
+                    return "reel"
+                if expr.operateur in ("div", "mod"):
+                    if type_g != "entier" or type_d != "entier":
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux entiers.")
+                    return "entier"
+                return "reel" if "reel" in (type_g, type_d) else "entier"
+        elif isinstance(expr, OperationUnaire):
+            type_op = self.obtenir_type_expression(expr.operande)
+            if expr.operateur == "non":
+                if type_op != "booleen":
+                    self.tables.erreur("L'opérateur 'non' s'applique uniquement à un booléen.")
+                return "booleen"
+            return type_op
+        
+        self.tables.erreur("Inconnu")
 
 
 
@@ -901,7 +928,7 @@ class Parseur:
         self.consommer("PAREN_FERMANT")
         return les_arguments
 
-    def obtenir_type_expression(self, expr: Expression) -> str:
+def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
         elif isinstance(expr, Caractere):
