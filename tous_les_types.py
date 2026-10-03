@@ -895,6 +895,12 @@ class Parseur:
         corps: list[Instruction] = []
         if self.token_courant()["valeur"] == "debut" :
             corps = self.parse_corps()
+            if len(corps) < 2:
+                self.erreur(
+                    "Utilisation inutile de 'debut ... fin' : "
+                    "un bloc 'debut ... fin' dans un cas doit contenir au moins 2 instructions. "
+                    "Pour une seule instruction, écrivez-la directement sur la ligne."
+                )
         else :
             corps = [self.parse_instruction()]
             self.fin_de_ligne()
