@@ -268,17 +268,21 @@ class AnalyseurSemantique:
             self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
 
         if symbole.nature == "procedure":
-            self.tables.erreur(f"On ne peut pas affecter une procedure vu qu'elle ne retourne rien. {symbole.nom} ")
+            self.tables.erreur(f"On ne peut pas affecter une procedure vu qu'elle ne retourne rien : {symbole.nom}")
 
         if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
-            self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un un conseil utiliser une boucle.")
+            self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un.")
 
-        if symbole.est_constante :
-            self.tables.erreur("Une constante est immuable donc par consequent affectation impossible.")
+        if symbole.est_constante:
+            self.tables.erreur("Une constante est immuable donc par conséquent affectation impossible.")
+
+        # ✅ Interdiction de l'affectation d'une variable à elle-même (ex: x <- x)
+        if isinstance(instruction.cible, Identifiant) and isinstance(instruction.valeur, Identifiant):
+            if instruction.cible.nom == instruction.valeur.nom:
+                self.tables.erreur(f"Réaffectation d'une variable à elle-même interdite : '{instruction.cible.nom} <- {instruction.valeur.nom}' n'a pas de sens 🚫")
 
         type_affecte = self.obtenir_type_expression(instruction.valeur)
         if symbole.type != type_affecte:
-            # ✅ Règle : Un Entier peut être affecté dans un Réel, mais pas l'inverse.
             if not (symbole.type == "reel" and type_affecte == "entier"):
                 self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{symbole.type}'.")
 
@@ -291,7 +295,7 @@ class AnalyseurSemantique:
             if len(instruction.cible.indices) != symbole.nb_dimensions:
                 self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
 
-            for indice in instruction.cible.indices :
+            for indice in instruction.cible.indices:
                 if self.obtenir_type_expression(indice) != "entier":
                     self.tables.erreur("L'indice d'un tableau doit être de type entier.")
 
@@ -474,7 +478,6 @@ class AnalyseurSemantique:
             return "booleen"
 
         if isinstance(expr, Identifiant):
-            # C'est ici qu'on s'assure que la variable existe !
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
                 self.tables.erreur(f"La variable '{expr.nom}' est lue avant d'avoir été initialisée ! 🚫")
@@ -502,13 +505,14 @@ class AnalyseurSemantique:
             type_gauche: str = self.obtenir_type_expression(expr.gauche)
             type_droite: str = self.obtenir_type_expression(expr.droite)
 
+            # Opérateurs arithmétiques
             if expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
-                if expr.operateur in ("/", "div", "mod") and isinstance(expr.droite, Nombre) and (expr.droite.valeur == 0 or expr.droite.valeur == 0.0):
+                if expr.operateur in ("/", "div", "mod") and isinstance(expr.droite, Nombre) and (expr.droite.valeur in (0, 0.0)):
                     self.tables.erreur("Division par zéro détectée avant compilation")
 
                 if expr.operateur in ("div", "mod"):
                     if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
-                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des entiers, pas '{type_gauche}' et '{type_droite}'.")
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige des nombres, pas '{type_gauche}' et '{type_droite}'.")
                     return "entier"
 
                 if expr.operateur == "/":
@@ -516,32 +520,49 @@ class AnalyseurSemantique:
                         self.tables.erreur(f"L'opérateur '/' exige des types numériques, pas '{type_gauche}' et '{type_droite}'.")
                     return "reel"
 
-                if type_gauche == "reel" or type_droite == "reel":
-                    if type_gauche not in ("entier", "reel") or type_droite not in ("entier", "reel"):
-                        self.tables.erreur("Opération arithmétique impossible sur des types non numériques.")
-                    return "reel"
-                elif type_gauche == "entier" and type_droite == "entier":
-                    return "entier"
+                if type_gauche in ("entier", "reel") and type_droite in ("entier", "reel"):
+                    return "reel" if (type_gauche == "reel" or type_droite == "reel") else "entier"
                 else:
-                    self.tables.erreur("Opération incohérente et non supportée par le langage.")
-        
+                    self.tables.erreur(f"Opération arithmétique impossible entre '{type_gauche}' et '{type_droite}'.")
+
+            # Opérateurs de comparaison
+            elif expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
+                if type_gauche in ("entier", "reel") and type_droite in ("entier", "reel"):
+                    return "booleen"
+                elif type_gauche == type_droite:
+                    return "booleen"
+                else:
+                    self.tables.erreur(f"Comparaison impossible entre le type '{type_gauche}' et le type '{type_droite}'.")
+
+            # Opérateurs logiques
+            elif expr.operateur in ("et", "ou"):
+                if type_gauche != "booleen" or type_droite != "booleen":
+                    self.tables.erreur(f"L'opérateur logique '{expr.operateur}' exige des booléens, pas '{type_gauche}' et '{type_droite}'.")
+                return "booleen"
+
         if isinstance(expr, OperationUnaire):
             type_operande: str = self.obtenir_type_expression(expr.operande)
-            operateur: str = expr.operateur
-
-            if operateur == "non":
+            if expr.operateur == "non":
                 if type_operande != "booleen":
-                    self.tables.erreur(f"L'opérateur 'non' requiert un booleen, pas un '{type_operande}' 🚫")
+                    self.tables.erreur(f"L'opérateur 'non' requiert un booléen, pas '{type_operande}' 🚫")
                 return "booleen"
             elif type_operande in ("entier", "reel"):
-                return "entier" if type_operande == "entier" else "reel"
-            self.tables.erreur(f"Type d'expression non pris en charge ou invalide : {type(expr).__name__}")
+                return type_operande
+            self.tables.erreur(f"Type d'expression non pris en charge : {type(expr).__name__}")
 
         if isinstance(expr, AppelFonction):
+            # ✅ Fonction prédéfinie racine(...)
+            if expr.nom == "racine":
+                if len(expr.arguments) != 1:
+                    self.tables.erreur("La fonction 'racine' attend exactement 1 argument.")
+                arg_type = self.obtenir_type_expression(expr.arguments[0])
+                if arg_type not in ("entier", "reel"):
+                    self.tables.erreur(f"La fonction 'racine' attend un nombre (entier ou réel), pas un '{arg_type}'.")
+                return "reel"
+
             symbole: Symbole = self.tables.rechercher(expr.nom)
             symbole.est_utilise = True
             
-            # Cas 1 : C'est en fait un tableau
             if symbole.nature == "tableau":
                 if len(expr.arguments) != symbole.nb_dimensions:
                     self.tables.erreur(f"Le tableau '{expr.nom}' attend {symbole.nb_dimensions} dimension(s).")
@@ -555,26 +576,21 @@ class AnalyseurSemantique:
                 return symbole.type
 
             elif symbole.nature == "procedure":
-                self.tables.erreur(f"Impossible d'utiliser la procédure '{expr.nom}' dans une expression car elle ne retourne aucune valeur.")
+                self.tables.erreur(f"Impossible d'utiliser la procédure '{expr.nom}' dans une expression.")
 
-            # Cas 2 : C'est bien une fonction
             elif symbole.nature == "fonction":
-                arguments: list = []
-                for element in expr.arguments:
-                    arguments.append(self.obtenir_type_expression(element))
+                arguments = [self.obtenir_type_expression(arg) for arg in expr.arguments]
                 if len(arguments) == len(symbole.parametres):
-                    for i, j in zip(arguments, symbole.parametres):
-                        if i != j:
-                            self.tables.erreur(f"Erreur de type dans l'appel de '{expr.nom}' : attendu {j}, reçu {i}.")
+                    for arg_t, param_t in zip(arguments, symbole.parametres):
+                        if arg_t != param_t and not (param_t == "reel" and arg_t == "entier"):
+                            self.tables.erreur(f"Erreur de type dans l'appel de '{expr.nom}' : attendu {param_t}, reçu {arg_t}.")
                     return symbole.type
                 else:
                     self.tables.erreur(f"La fonction '{expr.nom}' attend {len(symbole.parametres)} argument(s), mais {len(arguments)} ont été fournis.")
             else:
-                self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau appelable.")   
+                self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau appelable.")
 
-        else: # on doit voir car c'es pas bon ya des bugg qui peuvent nous echaper.
-            return "booleen"     
-
+        self.tables.erreur(f"Expression non reconnue ou invalide : {expr}")
 
 
 
