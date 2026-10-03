@@ -1,0 +1,16 @@
+ALGORITHMES TEST
+VARIABLES
+	X, f, i: entier
+DEBUT
+	repeter
+		Ecrire("Entrez un nombre strictement superieur à 0")
+		Lire(X)
+	jusqu'a x >= 0
+
+	f ← 1
+	pour i ← 1 à x pas 1 faire
+		Ecrire("boucle") %Ici je veux voir si dans le cas ou x ← 0 la boucle s'execute.%
+		f ← f * i
+	fin pour
+	Ecrire(f)
+FIN

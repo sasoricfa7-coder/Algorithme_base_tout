@@ -1,0 +1,14 @@
+Algorithme nombre_impaire
+variables
+	x, i: entier
+	s: réel
+debut
+	Ecrire("Entrez x")
+	lire(x)
+
+	s ← 0
+	pour i ← 1 à x pas 2 faire
+		s ← s + i^2
+	fin pour
+	Ecrire(s)
+fin

@@ -1,0 +1,12 @@
+ALGORITHMES TEST
+VARIABLES
+	X, I: entier
+	s: réel
+DEBUT
+	LIRE(X)
+	S ← 0
+	POUR I ← 1 A x PAS 1 FAIRE
+		S ← S + 1/I
+	FIN POUR
+	ECRIRE(S)
+FIN

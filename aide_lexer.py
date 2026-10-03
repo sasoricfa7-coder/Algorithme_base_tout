@@ -103,8 +103,11 @@ def numerique(ligne: int, index: int, code_source: str, token: list[Token]) -> t
     point_utiliser: bool = False
 
     while (index_Error(code_source, index)
-           and (code_source[index].isdigit() or (code_source[index] == "." and not point_utiliser))
+           and (code_source[index].isdigit() or code_source[index] == "_" or (code_source[index] == "." and not point_utiliser))
            and code_source[index] != "\n"):
+        if code_source[index] == "_":
+            index += 1
+            continue
         if code_source[index] == ".":
             point_utiliser = True
         index += 1
@@ -113,7 +116,15 @@ def numerique(ligne: int, index: int, code_source: str, token: list[Token]) -> t
         aide_remonter(index, code_source, ligne,
                       "Les nombres doivent être des entiers ou réels sur une seule ligne // Numbers must be integers or reals on a single line 🔢")
 
-    valeur = int(code_source[depart:index]) if not point_utiliser else float(code_source[depart:index])
+    try:
+        valeur = int(code_source[depart:index]) if not point_utiliser else float(code_source[depart:index])
+    except Exception as e:
+        aide_remonter(
+            index,
+            code_source,
+            ligne,
+            "Le nombre est mal former"
+        )
     token_append("NOMBRE", valeur, ligne, token)
     return ligne, index
 

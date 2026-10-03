@@ -1,0 +1,18 @@
+algorithmes somme_verser
+variables
+	age, somme, i: entier
+constantes
+	verser ← 500
+
+debut
+	Ecrire("Entrez votre age")
+	lire(age)
+
+	somme ← 0
+	pour i ← 1 à age pas 1 faire
+		somme ← somme + verser + 3 * i
+		Ecrire(i, " ans → ", verser + 3 * i)
+	fin pour
+
+	Ecrire("somme = ", somme)
+fin

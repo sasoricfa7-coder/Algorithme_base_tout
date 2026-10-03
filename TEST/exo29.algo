@@ -1,0 +1,27 @@
+Algorithme calcul_population
+constantes
+	population_marakech ← 1_000_000
+	CM ← 50_000 %CM : croissance de la ville de Marakech%
+	population_agadir ← 500_000
+variables
+	CA, PM, PA, nombre_annee: entier 
+%
+	CA : croissance de la ville de Agadir,
+	PM : Population du marakech, 
+	PA : Population d'Agadir
+%
+debut
+	PM ← population_marakech
+	PA ← population_agadir
+	nombre_annee ← 0
+
+	Tant que PA < PM faire
+		PM ← PM + CM
+		CA ← PA * 8 div 100
+		PA ← PA + CA
+		nombre_annee ← nombre_annee + 1
+	Fin tant que
+
+	Ecrire("Dans ", nombre_annee, " ans : ")
+	Ecrire("La population d'Agadir ", PA, " habitants, dépassera celle de Marakech ", PM, "habitants.")
+fin

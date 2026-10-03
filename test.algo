@@ -1,4 +1,7 @@
 Algorithme TEST
+variables
+	n: entier
 debut
-	Ecrire(%Premier Hello wordl% "Bonjour tout le monde.")
+	lire(n)
+	Ecrire(n)
 fin
