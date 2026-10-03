@@ -1,14 +1,1 @@
-# Exo 11: les conditions posent problèmes car obtenir type ne fais pas son travail correctement. : comparaison un seul signe ca va
-mais x * y > 0 ne marche pas.
-voici j'ai du mettre un cas else qui renvoi booleen en attendant.
-# c'est bizare je me demande si c'est une bonne chose ou pas :  mais une simple affectation on va dire que la variables est inutiliser. Est ce bien 
-ou pas ?? 
-# Exo 16 j'étais bloque car je ne pouvais pas faire la racine. Mais voici la syntaxe : racine(expression)
-# Interdir la réaffectation d'une variable à elle même car ca n'a pas de sens : ca peut être un oubli donc vaut mieux ne même pas laisser passer.
-# J'ai utiliser cas pour voir la correspondance d'un caractère à "A" et ca marcher or moi je ne le veux pas car "" c'est pour les chaines de 
-caractère
-# EXO 19 regarde un cas tordu de commentaire ca pose pas problèm car le lexer ne le transmet pas au parseur. je me demande si c'est 
-bien ou pas.
-# Au niveau du cas pour une seule instruction en ligne on ecrit direct mais pour plusieurs on encadre : debut ... fin.
-avec debut ... fin il faut obligatoirement au moins 2 instruction sinon ca ne s'execute même pas.
- # Exo 20 la comparaison avec un signe comme les operateurs arithmetique est mal supporter par le langage : erreur interne.
+# Exo 20 : voici ca pareil est faux : si x = -(-x)

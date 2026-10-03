@@ -16,8 +16,8 @@ debut
 		si d = 0 alors
 			s0 ← (-b) / 2 * z
 		sinon
-			s1 ← (-b - d) / 2 * z %Ne pouvant pas faire racine donc je l'ai laisser tomber.% 
-			s2 ← (-b + d) / 2 * z
+			s1 ← (-b - racine(d)) / 2 * z %Ne pouvant pas faire racine donc je l'ai laisser tomber.% 
+			s2 ← (-b + racine(d)) / 2 * z
 		fin si
 	fin si
 	Ecrire("S0 = ", s0)

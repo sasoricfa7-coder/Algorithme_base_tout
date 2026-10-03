@@ -1,5 +1,4 @@
-Algorithmes bonjour
-
+Algorithme TEST
 debut
-	ecrire("Bonjour tout le monde.")
+	Ecrire(%Premier Hello wordl% "Bonjour tout le monde.")
 fin

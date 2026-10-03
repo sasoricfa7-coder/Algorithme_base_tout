@@ -928,7 +928,7 @@ class Parseur:
         self.consommer("PAREN_FERMANT")
         return les_arguments
 
-def obtenir_type_expression(self, expr: Expression) -> str:
+    def obtenir_type_expression(self, expr: Expression) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
         elif isinstance(expr, Caractere):
@@ -999,6 +999,7 @@ def obtenir_type_expression(self, expr: Expression) -> str:
 
     def parse_expression(self) -> Expression:
         return self.parse_ou_expr()
+
     def parse_ou_expr(self) :
         gauche: Expression = self.parse_et_expr()
         

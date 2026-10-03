@@ -1,0 +1,12 @@
+algorithmes dix_prochains_nombres
+variables
+	x, i: entier
+
+debut
+	Ecrire("Entrez x")
+	Lire(X)
+
+	pour i ← x+1 à x+10 pas 1 faire
+		Ecrire(i)
+	fin pour
+fin

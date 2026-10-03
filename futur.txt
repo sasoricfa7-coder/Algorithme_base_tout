@@ -1,1 +1,5 @@
 revoir le mot clé à pour la boucle pour car son utilisation est fréquente donc si le langage savais faire la différence ca aiderait beaucoup.
+revoir la syntaxe des fonctions et procedure pour se rapprocher de Hassan El Bahi à 100%
+Et pour le cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
+Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais
+← sera egale à <-- mais dès le lexer il va les remplacer par ca ←
