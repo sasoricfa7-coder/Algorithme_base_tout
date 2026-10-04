@@ -1,7 +1,11 @@
 Algorithme TEST
 variables
-	n: entier
+	x: entier
 debut
-	n ← 1000000
-	Ecrire(n)
+	lire(x)
+	si -x = x alors
+		x ← 0
+	fin si
+
+	Ecrire(x)
 fin

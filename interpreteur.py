@@ -264,16 +264,18 @@ class Interpreteur:
             val_fin = self.evaluer_expression(inst.fin)
             val_pas = self.evaluer_expression(inst.pas)
 
+            if val_pas <= 0:
+                erreur(f"Le pas d'une boucle 'pour' doit être strictement positif (reçu : {val_pas})")
+            if val_debut > val_fin:
+                erreur(f"Boucle 'pour' impossible : début ({val_debut}) > fin ({val_fin}). La boucle ne s'exécutera jamais")
+
             self.env_courant.definir(nom_indice, val_debut)
 
-            if val_pas > 0:
-                while self.env_courant.obtenir(nom_indice) <= val_fin:
-                    for sub_inst in inst.corps:
-                        self.executer_instruction(sub_inst)
-                    courant = self.env_courant.obtenir(nom_indice)
-                    self.env_courant.modifier(nom_indice, courant + val_pas)
-            elif val_pas < 0:
-                erreur("Dans la boucle pour, le pas doit être toujours positif")
+            while self.env_courant.obtenir(nom_indice) <= val_fin:
+                for sub_inst in inst.corps:
+                    self.executer_instruction(sub_inst)
+                courant = self.env_courant.obtenir(nom_indice)
+                self.env_courant.modifier(nom_indice, courant + val_pas)
 
         elif isinstance(inst, TantQue):
             while self.evaluer_expression(inst.condition):

@@ -321,11 +321,49 @@ class AnalyseurSemantique:
 
             symbole.est_initialise = True
 
+    def simplifier(self, expr: Expression) -> Expression:
+        if isinstance(expr, OperationUnaire):
+            if expr.operateur == "+":
+                return self.simplifier(expr.operande)
+
+            if expr.operateur == "-" and isinstance(expr.operande, OperationUnaire) and expr.operande.operateur == "-":
+                return self.simplifier(expr.operande.operande)
+
+            if expr.operateur == "-" and isinstance(expr.operande, OperationUnaire):
+                return self.simplifier(expr.operande)
+
+            return OperationUnaire(expr.operateur, self.simplifier(expr.operande))
+
+        if isinstance(expr, OperationBinaire):
+            return OperationBinaire(expr.operateur, self.simplifier(expr.gauche), self.simplifier(expr.droite))
+
+        return expr
+
+    def est_tautologie(self, condition) -> bool:
+        if not isinstance(condition, OperationBinaire):
+            return False
+        if condition.operateur not in ("=", "<=", ">=", "<", ">", "<>"):
+            return False
+
+        if condition.operateur in ("=", "<=", ">=", "<", ">", "<>"):
+            gauche_simplifier = self.simplifier(condition.gauche)
+            droite_simplifier = self.simplifier(condition.droite)
+
+            if droite_simplifier == gauche_simplifier:
+                return True
+
+        return False
+
+    def verifier_pas_tautologie(self, condition):
+        if self.est_tautologie(condition) :
+            self.tables.erreur("Comparaison tautologique détectée : les deux côtés sont identiques 🚫")
+            
 
     def visiter_si(self, instruction: Si) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
             self.tables.erreur("Une condition doit toujours produire un booleen")
 
+        self.verifier_pas_tautologie(instruction.condition)
         # Sauvegarde des états d'initialisation avant le bloc Si
         etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
 
@@ -355,6 +393,7 @@ class AnalyseurSemantique:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
             self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
 
+        self.verifier_pas_tautologie(instruction.condition)
         # Sauvegarde de l'état (la boucle pouvant s'exécuter 0 fois)
         etat_initial = {nom: sym.est_initialise for nom, sym in self.tables.pile[-1].items()}
 
@@ -377,6 +416,13 @@ class AnalyseurSemantique:
         type_debut = self.obtenir_type_expression(instruction.debut)
         type_fin = self.obtenir_type_expression(instruction.fin)
         type_pas = self.obtenir_type_expression(instruction.pas)
+
+        if isinstance(instruction.pas, Nombre) and instruction.pas.valeur <= 0:
+            self.tables.erreur("Le pas d'une boucle 'pour' doit être strictement positif // The 'pour' loop step must be strictly positive 🚫") 
+
+        if isinstance(instruction.debut, Nombre) and isinstance(instruction.fin, Nombre):
+            if not (instruction.debut.valeur <= instruction.fin.valeur):
+                self.tables.erreur("Boucle 'pour' impossible : début > fin, la boucle ne s'exécutera jamais // Impossible 'pour' loop: start > end, loop will never run 🚫")
 
         if type_debut != "entier" or type_fin != "entier" or type_pas != "entier":
             self.tables.erreur("Les bornes (début, fin) et le pas d'une boucle 'pour' doivent tous être de type entier. 🚫")
@@ -456,6 +502,8 @@ class AnalyseurSemantique:
         self.appel_instruction(instruction.corps)
         if self.obtenir_type_expression(instruction.condition) != "booleen" :
             self.tables.erreur("Une condition doit toujours donner un booléen.")
+
+        self.verifier_pas_tautologie(instruction.condition)
 
     def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.nom)
