@@ -19,7 +19,7 @@ class Interpreteur:
         self.env_global = Environnement() if env_global is None else env_global
         self.env_courant = self.env_global if env_courant is None else env_courant
         self.fonctions: dict[str, Fonction] = fonctions
-        self.procedures: dict[str, Procedure] = procedures
+        self.procedures: dict[str, Procedure] = procedures  
         self.tout_type: dict[str, str] = {}
 
     def interpreter(self, ast: Algorithme) -> None:
@@ -46,10 +46,9 @@ class Interpreteur:
         print()
 
     def evaluer_expression(self, un_cas):
-        if isinstance(un_cas, Nombre) or isinstance(un_cas, ChaineCaractere) or isinstance(un_cas, Caractere) or isinstance(un_cas, Booleen):
+        if isinstance(un_cas, (Nombre, ChaineCaractere, Caractere, Booleen)):
             if isinstance(un_cas, Booleen):
-                retour = False if un_cas.valeur=="faux" else True
-                return retour
+                return False if un_cas.valeur == "faux" or un_cas.valeur is False else True
             return un_cas.valeur
 
         if isinstance(un_cas, Identifiant):
@@ -63,10 +62,25 @@ class Interpreteur:
         if isinstance(un_cas, OperationUnaire):
             operande = self.evaluer_expression(un_cas.operande)
             if un_cas.operateur == "-":
-                return -1 * operande
+                return -operande
+            elif un_cas.operateur == "+":
+                return operande
+            elif un_cas.operateur == "non":
+                return not operande
             return not operande
 
         if isinstance(un_cas, AppelFonction):
+            if un_cas.nom == "racine":
+                if len(un_cas.arguments) != 1:
+                    erreur("La fonction 'racine' prend exactement un argument.")
+                valeur = self.evaluer_expression(un_cas.arguments[0])
+                if not isinstance(valeur, (int, float)):
+                    erreur("L'argument de 'racine' doit être un nombre.")
+                if valeur < 0:
+                    erreur("Impossible de calculer la racine carrée d'un nombre négatif.")
+                import math
+                return math.sqrt(valeur)
+        
             noeud: Fonction = self.fonctions[un_cas.nom]
             arguments = []
             valeur_retour = ""
@@ -94,13 +108,13 @@ class Interpreteur:
             tableau = self.env_courant.obtenir(un_cas.nom)
             indices = self.evaluer_expression(un_cas.indices[0])
             if not isinstance(indices, int):
-                self.env_courant.erreur(f"{un_cas.nom} : les indices d'un tableaux doivent toujours être des entiers.")
+                erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
             return tableau[indices]
 
     def operation_binaire(self, gauche, droite, operateur):
         def verifie_zero(droite) -> None:
             if droite == 0 or droite == 0.0:
-                self.env_courant.erreur("Division par zero detecter à l'execution")
+                erreur("Division par zéro détectée à l'exécution")
         match operateur:
             case "+": resultat = gauche + droite
             case "-": resultat = gauche - droite
@@ -137,7 +151,7 @@ class Interpreteur:
 
         if isinstance(inst, DeclarationConstante):
             self.tout_type[inst.nom] = inst.type
-            self.env_courant.definir(inst.nom, inst.valeur)
+            self.env_courant.definir(inst.nom, self.evaluer_expression(inst.valeur))
 
         elif isinstance(inst, DeclarationVariable):
             self.tout_type[inst.nom] = inst.type
@@ -176,25 +190,24 @@ class Interpreteur:
                 saisie = input()
                 
                 match self.tout_type[nom]:
-                    case "entier": 
-                        for i in saisie:
-                            if not i.isdigit():
-                                self.env_courant.erreur(f"{nom} est un entier et ne peut pas recevoir {saisie}")
-                        saisie = int(saisie)
+
+                    case "entier":
+                        try:
+                            saisie = int(saisie)
+                        except ValueError:
+                            erreur(f"{nom} est un entier et ne peut pas recevoir '{saisie}'")
+
                     case "reel":
-                        valide: int = 0
-                        for i in saisie:
-                            if i == ".":
-                                valide += 1
-                                continue
-                            if not i.isdigit() or valide > 1:
-                                self.env_courant.erreur(f"{nom} est un reel et ne peut pas recevoir {saisie}")
-                        saisie = float(saisie)
+                        try:
+                            saisie = float(saisie)
+                        except ValueError:
+                            erreur(f"{nom} est un réel et ne peut pas recevoir '{saisie}'")
+
                     case "booleen":
-                        self.env_courant.erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
+                        erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
                     case "caractere":
                         if len(saisie) != 1:
-                            self.env_courant.erreur(f"{nom} est un caractère et ne peut recevoir qu'un seul élément")
+                            erreur(f"{nom} est un caractère et ne peut recevoir qu'un seul élément")
         
                 if isinstance(cible, Identifiant):
                     self.env_courant.modifier(nom, saisie)
@@ -215,14 +228,26 @@ class Interpreteur:
 
         elif isinstance(inst, Cas):
             valeur_cible = self.evaluer_expression(inst.expression)
+            
+            # Récupération du type EVA de la cible (via tout_type ou le type du nœud)
+            type_cible = None
+            if isinstance(inst.expression, Identifiant):
+                type_cible = self.tout_type.get(inst.expression.nom)
+        
             trouve = False
             for branche in inst.branches:
                 valeur_branche = self.evaluer_expression(branche.valeur)
+                
+                # Vérification optionnelle de sécurité à l'exécution
+                if type_cible == "caractere" and not isinstance(branche.valeur, Caractere):
+                    erreur("Incompatibilité de type à l'exécution : la branche doit être un caractère entre simples quotes ' '.")
+        
                 if valeur_cible == valeur_branche:
                     trouve = True
                     for sub_inst in branche.instructions:
                         self.executer_instruction(sub_inst)
                     break
+        
             if not trouve and inst.sinon:
                 for sub_inst in inst.sinon:
                     self.executer_instruction(sub_inst)
@@ -242,7 +267,7 @@ class Interpreteur:
                     courant = self.env_courant.obtenir(nom_indice)
                     self.env_courant.modifier(nom_indice, courant + val_pas)
             elif val_pas < 0:
-                self.env_courant.erreur("dans la boucle pour le pas doit être toujours positif")
+                erreur("Dans la boucle pour, le pas doit être toujours positif")
 
         elif isinstance(inst, TantQue):
             while self.evaluer_expression(inst.condition):
@@ -278,7 +303,6 @@ class Interpreteur:
                 self.executer_instruction(sub_inst)
 
             self.env_courant = ancien_env
-                            
                                 
 
         

@@ -1,8 +1,13 @@
-les fonctions et procedures declarer mais inutilser doit declencher une erreur grave.
-Le nom de l'Algorithme doit être unique dans tout le programme aucune données ne doit avoir ce nom
-Un réel ne peux pas recevoir un entier or moi je le veux.
+# Exo 20 : voici ca pareil est faux : si x = -(-x)
+#Exo 25 : voici un exemple simple : 
+repeter
+lire(x)
+jusqu'a x > 0
 
-# L'exo 5 l'utilisateur ne peux pas entrer un nombre précédé d'un signe
-# L'exo 7 a bugger carrement : et du à une erreur interne
-# L'exo 10 j'ai voulu tester la resistence en commentaire. car deux blocs bien delimitté le langage refuse or c'est bon.
-# J'ai tordu tellement le cas 10 comme declarer 2 constantes et données à la deuxième la valeur de la première constante
+ca pareil ne doit pas compiler car x est inutiliser alors que actu ca marche.
+
+#Exo 25 : 
+pour i ← 1 à 0 pas 1 faire
+je me dis que ça ne dois même pas compiler car c'est source de bug mais actu la boucle est ignorer siplement mais c'est dangereux pour nous.
+
+# J'ai deja gerer la cas dans le code _ pour separer les chiffres. mais je veux qu'a l'affichage ca soit formater c'est plus facile.

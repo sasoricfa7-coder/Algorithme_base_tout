@@ -40,9 +40,15 @@ class Interpreteur:
             valeur = False if valeur=="faux" else True
         self.env_courant.definir(nom, valeur)
 
+    def formater(self, valeur: int | float) -> int | float:
+        return f"{valeur:_}"
+
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
-            print(self.evaluer_expression(arg), end="")
+            valeur = self.evaluer_expression(arg)
+            if isinstance(valeur, (int, float)):
+                valeur = self.formater(valeur)
+            print(valeur, end="")
         print()
 
     def evaluer_expression(self, un_cas):

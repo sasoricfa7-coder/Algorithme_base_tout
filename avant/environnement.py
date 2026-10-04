@@ -9,6 +9,7 @@ class Environnement:
     parent: Environnement | None = None
 
     def erreur(self, message: str=""):
+        message = f"Interpréteur → {message}"
         erreur(message)
 
     def definir(self, nom: str, valeur) -> None:
