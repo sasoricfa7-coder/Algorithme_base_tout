@@ -2,6 +2,6 @@ Algorithme TEST
 variables
 	n: entier
 debut
-	lire(n)
+	N ← -1 - (-(-3))
 	Ecrire(n)
 fin
