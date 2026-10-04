@@ -1,11 +1,11 @@
 Algorithme TEST
 variables
-	x: entier
+	x, y: entier
 debut
-	lire(x)
-	si -x = x alors
-		x ← 0
-	fin si
-
-	Ecrire(x)
+Lire(x)
+Lire(x)
+si x > 0 alors
+    y ← x
+    Ecrire(y)
+fin si
 fin

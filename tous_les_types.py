@@ -27,6 +27,8 @@ class Symbole:
     est_initialise: bool = False
     est_utilise: bool = False
     est_verrouille: bool = False
+    est_lu: bool = False
+    est_consomme: bool = False
     dimensions_statiques: list[int] = field(default_factory=list)
 
 @dataclass
@@ -41,6 +43,9 @@ class TableSymboles:
         portee_actuelle: dict = self.pile[-1]
 
         for nom, symbole in portee_actuelle.items():
+            if symbole.nature == "variable" and symbole.est_lu and not symbole.est_consomme:
+                self.erreur(f"La variable '{nom}' est lue mais sa valeur n'est jamais exploitée 🚫")
+        
             if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau", "fonction", "procedure"):
 
                 match symbole.nature:
@@ -320,6 +325,7 @@ class AnalyseurSemantique:
                     self.obtenir_type_expression(args)
 
             symbole.est_initialise = True
+            symbole.est_lu = True
 
     def simplifier(self, expr: Expression) -> Expression:
         if isinstance(expr, OperationUnaire):
@@ -360,7 +366,7 @@ class AnalyseurSemantique:
             
 
     def visiter_si(self, instruction: Si) -> None:
-        if self.obtenir_type_expression(instruction.condition) != "booleen":
+        if self.obtenir_type_expression(instruction.condition, est_condition=False) != "booleen":
             self.tables.erreur("Une condition doit toujours produire un booleen")
 
         self.verifier_pas_tautologie(instruction.condition)
@@ -390,7 +396,7 @@ class AnalyseurSemantique:
 
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
-        if self.obtenir_type_expression(instruction.condition) != "booleen":
+        if self.obtenir_type_expression(instruction.condition, est_condition=True) != "booleen":
             self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
 
         self.verifier_pas_tautologie(instruction.condition)
@@ -500,7 +506,7 @@ class AnalyseurSemantique:
 
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
-        if self.obtenir_type_expression(instruction.condition) != "booleen" :
+        if self.obtenir_type_expression(instruction.condition, est_condition=True) != "booleen" :
             self.tables.erreur("Une condition doit toujours donner un booléen.")
 
         self.verifier_pas_tautologie(instruction.condition)
@@ -521,7 +527,7 @@ class AnalyseurSemantique:
             self.tables.erreur("Le nombre de paramètre des procedures doivent être egale au nombre passer en paramètre")
         symbole.est_utilise = True
 
-    def obtenir_type_expression(self, expr: Expression) -> str:
+    def obtenir_type_expression(self, expr: Expression, est_condition: bool = False) -> str:
         if isinstance(expr, Nombre):
             return "entier" if isinstance(expr.valeur, int) else "reel"
         elif isinstance(expr, Caractere):
@@ -535,14 +541,21 @@ class AnalyseurSemantique:
             if not symbole.est_initialise:
                 self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫")
             symbole.est_utilise = True
+            if not est_condition:
+                symbole.est_consomme = True
             return symbole.type
         elif isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
                 self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫")
+
             symbole.est_utilise = True
+
+            if not est_condition:
+                symbole.est_consomme = True
+
             for indice in expr.indices:
-                if self.obtenir_type_expression(indice) != "entier":
+                if self.obtenir_type_expression(indice, est_condition) != "entier":
                     self.tables.erreur("L'indice d'un tableau doit être un entier.")
             return symbole.type
         elif isinstance(expr, AppelFonction):
@@ -550,15 +563,17 @@ class AnalyseurSemantique:
                 if len(expr.arguments) != 1:
                     self.tables.erreur("La fonction 'racine' prend exactement un argument.")
                 type_arg = self.obtenir_type_expression(expr.arguments[0])
+
                 if type_arg not in ("entier", "reel"):
                     self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.")
+
                 return "reel"
             symbole = self.tables.rechercher(expr.nom)
             symbole.est_utilise = True
             return symbole.type
         elif isinstance(expr, OperationBinaire):
-            type_g = self.obtenir_type_expression(expr.gauche)
-            type_d = self.obtenir_type_expression(expr.droite)
+            type_g = self.obtenir_type_expression(expr.gauche, est_condition)
+            type_d = self.obtenir_type_expression(expr.droite, est_condition)
             
             if expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
                 return "booleen"
@@ -575,7 +590,7 @@ class AnalyseurSemantique:
                     return "entier"
                 return "reel" if "reel" in (type_g, type_d) else "entier"
         elif isinstance(expr, OperationUnaire):
-            type_op = self.obtenir_type_expression(expr.operande)
+            type_op = self.obtenir_type_expression(expr.operande, est_condition)
             if expr.operateur == "non":
                 if type_op != "booleen":
                     self.tables.erreur("L'opérateur 'non' s'applique uniquement à un booléen.")
