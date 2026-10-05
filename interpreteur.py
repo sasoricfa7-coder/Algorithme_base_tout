@@ -43,6 +43,22 @@ class Interpreteur:
     def formater(self, valeur: int | float) -> int | float:
         return f"{valeur:_}"
 
+    def lire_tableau(self, tableau: list, indices: list[int]):
+        if len(indices) == 1:
+            return tableau[indices[0]]
+        elif len(indices) == 2:
+            return tableau[indices[0]][indices[1]]
+        else:
+            erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
+    
+    def ecrire_tableau(self, tableau: list, indices: list[int], valeur) -> None:
+        if len(indices) == 1:
+            tableau[indices[0]] = valeur
+        elif len(indices) == 2:
+            tableau[indices[0]][indices[1]] = valeur
+        else:
+            erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
+
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
             valeur = self.evaluer_expression(arg)
@@ -87,6 +103,15 @@ class Interpreteur:
                 import math
                 return math.sqrt(valeur)
 
+            if un_cas.nom not in self.fonctions:
+                try:
+                    tableau = self.env_courant.obtenir(un_cas.nom)
+                except:
+                    erreur(f"'{un_cas.nom}' n'est ni une fonction ni un tableau")
+            
+                indices = [self.evaluer_expression(arg) for arg in un_cas.arguments]
+                return self.lire_tableau(tableau, indices)
+
             noeud: Fonction = self.fonctions[un_cas.nom]
             arguments = []
             valeur_retour = ""
@@ -112,10 +137,11 @@ class Interpreteur:
 
         if isinstance(un_cas, Indexation):
             tableau = self.env_courant.obtenir(un_cas.nom)
-            indices = self.evaluer_expression(un_cas.indices[0])
-            if not isinstance(indices, int):
-                erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
-            return tableau[indices]
+            indices = [self.evaluer_expression(idx) for idx in un_cas.indices]
+            for idx in indices:
+                if not isinstance(idx, int):
+                    erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
+            return self.lire_tableau(tableau, indices)
 
         else:
             erreur("Cas inconnu")
@@ -168,22 +194,20 @@ class Interpreteur:
 
         elif isinstance(inst, DeclarationTableau):
             self.tout_type[inst.nom] = inst.type
-            tableau1: list = []
             if inst.type is None:
-                for element in inst.valeurs_initiales:
-                    tableau.append(element)
+                # Tableau constant : liste plate 1D
+                tableau = [self.evaluer_expression(el) for el in inst.valeurs_initiales]
             else:
                 valeur = aide_moi(inst.type)
-                dimension1 = self.evaluer_expression(inst.dimensions[0])
-                for i in range(dimension1):
-                    tableau1.append(valeur)
-                tableau = tableau1
-                if len(inst.dimensions) >= 2:
-                    tableau2: list = []
-                    dimension2 = self.evaluer_expression(inst.dimensions[1])
-                    for i in range(dimension2):
-                        tableau2.append(valeur)
-                    tableau = [tableau1, tableau2]
+                if len(inst.dimensions) == 1:
+                    dim1 = self.evaluer_expression(inst.dimensions[0])
+                    tableau = [valeur for _ in range(dim1)]
+                elif len(inst.dimensions) == 2:
+                    dim1 = self.evaluer_expression(inst.dimensions[0])
+                    dim2 = self.evaluer_expression(inst.dimensions[1])
+                    tableau = [[valeur for _ in range(dim2)] for _ in range(dim1)]
+                else:
+                    erreur("Tableaux de plus de 2 dimensions non supportés")
             self.env_courant.definir(inst.nom, tableau)
                 
         elif isinstance(inst, Affectation):
@@ -192,10 +216,9 @@ class Interpreteur:
             if isinstance(inst.cible, Identifiant):
                 self.env_courant.modifier(nom, valeur)
             else:
-                tableau: list = self.env_courant.obtenir(nom)
-                indice: int = self.evaluer_expression(inst.cible.indices[0])
-                tableau[indice] = valeur
-                self.env_courant.modifier(nom, tableau)
+                tableau = self.env_courant.obtenir(nom)
+                indices = [self.evaluer_expression(idx) for idx in inst.cible.indices]
+                self.ecrire_tableau(tableau, indices, valeur)
 
         elif isinstance(inst, Ecrire): 
             self.ecrire(inst)
@@ -229,9 +252,8 @@ class Interpreteur:
                     self.env_courant.modifier(nom, saisie)
                 else:
                     tableau = self.env_courant.obtenir(nom)
-                    indice = self.evaluer_expression(cible.indices[0])
-                    tableau[indice] = saisie
-                    self.env_courant.modifier(nom, tableau)
+                    indices = [self.evaluer_expression(idx) for idx in cible.indices]
+                    self.ecrire_tableau(tableau, indices, saisie)
 
         elif isinstance(inst, Si):
             condition = self.evaluer_expression(inst.condition)

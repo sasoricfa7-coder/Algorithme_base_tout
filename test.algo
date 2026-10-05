@@ -1,5 +1,9 @@
-algorithmes nom
+algorithme nom
+variables
+    tableau T(5), i: entier
 debut
-	Ecrire("Bonjour tout le monde")
+    pour i ← 0 à 4 pas 1 faire
+        T(i) ← i
+    fin pour
+    Ecrire(T(0))
 fin
-

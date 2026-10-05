@@ -474,10 +474,10 @@ class AnalyseurSemantique:
         for i, indice_expr in enumerate(indexation.indices):
             if isinstance(indice_expr, Nombre) and i < len(symbole.dimensions_statiques):
                 taille_max = symbole.dimensions_statiques[i]
-                if indice_expr.valeur < 1 or indice_expr.valeur > taille_max:
+                if indice_expr.valeur < 0 or indice_expr.valeur > taille_max:
                     self.tables.erreur(
                         f"Débordement de tableau détecté à la compilation : "
-                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max}] pour '{symbole.nom}' 🚫"
+                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max - 1}] pour '{symbole.nom}' 🚫"
                     )
 
     def visiter_cas(self, instruction: Cas) -> None:
@@ -781,7 +781,7 @@ class Parseur:
         resultats: list[Declaration] = []
         while self.token_courant()["valeur"] == "tableau" or self.token_courant()["type"] == "identifiant" :
             if self.token_courant()["valeur"] == "tableau" :
-                resultats.append(self.parse_aide_tableau())
+                resultats += self.parse_aide_tableau()
             else :
                 resultats.extend(self.parse_aide_variable())
 
@@ -803,7 +803,7 @@ class Parseur:
         
         return [DeclarationVariable(nom, type_) for nom in noms]
 
-    def parse_aide_tableau(self) -> DeclarationTableau : # Tableau 1D et 2D uniquement
+    def parse_aide_tableau(self) -> list[Declaration]:
         self.consommer("mots_cles", "tableau")
         nom: str = self.token_courant()["valeur"]
         dimensions: list[Expression] = []
@@ -814,13 +814,25 @@ class Parseur:
             self.consommer("separateur")
             dimensions.append(self.parse_expression())
         self.consommer("PAREN_FERMANT")
+    
+        # ✅ Noms supplémentaires après le tableau (ex: T(5), i, j: entier)
+        autres_noms: list[str] = []
+        while self.token_courant()["type"] == "separateur":
+            self.consommer("separateur")
+            autres_noms.append(self.token_courant()["valeur"])
+            self.consommer("identifiant")
+    
         self.consommer("declaration_type")
         type_: str = self.token_courant()["valeur"]
         if type_ not in LES_TYPES_PRIS :
             self.erreur(f"{type_} non pris en charge dans le langage EVA")
         self.consommer("mots_cles")
-        
-        return DeclarationTableau(nom, type_, dimensions)
+    
+        # ✅ On retourne une liste : le tableau + les variables
+        resultats: list[Declaration] = [DeclarationTableau(nom, type_, dimensions)]
+        for autre in autres_noms:
+            resultats.append(DeclarationVariable(autre, type_))
+        return resultats
 
     def parse_instructions(self) -> list[Instruction]:
         resultats: list[Instruction] = []
@@ -991,82 +1003,13 @@ class Parseur:
         self.consommer("PAREN_FERMANT")
         return les_arguments
 
-    def obtenir_type_expression(self, expr: Expression) -> str:
-        if isinstance(expr, Nombre):
-            return "entier" if isinstance(expr.valeur, int) else "reel"
-        elif isinstance(expr, Caractere):
-            return "caractere"
-        elif isinstance(expr, ChaineCaractere):
-            return "chaine"
-        elif isinstance(expr, Booleen):
-            return "booleen"
-        elif isinstance(expr, Identifiant):
-            symbole = self.tables.rechercher(expr.nom)
-            if not symbole.est_initialise:
-                self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫")
-            symbole.est_utilise = True
-            return symbole.type
-        elif isinstance(expr, Indexation):
-            symbole = self.tables.rechercher(expr.nom)
-            if not symbole.est_initialise:
-                self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫")
-            symbole.est_utilise = True
-            for indice in expr.indices:
-                type_ind = self.obtenir_type_expression(indice)
-                if type_ind != "entier":
-                    self.tables.erreur(f"L'indice d'un tableau doit être un entier, pas '{type_ind}'.")
-            return symbole.type
-        elif isinstance(expr, AppelFonction):
-            if expr.nom == "racine":
-                if len(expr.arguments) != 1:
-                    self.tables.erreur("La fonction 'racine' prend exactement un argument.")
-                type_arg = self.obtenir_type_expression(expr.arguments[0])
-                if type_arg not in ("entier", "reel"):
-                    self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.")
-                return "reel"
-            symbole = self.tables.rechercher(expr.nom)
-            symbole.est_utilise = True
-            if len(expr.arguments) != len(symbole.parametres):
-                self.tables.erreur(f"La fonction '{expr.nom}' attend {len(symbole.parametres)} argument(s), {len(expr.arguments)} fourni(s).")
-            for arg, type_param in zip(expr.arguments, symbole.parametres):
-                type_arg = self.obtenir_type_expression(arg)
-                if type_arg != type_param and not (type_param == "reel" and type_arg == "entier"):
-                    self.tables.erreur(f"Type d'argument incompatible pour '{expr.nom}' : attendu '{type_param}', reçu '{type_arg}'.")
-            return symbole.type
-        elif isinstance(expr, OperationBinaire):
-            type_g = self.obtenir_type_expression(expr.gauche)
-            type_d = self.obtenir_type_expression(expr.droite)
-            if expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
-                return "booleen"
-            elif expr.operateur in ("et", "ou"):
-                if type_g != "booleen" or type_d != "booleen":
-                    self.tables.erreur(f"Les opérateurs logiques 'et'/'ou' exigent des booléens, pas '{type_g}' et '{type_d}'.")
-                return "booleen"
-            elif expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
-                if expr.operateur == "/":
-                    return "reel"
-                if expr.operateur in ("div", "mod"):
-                    if type_g != "entier" or type_d != "entier":
-                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux entiers.")
-                    return "entier"
-                return "reel" if "reel" in (type_g, type_d) else "entier"
-        elif isinstance(expr, OperationUnaire):
-            type_op = self.obtenir_type_expression(expr.operande)
-            if expr.operateur == "non":
-                if type_op != "booleen":
-                    self.tables.erreur("L'opérateur 'non' s'applique uniquement à un booléen.")
-                return "booleen"
-            return type_op
-        self.tables.erreur("Expression mal formée.")
-
-
     def parse_expression(self) -> Expression:
         return self.parse_ou_expr()
 
     def parse_ou_expr(self) :
         gauche: Expression = self.parse_et_expr()
         
-        while self.token_courant()["valeur"] == "ou" :
+        while self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "ou" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "ou") # je veux rester coherent
             droite: Expression = self.parse_et_expr()
@@ -1077,7 +1020,7 @@ class Parseur:
     def parse_et_expr(self) -> Expression:
         gauche: Expression = self.parse_non_expr()
         
-        while self.token_courant()["valeur"] == "et" :
+        while  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "et" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "et") # je veux rester coherent
             droite: Expression = self.parse_non_expr()
@@ -1086,7 +1029,7 @@ class Parseur:
         return gauche
 
     def parse_non_expr(self) -> Expression:
-        if self.token_courant()["valeur"] == "non" :
+        if  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "non" :
             self.consommer("operateurs_logiques", "non")
             operande: Expression = self.parse_non_expr()
             return OperationUnaire("non", operande)
@@ -1103,7 +1046,7 @@ class Parseur:
 
     def parse_additif(self) -> Expression:
         gauche: Expression = self.parse_multiplicatif()
-        while self.token_courant()["valeur"] in ("+", "-") :
+        while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_multiplicatif()
@@ -1112,7 +1055,7 @@ class Parseur:
         
     def parse_multiplicatif(self) -> Expression:
         gauche: Expression = self.parse_puissance()
-        while self.token_courant()["valeur"] in ("*", "/", "mod", "div") :
+        while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("*", "/", "mod", "div") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_puissance()
@@ -1121,7 +1064,7 @@ class Parseur:
         
     def parse_puissance(self) -> Expression:
         gauche: Expression = self.parse_unaire()
-        if self.token_courant()["valeur"] == "^" :
+        if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] == "^" :
             operateur: str = str(self.token_courant()["valeur"])
             self.consommer("operateurs_arihmetiques", "^")
             droite: Expression = self.parse_puissance()  # Récursion à droite
@@ -1129,7 +1072,7 @@ class Parseur:
         return gauche
         
     def parse_unaire(self) -> Expression:
-        if self.token_courant()["valeur"] in ("+", "-") :
+        if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             operande: Expression = self.parse_unaire()
