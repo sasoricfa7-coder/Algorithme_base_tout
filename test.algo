@@ -1,9 +1,7 @@
 algorithme nom
 variables
-    tableau T(5), i: entier
+    i: entier
 debut
-    pour i ← 0 à 4 pas 1 faire
-        T(i) ← i
-    fin pour
-    Ecrire(T(0))
+	lire(i)
+	Ecrire(i)
 fin
