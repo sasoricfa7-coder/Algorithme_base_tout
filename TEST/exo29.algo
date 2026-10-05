@@ -23,5 +23,5 @@ debut
 	Fin tant que
 
 	Ecrire("Dans ", nombre_annee, " ans : ")
-	Ecrire("La population d'Agadir ", PA, " habitants, dépassera celle de Marakech ", PM, "habitants.")
+	Ecrire("La population d'Agadir ", PA, " habitants, dépassera celle de Marakech ", PM, " habitants.")
 fin

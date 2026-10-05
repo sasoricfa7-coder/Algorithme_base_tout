@@ -584,11 +584,11 @@ class AnalyseurSemantique:
             elif expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
                 if expr.operateur == "/":
                     return "reel"
-                if expr.operateur in ("div", "mod"):
-                    if type_g != "entier" or type_d != "entier":
-                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux entiers.")
+                if expr.operateur in ("div", "mod"): # return toujours des entiers même si des réels les appels.
+                    if not (type_g in ("entier", "reel")) or not (type_d in ("entier", "reel")):
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux nombres.")
                     return "entier"
-                return "reel" if "reel" in (type_g, type_d) else "entier"
+                return "entier" if type_g != "reel" and type_d != "reel" else "reel"
         elif isinstance(expr, OperationUnaire):
             type_op = self.obtenir_type_expression(expr.operande, est_condition)
             if expr.operateur == "non":

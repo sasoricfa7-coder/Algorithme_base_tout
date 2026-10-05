@@ -1,0 +1,2 @@
+# Exo 20 : comparaison avec un operateur echoue comme si operateur = '+' on me dit Parseur → type : operateurs_arihmetiques : c'est ce qui était attendu.
+

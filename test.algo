@@ -1,11 +1,16 @@
-Algorithme TEST
+algorithmes suite
+constantes
+	U0 ← 6
 variables
-	x, y: entier
+	N, Un, i: entier
+
 debut
-Lire(x)
-Lire(x)
-si x > 0 alors
-    y ← x
-    Ecrire(y)
-fin si
+	Ecrire("Entrez N")
+	lire(n)
+
+	Un ← U0
+	pour i ← 1 à N pas 1 faire
+		Un ← 4 * Un + 10
+	fin pour
+	Ecrire("U", n, " = ", UN)
 fin
