@@ -1,0 +1,22 @@
+algorithmes suite_fibonacci
+variables
+	x, i, fib: entier
+	fibn, fibn1: entier
+debut
+	repeter
+		Ecrire("Entrez un entier positif superieur ou egale à 2")
+		lire(x)
+	jusqu'à x >= 2
+
+	fibn ← 0
+	fibn1 ← 1
+	Ecrire("Les termes de la suite de fibonnaci sont : ")
+	Ecrire("Fib0 = ",fibn)
+	Ecrire("Fib1 = ",fibn1)
+	pour i ← 2 à x pas 1 faire
+		fib ← fibn + fibn1
+		Ecrire(fib)
+		fibn ← fibn1
+		fibn1 ← fib
+	fin pour
+fin

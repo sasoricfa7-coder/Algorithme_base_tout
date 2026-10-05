@@ -396,7 +396,7 @@ class AnalyseurSemantique:
 
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
-        if self.obtenir_type_expression(instruction.condition, est_condition=True) != "booleen":
+        if self.obtenir_type_expression(instruction.condition) != "booleen":
             self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
 
         self.verifier_pas_tautologie(instruction.condition)
@@ -506,7 +506,7 @@ class AnalyseurSemantique:
 
     def visiter_repeter(self, instruction) -> None:
         self.appel_instruction(instruction.corps)
-        if self.obtenir_type_expression(instruction.condition, est_condition=True) != "booleen" :
+        if self.obtenir_type_expression(instruction.condition) != "booleen" :
             self.tables.erreur("Une condition doit toujours donner un booléen.")
 
         self.verifier_pas_tautologie(instruction.condition)
@@ -824,7 +824,7 @@ class Parseur:
 
     def parse_instructions(self) -> list[Instruction]:
         resultats: list[Instruction] = []
-        while not self.est_fin_bloc() :
+        while not self.est_fin_bloc():
             resultats.append(self.parse_instruction())
             self.fin_de_ligne()
         return resultats

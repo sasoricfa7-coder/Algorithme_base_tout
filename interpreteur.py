@@ -86,7 +86,7 @@ class Interpreteur:
                     erreur("Impossible de calculer la racine carrée d'un nombre négatif.")
                 import math
                 return math.sqrt(valeur)
-        
+
             noeud: Fonction = self.fonctions[un_cas.nom]
             arguments = []
             valeur_retour = ""
@@ -116,6 +116,9 @@ class Interpreteur:
             if not isinstance(indices, int):
                 erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
             return tableau[indices]
+
+        else:
+            erreur("Cas inconnu")
 
     def operation_binaire(self, gauche, droite, operateur):
         def verifie_zero(droite) -> None:
@@ -165,15 +168,22 @@ class Interpreteur:
 
         elif isinstance(inst, DeclarationTableau):
             self.tout_type[inst.nom] = inst.type
-            tableau: list = []
+            tableau1: list = []
             if inst.type is None:
                 for element in inst.valeurs_initiales:
                     tableau.append(element)
             else:
                 valeur = aide_moi(inst.type)
-                dimension = self.evaluer_expression(inst.dimensions)
-                for i in range(dimension):
-                    tableau.append(valeur)
+                dimension1 = self.evaluer_expression(inst.dimensions[0])
+                for i in range(dimension1):
+                    tableau1.append(valeur)
+                tableau = tableau1
+                if len(inst.dimensions) >= 2:
+                    tableau2: list = []
+                    dimension2 = self.evaluer_expression(inst.dimensions[1])
+                    for i in range(dimension2):
+                        tableau2.append(valeur)
+                    tableau = [tableau1, tableau2]
             self.env_courant.definir(inst.nom, tableau)
                 
         elif isinstance(inst, Affectation):

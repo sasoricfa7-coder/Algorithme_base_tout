@@ -1,2 +1,7 @@
 # Exo 20 : comparaison avec un operateur echoue comme si operateur = '+' on me dit Parseur → type : operateurs_arihmetiques : c'est ce qui était attendu.
 
+#Exo 32 : je commence à avoir de serieux problème avec les tableaux car :
+tableau T(i): entier ca marche mais 
+tableau T(i), i: entier non 
+
+et même l'affectation sur une case précise est un problème.

@@ -1,1 +1,1 @@
-print(int("1_0000"))
+print("Bonjour tout le monde ")

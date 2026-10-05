@@ -1,0 +1,14 @@
+algorithmes remplir_tableau
+variables
+	Tableau T(10): entiers
+	i: entiers
+
+debut
+	pour i ← 0 à 9 pas 1 faire
+		T(i) ← 0
+	fin pour
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("T(", i,") = ", t(i))
+	fin pour
+fin
+
