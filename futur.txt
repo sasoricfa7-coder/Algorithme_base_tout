@@ -3,3 +3,16 @@ revoir la syntaxe des fonctions et procedure pour se rapprocher de Hassan El Bah
 Et pour le cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
 Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais
 ← sera egale à <-- mais dès le lexer il va les remplacer par ca ←
+Revoir aussi l'utilisation de Ecrire pour pouvoir inclure $nom_variable directement dans la chaine de caractère et aussi 
+avec Ecrire un paramètres pour ne pas faire de saut de ligne.
+
+Je pense qu'en v2 changer de langage est necessaire car nos intensions et celle de python diverge
+Etant dynamiquement typer yaura toujours des cas que python va laisser passer or un langage Hote qui a la même 
+vision que nous sera facile et on profitera déja de tout ce qu'apporte le langage. 
+Mais un langage moderne, simple, capable de transpiler vers du C 
+je vois Zig car avec lui mon premier but est accomplie : A l'université on nous imposera trop de langage 
+par devoir : moi ma promesse ecritune fois en EVA et compile vers n'importe quel langage : notre but n'est pas la memoire ou autre. 
+mais je me dis zig est bien mais RUST aussi surtout à cause de la memoire sure car on aurra la tête tranquille.
+Ocaml n'est pas mal à cause du GC.
+Donc je te laisse choisir : 
+Zig vs RUST vs Ocaml

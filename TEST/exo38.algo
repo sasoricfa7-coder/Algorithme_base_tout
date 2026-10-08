@@ -1,0 +1,28 @@
+ALGORITHMES MAX_10_ENTIERS
+variables
+	tableau T(10), i, n: entier
+	trouver: booleen
+
+debut
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(T(i))
+	fin pour
+
+	Ecrire("Entrez n l'élément à rechercher")
+	lire(n)
+
+	trouver ← faux
+	pour i ← 0 à 9 pas 1 faire
+		si	n = t(i) alors
+			trouver ← vrai
+		fin si
+	fin pour
+
+	si trouver alors
+		Ecrire(n, " se trouve dans le tableau.")
+	sinon
+		Ecrire(n, " ne se pas trouve dans le tableau.")
+
+	fin si
+fin

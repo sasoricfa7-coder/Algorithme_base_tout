@@ -5,3 +5,12 @@ tableau T(i): entier ca marche mais
 tableau T(i), i: entier non 
 
 et même l'affectation sur une case précise est un problème.
+#EXO 36 : 
+variables
+	max, tableau T(10), i: entier c'est invalide : 
+GUIDE : Parseur → type : identifiant : c'est ce qui était attendu.
+Mais pour la v1 on peut laisser passer ??
+
+# EXO 38 : notre interpréteur doit être capable de verifier les indices en temps réels et dynamiquement des 
+tableaux. 
+#EXO 41 : erreur d'index dans interpréteur.py

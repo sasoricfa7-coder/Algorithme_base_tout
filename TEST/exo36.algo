@@ -1,0 +1,19 @@
+ALGORITHMES MAX_10_ENTIERS
+variables
+	tableau T(10), i, max: entier
+
+debut
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(T(i))
+	fin pour
+
+	max ← t(0)
+	pour i ← 1 à 9 pas 1 faire
+		si	t(i) > max alors
+			max ← t(i)
+		fin si
+	fin pour
+
+	Ecrire("Le max = ", max)
+fin

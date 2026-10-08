@@ -1,0 +1,33 @@
+algorithmes nombres_d_occurences
+variables
+	tableau T(50), i: entier
+	n: entier
+	occurence: entier
+
+debut
+	%pour i ← 0 à 49 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(T(i))
+	fin pour%
+
+	pour i ← 0 à 49 pas 1 faire %Je ne veux pas avoir à ecrire 50 entiers%
+		T(i) ← 0
+	fin pour
+
+	Ecrire("Entrez n : ")
+	lire(n)
+	occurence ← 0
+
+	pour i ← 0 à 49 pas 1 faire
+		si	T(i) = n alors
+			occurence ← occurence + 1
+		fin si
+	fin pour
+
+	si occurence > 0 alors
+		Ecrire("Dans le tableau ", n, " se présente ", occurence, " fois.")
+	sinon
+		Ecrire(n, " n'a pas d'occurence dans le tableau.")
+	fin si
+	
+fin

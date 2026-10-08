@@ -1,0 +1,24 @@
+ALGORITHMES PRODUIT_SCALAIRE
+variables
+	tableau u(3), i: entier
+	tableau v(3), PS: entier
+	%Produit scalaire%
+
+DEBUT
+	Ecrire("Entrez les differents coordonnées de U et V")
+	pour i ← 0 à 2 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1, " de U : ")
+		lire(U(i))
+		Ecrire("Ensuite l'élément ", i+1, " de V : ")
+		lire(V(i))
+	fin pour
+
+	ps ← 0
+
+	pour i ← 0 à 2 pas 1 faire
+		ps ← ps + U(i)*V(i)
+	fin pour
+
+	Ecrire("Le produit scalaire de U et de V = ", ps)
+
+FIN

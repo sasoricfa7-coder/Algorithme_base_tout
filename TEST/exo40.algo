@@ -1,0 +1,26 @@
+algorithmes  notes_superieur_moyenne
+variables
+	tableau T(50): réel
+	moyenne, n: réel
+	i: entier
+debut
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(T(i))
+	fin pour
+
+	moyenne ← 0
+	pour i ← 0 à 9 pas 1 faire
+		moyenne ← moyenne + t(i)
+	fin pour
+	moyenne ← moyenne / 10
+
+	n ← 0
+	pour i ← 0 à 9 pas 1 faire
+		si t(i) >= moyenne alors
+			n ← n + 1
+		fin si
+	fin pour
+
+	Ecrire("Le nombre de note superieur à la moyenne : ", moyenne, " sont ", n)
+fin
