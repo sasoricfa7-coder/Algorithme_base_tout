@@ -45,19 +45,31 @@ class Interpreteur:
 
     def lire_tableau(self, tableau: list, indices: list[int]):
         if len(indices) == 1:
+            self.verifier_bornes(tableau, indices[0], len(tableau))
             return tableau[indices[0]]
         elif len(indices) == 2:
-            return tableau[indices[0]][indices[1]]
+            self.verifier_bornes(tableau, indices[0], len(tableau))
+            sous_tableau = tableau[indices[0]]
+            self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau))
+            return sous_tableau[indices[1]]
         else:
             erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
     
     def ecrire_tableau(self, tableau: list, indices: list[int], valeur) -> None:
         if len(indices) == 1:
+            self.verifier_bornes(tableau, indices[0], len(tableau))
             tableau[indices[0]] = valeur
         elif len(indices) == 2:
-            tableau[indices[0]][indices[1]] = valeur
+            self.verifier_bornes(tableau, indices[0], len(tableau))
+            sous_tableau = tableau[indices[0]]
+            self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau))
+            sous_tableau[indices[1]] = valeur
         else:
             erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
+    
+    def verifier_bornes(self, tableau: list, indice: int, taille: int) -> None:
+        if indice < 0 or indice >= taille:
+            erreur(f"Indice {indice} hors bornes à l'exécution (taille : {taille})")
 
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
