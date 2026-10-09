@@ -1,7 +1,10 @@
 algorithme nom
-variables
-    i: entier
+variables 
+	compteur: entier
 debut
-	lire(i)
-	Ecrire(i)
+	compteur ← 0
+	repeter
+		Ecrire(compteur)
+		compteur ← compteur + 1
+	jusqu'à compteur >= 5
 fin

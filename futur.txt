@@ -6,7 +6,7 @@ Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais
 Revoir aussi l'utilisation de Ecrire pour pouvoir inclure $nom_variable directement dans la chaine de caractère et aussi 
 avec Ecrire un paramètres pour ne pas faire de saut de ligne.
 
-Je pense qu'en v2 changer de langage est necessaire car nos intensions et celle de python diverge
+"""Je pense qu'en v2 changer de langage est necessaire car nos intensions et celle de python diverge
 Etant dynamiquement typer yaura toujours des cas que python va laisser passer or un langage Hote qui a la même 
 vision que nous sera facile et on profitera déja de tout ce qu'apporte le langage. 
 Mais un langage moderne, simple, capable de transpiler vers du C 
@@ -15,4 +15,32 @@ par devoir : moi ma promesse ecritune fois en EVA et compile vers n'importe quel
 mais je me dis zig est bien mais RUST aussi surtout à cause de la memoire sure car on aurra la tête tranquille.
 Ocaml n'est pas mal à cause du GC.
 Donc je te laisse choisir : 
-Zig vs RUST vs Ocaml
+Zig vs RUST vs Ocaml"""
+
+""""""""""
+// Algorithme simple en kotlin compteur a zero vient à 5
+fun main(){
+	var compteur = 0
+	do
+	{
+		compteur++
+		println(compteur)
+	} while(compteur >= 5)
+	println("fin : $compteur")
+}
+
+ca pareil la boucle est ignorer car le do while se traduis par : repeter tant que or en EVA c'est repeter jusqu'a : voici la différence 
+entre nous en EVA tout est expliciter : repeter jusqu'a
+algorithme nom
+variables 
+	compteur: entier
+debut
+	compteur ← 0
+	repeter
+		Ecrire(compteur)
+		compteur ← compteur + 1
+	jusqu'à compteur >= 5
+fin
+""""""
+
+
