@@ -43,4 +43,9 @@ debut
 fin
 """"""
 
-
+J'ai remarquer une chose on duplique trop de code : voici ce que j'ai envi par exemple en EVA
+une fonction qui a une bocule de 0 à 3 par exemple. Tu vois que si c'est un tableau de 3 on doit ecrire 
+plusieurs boucles : pour initialiser, afficher , faire des manipulations mais  ce que moi je veux 
+la fonction a la boucle et tu peux lui passer les instructions a faire et elle va te retourner 
+ton tableau à jour et si ya de l'affichage effectuer. Tu vois ca ?? Mais à une grande echelle
+Ya t-il des langages qui font pareil ??

@@ -1,18 +1,20 @@
-algorithmes somme_mohamed
+algorithmes inverser_tableau
 variables
-	tableau T(20), s: réel
-	i: entier
-constantes
-	somme_base ← 1000.0
+	tableau t1(6), i: entier
+	tableau t2(6): entier
 
 debut
-	s ← somme_base
-	pour i ← 0 à 49 pas 1 faire
-		s ← s + (i * 2 / 100)
-		t(i) ← s
+	pour i ← 0 à 5 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(t1(i))
 	fin pour
 
-	pour i ← 0 à 49 pas 1 faire
-		Ecrire(i+1, " ans : ", t(i), " FCFA.")
+	pour i ← 0 à 5 pas 1 faire
+		t2(5-i) ← t1(i)
+	fin pour
+
+	Ecrire("Les éléments dans l'ordre inverse : ")
+	pour i ← 0 à 5 pas 1 faire
+		Ecrire("T2(", i+1, ") = ", t2(i))
 	fin pour
 fin

@@ -1,0 +1,20 @@
+algorithmes inverser_tableau
+variables
+	tableau t1(6), i: entier
+	tableau t2(6): entier
+
+debut
+	pour i ← 0 à 5 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(t1(i))
+	fin pour
+
+	pour i ← 0 à 5 pas 1 faire
+		t2(5-i) ← t1(i)
+	fin pour
+
+	Ecrire("Les éléments dans l'ordre inverse : ")
+	pour i ← 0 à 5 pas 1 faire
+		Ecrire("T2(", i+1, ") = ", t2(i))
+	fin pour
+fin
