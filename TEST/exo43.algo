@@ -1,0 +1,37 @@
+Algorithmes nombre_premiers
+
+procedure premier(n_reçu: entier)
+variables
+i: entier
+j: booleen
+debut
+	j ← vrai
+	pour i ← 2 à n_reçu div 2 pas 1 faire
+		si	i <> n_reçu et n_reçu mod i = 0 alors
+			j ← faux
+		fin si
+	fin pour
+
+	si	j alors
+		Ecrire("le nombre est premier")
+	sinon
+		Ecrire("le nombre n'est pas premier")
+	fin si
+fin
+
+variables
+n: entier
+
+debut
+	Tant que vrai faire
+		repeter
+			Ecrire("Entrez un nombre entier positif")
+			lire(n)
+		jusqu'a n >= 0
+		si n = 0 ou n = 1 alors
+			Ecrire("le nombre n'est pas premier")
+		sinon
+			premier(n)
+		fin si
+	fin tant que
+fin

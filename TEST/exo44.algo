@@ -1,0 +1,37 @@
+Algorithmes nombre_premiers
+
+fonction premier(n_reçu: entier) : booleen
+variables
+i: entier
+j: booleen
+debut
+	j ← vrai
+	si n_reçu = 1 ou n_reçu = 0  alors
+		retourner faux
+	fin si
+
+	pour i ← 2 à n_reçu div 2 pas 1 faire
+		si	i <> n_reçu et n_reçu mod i = 0 alors
+			j ← faux
+		fin si
+	fin pour
+
+	retourne j
+fin
+
+variables
+n: entier
+
+debut
+	Tant que vrai faire
+		repeter
+			Ecrire("Entrez un nombre entier positif")
+			lire(n)
+		jusqu'a n >= 0
+		si	premier(n) alors
+			Ecrire("le nombre est premier")
+		sinon
+			Ecrire("le nombre n'est pas premier")
+		fin si
+	fin tant que
+fin
