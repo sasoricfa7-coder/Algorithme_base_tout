@@ -49,3 +49,8 @@ plusieurs boucles : pour initialiser, afficher , faire des manipulations mais  c
 la fonction a la boucle et tu peux lui passer les instructions a faire et elle va te retourner 
 ton tableau à jour et si ya de l'affichage effectuer. Tu vois ca ?? Mais à une grande echelle
 Ya t-il des langages qui font pareil ??
+
+"""
+voici je prends un exemple : nous tous on vois que i est un entier mais lorsque l'utilisateur entre autre chose le programme s'arrête 
+ou l'utilisateur doit gerer ce cas. Ce que je veux c'est que ca soit automatique et pris en charge dans l'interpréteur
+qui redemande tant que la declaration est différente de la saisie. Simple très utile et simplifie le codage pour debutant

@@ -1,20 +1,37 @@
-algorithmes inverser_tableau
+Algorithmes nombre_premiers
+
+fonction premier(n_reçu: entier) : booleen
 variables
-	tableau t1(6), i: entier
-	tableau t2(6): entier
+i: entier
+j: booleen
+debut
+	j ← vrai
+	si n_reçu = 1 ou n_reçu = 0  alors
+		retourner faux
+	fin si
+
+	pour i ← 2 à n_reçu div 2 pas 1 faire
+		si	i <> n_reçu et n_reçu mod i = 0 alors
+			j ← faux
+		fin si
+	fin pour
+
+	retourne j
+fin
+
+variables
+n: entier
 
 debut
-	pour i ← 0 à 5 pas 1 faire
-		Ecrire("Entrez l'élément ", i+1)
-		lire(t1(i))
-	fin pour
-
-	pour i ← 0 à 5 pas 1 faire
-		t2(5-i) ← t1(i)
-	fin pour
-
-	Ecrire("Les éléments dans l'ordre inverse : ")
-	pour i ← 0 à 5 pas 1 faire
-		Ecrire("T2(", i+1, ") = ", t2(i))
-	fin pour
+	Tant que vrai faire
+		repeter
+			Ecrire("Entrez un nombre entier positif")
+			lire(n)
+		jusqu'a n >= 0
+		si	premier(n) alors
+			Ecrire("le nombre est premier")
+		sinon
+			Ecrire("le nombre n'est pas premier")
+		fin si
+	fin tant que
 fin

@@ -1,0 +1,5 @@
+En cas de ctr + C ou un arret brutale du programme , il ne faudrait pas afficher des trucs de pythons mais un message du genre
+arrêt en cours.
+
+Pour la boucle pour j'ai annuler le cas ou elle est ignorée est une erreur car ca complexifie tout hors ya des cas
+on veut l'ignorer.
