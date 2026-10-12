@@ -2,4 +2,13 @@ En cas de ctr + C ou un arret brutale du programme , il ne faudrait pas afficher
 arrêt en cours.
 
 Pour la boucle pour j'ai annuler le cas ou elle est ignorée est une erreur car ca complexifie tout hors ya des cas
-on veut l'ignorer.
+on veut l'ignorer mais je me dis aussi que notre pratique actu est la meilleur aussi et si l'utiliseur a ignorer la boucle
+qu'il utilise autre chose comme tant que ca peut faire la même chose.
+
+ici j'ai un problème le fait de recuperer simplement une saisie et de l'envoyer à une fonction et 
+on dit La variable 'n' est lue mais sa valeur n'est jamais exploitée 
+
+
+nombre ← nombre + -1 je suis etonner de ne pas voir d'erreur.
+
+Une constante passer à une fonction ou une procedure est mutable ce qui doit être impossible.

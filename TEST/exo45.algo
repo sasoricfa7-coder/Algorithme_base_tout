@@ -1,0 +1,27 @@
+algorithmes nombre_chiffre
+
+fonction determine_nombre_chiffre(nombre: entier): entier
+variables
+i: entier
+
+debut
+	i ← 0
+	si nombre < 0 alors
+		nombre ← nombre * (-1)
+	fin si
+	repeter
+		nombre ← nombre div 10
+		i ← i + 1
+	jusqu'a nombre <= 0
+	retourne i
+fin
+
+variables
+n: entier
+
+debut
+	Ecrire("Entrez un nombre positif non nul")
+	lire(N)
+
+	Ecrire("Le nombre ", n, " contient : ", determine_nombre_chiffre(n), " chiffres.")
+fin

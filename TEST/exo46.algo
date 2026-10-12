@@ -1,0 +1,20 @@
+algorithmes table_multiplication
+procedure fait_table(nombre: entier)
+variables
+i: entier
+debut
+	pour i ← 0 à 10 pas 1 faire
+		Ecrire(i , " * ", NOmbre, " = ", i * nombre)
+	fin pour
+fin
+
+variables
+N: entier
+
+debut
+	repeter
+		Ecrire("Entrez un nombre entier positif")
+		lire(N)
+	jusqu'a N >= 0
+	fait_table(N)
+fin

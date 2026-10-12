@@ -1,5 +1,13 @@
+Voici le but de EVA :
+	Ecrit une fois en EVA et compile vers n'importe quel langage.
+
+Et voici je te disait faisons notre langage grand comme à la rust tu m'a dit impossible seul je comprends mais c'est que 
+moi je ne veux pas partir de zero. Tu vois kotlin à un ecosystème petit en réalité mais pour combler ca 
+il utilise pour java tu vois un peu mon but ?? 
+
+
+
 revoir le mot clé à pour la boucle pour car son utilisation est fréquente donc si le langage savais faire la différence ca aiderait beaucoup.
-revoir la syntaxe des fonctions et procedure pour se rapprocher de Hassan El Bahi à 100%
 Et pour le cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
 Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais
 ← sera egale à <-- mais dès le lexer il va les remplacer par ca ←
@@ -54,3 +62,5 @@ Ya t-il des langages qui font pareil ??
 voici je prends un exemple : nous tous on vois que i est un entier mais lorsque l'utilisateur entre autre chose le programme s'arrête 
 ou l'utilisateur doit gerer ce cas. Ce que je veux c'est que ca soit automatique et pris en charge dans l'interpréteur
 qui redemande tant que la declaration est différente de la saisie. Simple très utile et simplifie le codage pour debutant
+et aussi a la declaration l'utilisateur peut même ajouter un interval pour du numerique et le compilateur se chargera de boucler dessus.
+
