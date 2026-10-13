@@ -1,0 +1,25 @@
+algorithmes element_cercle
+
+procedure cercle(X: réel)
+constantes
+	PI ← 3.14
+variables
+	d, s, p: réel
+debut
+	d ← X / 2
+	S ← PI * X^2
+	P ← 2 * PI * X
+
+	Ecrire("diamètre = ", d)
+	Ecrire("surface = ", s)
+	Ecrire("perimètre = ", P)
+fin
+
+variables
+	r: réel
+
+debut
+	Ecrire("Entrez le rayon")
+	lire(r)
+	cercle(r)
+fin

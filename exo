@@ -1,23 +1,25 @@
-algorithmes table_multiplication
-procedure fait_table(nombre: entier, yes: entier)
+algorithmes element_cercle
+
+procedure cercle(X: réel)
+constantes
+	PI ← 3.14
 variables
-i: entier
+	d, s, p: réel
 debut
-	yes ← 0
-	pour i ← 0 à 10 pas 1 faire
-		Ecrire(i , " * ", NOmbre, " = ", i * nombre)
-	fin pour
+	d ← X / 2
+	S ← PI * X^2
+	P ← 2 * PI * X
+
+	Ecrire("diamètre = ", d)
+	Ecrire("surface = ", s)
+	Ecrire("perimètre = ", P)
 fin
 
 variables
-N: entier
-constante
-Y ← 10
+	r: réel
 
 debut
-	repeter
-		Ecrire("Entrez un nombre entier positif")
-		lire(N)
-	jusqu'a N >= 0
-	fait_table(N, y)
+	Ecrire("Entrez le rayon")
+	lire(r)
+	cercle(r)
 fin

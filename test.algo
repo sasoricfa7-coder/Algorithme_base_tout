@@ -1,10 +1,9 @@
 algorithme nom
 variables 
-	compteur: entier
+	compteur, i: entier
 debut
 	compteur ← 0
-	repeter
-		Ecrire(compteur)
+	pour i ← 5 à compteur pas 1 faire
 		compteur ← compteur + 1
-	jusqu'à compteur >= 5
+	fin pour
 fin

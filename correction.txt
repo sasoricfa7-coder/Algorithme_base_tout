@@ -3,7 +3,7 @@ arrêt en cours.
 
 Pour la boucle pour j'ai annuler le cas ou elle est ignorée est une erreur car ca complexifie tout hors ya des cas
 on veut l'ignorer mais je me dis aussi que notre pratique actu est la meilleur aussi et si l'utiliseur a ignorer la boucle
-qu'il utilise autre chose comme tant que ca peut faire la même chose.
+qu'il utilise autre chose comme tant que ca peut faire la même chose donc je l'ai remis.
 
 ici j'ai un problème le fait de recuperer simplement une saisie et de l'envoyer à une fonction et 
 on dit La variable 'n' est lue mais sa valeur n'est jamais exploitée 
@@ -12,3 +12,8 @@ on dit La variable 'n' est lue mais sa valeur n'est jamais exploitée
 nombre ← nombre + -1 je suis etonner de ne pas voir d'erreur.
 
 Une constante passer à une fonction ou une procedure est mutable ce qui doit être impossible.
+
+EXO 47 : quand j'affiche un booleen on  me montre 0 ou 1 or moi je veux vrai ou faux.
+
+Exo 48: je veux que l'on ajoute PI directement au langage et ca la vrai valeur de PI avec beaucoup de decimaux donc aucune donnée ne peu
+avoir le nom PI et l'utilisateur peut faire appel à lui n'importe ou sans declarer.
