@@ -1,0 +1,48 @@
+algorithmes equation_second_degré
+
+fonctions calcul_discriminant(M: réel, N: réel, P: réel): réel
+	debut
+		retourne N^2 - 4 * M * P
+	fin
+
+procedure calcul_valeur(discriminant: réel, S: réel, Y: réel)
+variables
+	x0, x1, x2, rD: réel
+
+debut
+	x0 ← 0
+	x1 ← 0
+	x2 ← 0
+	RD  ← 0
+
+	si discriminant = 0 alors
+		x0 ← -Y / 2 * S
+		Ecrire("Delta = 0 alors X0 = ", X0)
+	sinon
+		si discriminant > 0 alors
+			RD ← racine(discriminant)
+			x1 ← (-Y - RD) / 2 * S
+			x2 ← (-Y + RD) / 2 * S
+			Ecrire("Delta > 0 alors :")
+			Ecrire("X1 = ", x1)
+			Ecrire("X2 = ", x2)
+		sinon
+			Ecrire("Delta < 0 alors l'equation n'admet pas de solution dans R.")
+		fin si
+	fin si
+fin	
+
+variables
+X, b, c: réel
+
+debut
+	Ecrire("Entrez A, B, C : ")
+	lire(X, B, C)
+
+	Ecrire("A : ", X)
+	Ecrire("B : ", B)
+	Ecrire("C : ", C)
+
+	calcul_valeur(calcul_discriminant(X, B, C), X, B)
+fin
+

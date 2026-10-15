@@ -1,9 +1,11 @@
 algorithme nom
 variables 
-	compteur, i: entier
+	compteur: réel
 debut
-	compteur ← 0
-	pour i ← 5 à compteur pas 1 faire
-		compteur ← compteur + 1
-	fin pour
+	Tant que vrai faire
+		Ecrire("Entrez a")
+		lire(compteur)
+		Ecrire("sqrt : ", sqrt(compteur))
+		Ecrire("racine : ", racine(compteur))
+	fin tant que
 fin

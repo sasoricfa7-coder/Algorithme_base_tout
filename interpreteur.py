@@ -107,7 +107,7 @@ class Interpreteur:
             return not operande
 
         if isinstance(un_cas, AppelFonction):
-            if un_cas.nom == "racine":
+            if un_cas.nom in ("racine", "sqrt"): # C'est exprès
                 if len(un_cas.arguments) != 1:
                     erreur("La fonction 'racine' prend exactement un argument.")
                 valeur = self.evaluer_expression(un_cas.arguments[0])

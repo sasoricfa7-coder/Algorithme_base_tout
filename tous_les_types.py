@@ -61,6 +61,8 @@ class TableSymboles:
     def declarer(self, nom: str, symbole: Symbole) -> None:
         if nom == "racine":
             self.erreur("Le nom 'racine' est réservé par le langage pour la fonction racine carrée 🚫")
+        if nom == "sqrt":
+            self.erreur("Le nom 'sqrt' est réservé par le langage pour la fonction racine carrée 🚫")
         if nom in self.symboles_globaux:
             self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫 : NB: aucune donnée ne doit avoir le nom de votre algortihme.")
         self.symboles_globaux.add(nom)
@@ -86,6 +88,7 @@ class AnalyseurSemantique:
         self.tables.entrer_portee()
         self.tables.symboles_globaux.add(self.ast.nom)
         self.tables.symboles_globaux.add("racine")
+        self.tables.symboles_globaux.add("sqrt")
         self.visiter_declarations(self.ast.declarations)
         
         # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
@@ -559,7 +562,7 @@ class AnalyseurSemantique:
                     self.tables.erreur("L'indice d'un tableau doit être un entier.")
             return symbole.type
         elif isinstance(expr, AppelFonction):
-            if expr.nom == "racine":
+            if expr.nom in ("racine", "sqrt"):
                 if len(expr.arguments) != 1:
                     self.tables.erreur("La fonction 'racine' prend exactement un argument.")
                 type_arg = self.obtenir_type_expression(expr.arguments[0])
