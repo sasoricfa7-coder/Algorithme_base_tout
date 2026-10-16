@@ -4,6 +4,8 @@ Voici le but de EVA :
 Et voici je te disait faisons notre langage grand comme à la rust tu m'a dit impossible seul je comprends mais c'est que 
 moi je ne veux pas partir de zero. Tu vois kotlin à un ecosystème petit en réalité mais pour combler ca 
 il utilise pour java tu vois un peu mon but ?? 
+Bien vrai on ne peut pas faire un compilateur à la rust mais tu vois que si moi je n'ai pas un vrai truc à apporter 
+je t'assure ma motivation tombera. Et les trucs que j'aime ce sont des trucs qui ont dit impossible la je tente.
 
 
 Et pour le mot cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
@@ -24,6 +26,7 @@ Donc je te laisse choisir :
 Zig vs RUST vs Ocaml
 J'oubliais voici aussi les langages que je maitrise bien
 C → Python → Kotlin je me demande si kotlin aussi peu faire la v2 
+voici kotlin lui je le maitrise mais les autres non mais ne regardons pas ce point. seulement.
 """
 
 """"""""""
@@ -39,7 +42,7 @@ fun main(){
 }
 
 ca pareil la boucle est ignorer car le do while se traduis par : repeter tant que or en EVA c'est repeter jusqu'a : voici la différence 
-entre nous en EVA tout est expliciter : repeter jusqu'a
+entre nous en EVA tout est explicite : repeter jusqu'a
 algorithme nom
 variables 
 	compteur: entier
@@ -66,3 +69,10 @@ qui redemande tant que la declaration est différente de la saisie. Simple très
 et aussi a la declaration l'utilisateur peut même ajouter un interval pour du numerique et le compilateur se chargera de boucler dessus.
 
 Peut importe l'étape à laquelle on est : parseur ou ... On doit toujours indiquer à l'utilisateur la ligne qui cause problème
+
+"""
+EXO 50 : revoir en v2 la syntaxe pour qu'au lieu de fin simplement pur les fonction et procedure on dise
+fin fonction 
+fin procedure. 
+C'est plus explicite et visiblement c'est facile.
+"""

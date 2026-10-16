@@ -1,0 +1,82 @@
+algorithmes calcul_tableau
+
+fonction somme(notes_somme: Tableau réel) : réel
+variables
+	index: entier
+	s: réel
+debut
+	s ← 0
+	Ecrire("Calcul de la somme en cours...")
+	pour index ← 0 à 9 pas 1 faire
+		s ← s + notes_somme(index)
+	fin pour
+	retourne s
+fin
+
+fonction produit(notes_produit: Tableau réel) : réel
+variables
+	indice: entier
+	p: réel
+debut
+	p ← 1
+	Ecrire("Calcul du produit en cours...")
+	pour indice ← 0 à 9 pas 1 faire
+		p ← p * notes_somme(indice)
+	fin pour
+	retourne p
+fin
+
+fonction la_moyenne(notes_moyenne: Tableau réel): réel
+debut
+	return somme(notes_moyenne) / 10
+fin
+
+procedure est_negatif_ou_pas(N: tableau réel)
+variables
+	iterateur: entier
+	valide: booléen
+
+debut
+	valide ← False
+	Ecrire("Les éléments positifs du tableau sont : ")
+	pour iterateur ← 0 à 9 pas 1 faire
+		si N(iterateur) >= 0 alors
+			Ecrire(N(iterateur))
+			valide ← true
+		fin si
+	fin pour
+
+	si not valide alors
+		Ecrire("Aucun")
+	fin si
+
+	valide ← False
+	Ecrire("Les éléments negatifs du tableau sont : ")
+	pour iterateur ← 0 à 9 pas 1 faire
+		si N(iterateur) < 0 alors
+			Ecrire(N(iterateur))
+			valide ← true
+		fin si
+	fin pour
+
+	si not valide alors
+		Ecrire("Aucun")
+	fin si
+fin
+
+variables
+	i: entier
+	tableau notes(10): réel
+
+debut
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("Entrez l'élément ", i+1)
+		lire(notes(i))
+	fin pour
+
+	Ecrire("la somme des éléments = ", somme(notes))
+	Ecrire("le produit des éléments = ", produit(notes))
+	Ecrire("la moyenne des éléments = ", la_moyenne(notes))
+
+	est_negatif_ou_pas(notes)
+fin

@@ -1,0 +1,63 @@
+algorithmes max_min_inverseTableau
+
+fonction max(N: tableau réel): réel
+variables
+	indice: entier
+	maximum: réel
+
+debut
+	maximum ← N(0)
+	pour indice ← 1 à 9 pas 1 faire
+		si	maximum < N(i) alors
+			maximum ← N(i)
+		fin si
+	fin pour
+	retourne maximum
+fin
+
+fonction min(min_notes: tableau réel): réel
+variables
+	index: entier
+	minimum: réel
+
+debut
+	minimum ← N(0)
+	pour indice ← 1 à 9 pas 1 faire
+		si	minimum > N(i) alors
+			minimum ← N(i)
+		fin si
+	fin pour
+	retourne minimum
+fin
+
+fonction tab_inverser(notes_tab: tableau réel): tableau réel
+variables
+	iterateur: entier
+	tableau temporaire (10): réel
+debut
+	pour iterateur ← 0 à 9 pas 1 faire
+		temporaire(i) ← notes_tab(9 - i)
+	fin pour
+	retourne temporaire
+fin
+
+variables
+	tableau notes(10): réel
+	i: réel
+	tableau inverse(10): réel
+
+debut
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire("Entrez l'élément ", i + 1)
+		lire(notes(i))
+	fin pour
+
+	Ecrire("Voici le maximum de ce tableau : ", max(notes))
+	Ecrire("Voici le minimum de ce tableau : ", min(notes))
+	inverse ← tab_inverser(notes)
+
+	Ecrire("Le tableau dans l'ordre inverse est : ")
+	pour i ← 0 à 9 pas 1 faire
+		Ecrire(inverse(i))
+	fin pour
+fin
