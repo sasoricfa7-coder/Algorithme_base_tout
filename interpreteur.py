@@ -74,11 +74,11 @@ class Interpreteur:
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
             valeur = self.evaluer_expression(arg)
-            if isinstance(valeur, (int, float)):
+            if isinstance(valeur, bool):
+                valeur = "FAUX" if valeur is False else "VRAI"
+            elif isinstance(valeur, (int, float)):
                 valeur = self.formater(valeur)
-            """if valeur is False or valeur is True:
-                valeur = "FAUX" if valeur == False else "VRAI"
-                print("test") j'ai voulu corriger mais ca ne marchait pas."""
+
             print(valeur, end="")
         print()
 

@@ -76,3 +76,18 @@ fin fonction
 fin procedure. 
 C'est plus explicite et visiblement c'est facile.
 """
+
+"""
+a savoir le differencier d'une boucle
+"""
+""
+ajouter quelque constantes de base comme PI
+""
+
+""
+constante passer à une fonction ou autre est toujours imuable.
+""
+
+"""
+formater la partie decimale.
+"""
