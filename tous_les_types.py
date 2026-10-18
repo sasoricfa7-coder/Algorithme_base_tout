@@ -135,6 +135,11 @@ class AnalyseurSemantique:
 
             if not self.verifier_chemins_retour(fonction.corps):
                 self.tables.erreur(f"La fonction '{fonction.nom}' ne garantit pas de 'retourne' dans tous ses chemins d'exécution.")
+
+            for param in fonction.parametres:
+                symbole = self.tables.rechercher(param.nom)
+                if not symbole.est_utilise:
+                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la fonction {fonction.nom}")
             
             self.fonction_courante = None
 
@@ -174,6 +179,10 @@ class AnalyseurSemantique:
             self.visiter_declarations(procedure.declarations)
 
             self.appel_instruction(procedure.corps)
+            for param in procedure.parametres:
+                symbole = self.tables.rechercher(param.nom)
+                if not symbole.est_utilise:
+                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la procedure {procedure.nom}")
 
             self.tables.sortir_portee()
 
