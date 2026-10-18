@@ -573,6 +573,8 @@ class AnalyseurSemantique:
                 return "reel"
             symbole = self.tables.rechercher(expr.nom)
             symbole.est_utilise = True
+            for arg in expr.arguments:
+                self.obtenir_type_expression(arg, est_condition=False)
             return symbole.type
         elif isinstance(expr, OperationBinaire):
             type_g = self.obtenir_type_expression(expr.gauche, est_condition)

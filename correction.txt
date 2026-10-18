@@ -25,7 +25,8 @@ même moi je t'assure que j'ai passer 2heures à cherche pourquoi mon code ne co
 A.
 
 convains moi que pour le futur obliger que le nom de chaque variable soit unique partout est le meilleur des cas pour le futur.
-car coder devient chiant 10 fonction chacune utilise des boucles, il faut avoir 10 noms differents pour chaque iterateur
+car coder devient chiant 10 fonction chacune utilise des boucles, il faut avoir 10 noms differents pour chaque iterateur moi
+meme ca m'énerve.
 
 passer un paramètre que l'on utilise jamais ne doit pas compiler
 
