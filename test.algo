@@ -3,14 +3,14 @@ algorithmes test
 procedure ma_procedure(X: booléen)
 
 debut
-	Ecrire("Hello world")
+	Ecrire(x)
 fin
 
 variable
 	valide: booléen
 
 debut
-	valide ← vrai
+	lire(valide)
 	Ecrire(valide)
 	ma_procedure(valide)
 fin

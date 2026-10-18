@@ -3,18 +3,24 @@ from lexer import main as lexer
 from tous_les_types import Parseur, afficher_ast, AnalyseurSemantique
 import pprint as p
 from interpreteur import Interpreteur
+import sys
 
 """LANGAGE EVA"""
-code_source: str
-fichier_json: dict
-code_source, fichier_json = avant_lexer()
+try:
+    code_source: str
+    fichier_json: dict
+    code_source, fichier_json = avant_lexer()
 
-original_code_source: str = code_source
+    original_code_source: str = code_source
 
-token: list[dict] = lexer(code_source, fichier_json)
-parseur = Parseur(token)
-ast = parseur.parse_programme()
-ANA_SEMAN = AnalyseurSemantique(ast)
-ANA_SEMAN.visiter_algorithme()
-interprete = Interpreteur()
-interprete.interpreter(ast)
+    token: list[dict] = lexer(code_source, fichier_json)
+    parseur = Parseur(token)
+    ast = parseur.parse_programme()
+    ANA_SEMAN = AnalyseurSemantique(ast)
+    ANA_SEMAN.visiter_algorithme()
+    interprete = Interpreteur()
+    interprete.interpreter(ast)
+
+except KeyboardInterrupt:
+    print("\n\033[1m\033[93mArrêt en cours... // Stopping...\033[0m")
+    sys.exit(130)
