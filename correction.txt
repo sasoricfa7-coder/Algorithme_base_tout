@@ -1,1 +1,2 @@
 lire ne doit pas marcher avec les booléen.
+Pour les tableaux 2D une boucles imbriquers on ne doit pas pouvoir utiliser la même variable pour les meme indices.

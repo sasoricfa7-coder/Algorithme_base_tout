@@ -1,20 +1,18 @@
-algorithmes calcul_tableau
-fonction somme(ta: entier) : entier
+algorithme tab_2D
 variables
-	index: entier
-debut
-	pour index ← 0 à 9 pas 1 faire
-		ta(index) ← index
-	fin pour
-	retourne ta
-fin
-
-variables
-	tableau t(10), i: entier
+	tableau tab(3, 6): réel
+	i, j: entier
 
 debut
-	pour i ← 0 à 9 pas 1 faire
-		lire(t(i))
+	pour i ← 0 à 2 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			tab(i, j) ← 0
+		fin pour
 	fin pour
-	t ← somme(t)
+
+	pour i ← 0 à 2 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			Ecrire("tab(" , i, ", ", j, ") = ",tab(i, j))
+		fin pour
+	fin pour
 fin
