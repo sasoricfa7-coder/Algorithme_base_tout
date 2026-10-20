@@ -1,0 +1,24 @@
+Algorithme somme_deux_matrices
+
+Variable
+	Tableau X(4, 5): réel
+	Tableau B(4, 5): réel
+	Tableau C(4, 5): réel
+	i, j: entier
+
+debut
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 4 pas 1 faire
+			X(i, j) ← i + j
+			B(i, j) ← i * j
+			C(i, j) ← X(i, j) + B(i, j)
+		fin Pour
+	fin Pour
+
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 4 pas 1 faire
+			Ecrire("C(", i+1, ",", j+1, ") = ", C(i, j))
+		fin Pour
+	fin Pour
+
+fin

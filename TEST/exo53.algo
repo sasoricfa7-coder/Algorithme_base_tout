@@ -1,0 +1,33 @@
+algorithme calculer_transposer_matrice
+
+variables
+	tableau MA(4, 6): réel
+	tableau TA(6, 4): réel
+	i, j: entier
+
+debut
+	pour i ← 0 à 3 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			Ecrire("MA(", i+1, ",", j+1, ") = ")
+			lire(MA(i, j))
+		fin	pour
+	fin pour
+
+	pour i ← 0 à 3 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			TA(j, i) ← MA(i, j)
+		fin	pour
+	fin pour
+
+	pour i ← 0 à 3 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			Ecrire("MA(", i+1, ",", j+1, ") = ", ma(i, j))
+		fin	pour
+	fin pour
+
+	pour i ← 0 à 3 pas 1 faire
+		pour j ← 0 à 5 pas 1 faire
+			Ecrire("TA(", j+1, ",", i+1, ") = ", TA(j, i))
+		fin	pour
+	fin pour
+fin	

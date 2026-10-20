@@ -1,1 +1,3 @@
 * Passage des tableau en paramètre
+* differencier à de A 
+* Declaration de plusieurs tableaux sur une même ligne.
