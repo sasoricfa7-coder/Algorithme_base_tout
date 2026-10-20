@@ -1,0 +1,25 @@
+Algorithme PGCD %La recursivité%
+
+	Fonction calcul_pgcd(S: entier, T: entier): entier
+		Debut
+			Si T = 0 alors
+				Retourne S
+			Sinon
+				Retourne calcul_pgcd(T, S mod T)
+			fin Si
+		Fin
+
+
+Variables 
+	x, y: entier 
+
+Debut 
+	Répeter 
+		Ecrire("Entrez un premier nombre positif : ")
+		Lire(x)
+		Ecrire("Entrez un second nombre inferieur au premier : ")
+		Lire(y)
+	Jusqu'à y <= x et 1 <= X et 1 <= y
+	Ecrire("Le PGCD est : ", calcul_pgcd(x, y))
+
+Fin 

@@ -4,3 +4,4 @@
 * Prendre en charge <-- egale ← egale à := car les deux precedent ne sont pas si facile à faire.
 * prendre en charge \n , \t et meme ca $ pour ecrire les variable direct dans la chaine. Et comme en python
 un paramètre Ecrire("ma variable \n $x + 1 = \t ${x + 1}", fin="")
+Limitter la recursiviter afin que des erreurs de pythons ne s'affiche pas devant l'utilisateur.

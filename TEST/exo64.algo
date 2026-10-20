@@ -1,0 +1,27 @@
+Algorithme combinaison_p_parmi_n %La recursivité%
+Fonction combinaison(x%p%: entier, y%n%: entier) : entier
+debut
+	Si x = y alors
+		Retourne 1
+	Sinon
+		Si x = 1 alors
+			Retourne y
+		Sinon
+			Retourne combinaison(x - 1 , y - 1) + combinaison(x, y - 1)
+		fin Si
+	fin Si
+fin
+
+Variables 
+	n, p: entier 
+
+Debut 
+	Répeter 
+		Ecrire("Entrez le nombre d'éléments n : ")
+		Lire(n)
+		Ecrire("Entrez le nombre de combinaison possible p : ")
+		Lire(p)
+	Jusqu'à 1 <= n et 1 <= p
+	Ecrire("Le nombre de combinaison est : ", combinaison(p, n))
+
+Fin 

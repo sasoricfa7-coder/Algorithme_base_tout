@@ -1,21 +1,32 @@
-Algorithme puissance_sans_chapeau_ni_boucle %En utilisant la recursiviter%
-Fonction calcul_puissance(X: entier, puissance: entier) : entier
-debut
-	Si puissance = 0 alors
-		Retourne 1
-	Sinon
-		Retourne X * calcul_puissance(X , puissance - 1)
-	fin Si
-fin
+Algorithme croissant_decroissant %La recursivité%
+	
+	Procedure ordre_croissant(x: entier)
+		Debut
+			Si x <> 0 alors
+				ordre_croissant(x - 1)
+				Ecrire(x)
+			fin Si
+		Fin
+	
+	Procedure ordre_decroissant(y: entier)
+		Debut
+			Si y <> 0 alors
+				Ecrire(y)
+				ordre_decroissant(y - 1)
+			fin Si
+		Fin
 
 Variables 
-	n, p: entier 
+	n: entier 
 
-debut
-	Répeter
-		Ecrire("Entrez N et p : ")
-		Lire(N, p)
-	Jusqu'à 0 <= N et 0 <= P
-
-	Ecrire(n, " ^ ", p ," = ", calcul_puissance(n, p) )
-fin 
+Debut 
+	Répeter 
+		Ecrire("Entrez n : ")
+		Lire(n)
+	Jusqu'à 1 <= n
+	
+	Ecrire("Les nombres de 1 à ", n)
+	ordre_croissant(n)
+	Ecrire("Les nombres de ", n, " à 1")
+	ordre_decroissant(n)
+Fin 
