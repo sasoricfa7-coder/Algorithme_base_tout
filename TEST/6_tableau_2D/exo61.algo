@@ -1,0 +1,29 @@
+Algorithme Triangle_pascal
+
+Variable
+	Tableau X(20 , 20), N: entier
+	i, j: entier
+
+debut
+	Répeter
+		Ecrire("Entrez le degré N du triangle de pascal (max 19) ")
+		Lire(N)
+	Jusqu'à (N > 0 et 20 > N)
+	
+	Pour i ← 0 à n pas 1 faire
+		X(i, 0) ← 1
+		X(i, i) ← 1 
+		Pour j ← 1 à i - 1 pas 1 faire
+			X(i, j) ← X(i - 1, j - 1) + X(i - 1 , j)
+		fin Pour
+	fin Pour
+	
+	Ecrire("Affichage du triangle de pascal de degré : ", N)
+	
+	Pour i ← 0 à n pas 1 faire
+		Pour j ← 0 à i pas 1 faire
+			Ecrire(X(i, j))
+		fin Pour
+	fin Pour
+	
+fin

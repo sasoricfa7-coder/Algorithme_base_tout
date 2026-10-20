@@ -1,0 +1,18 @@
+Algorithme somme_deux_matrices
+
+Variable
+	Tableau X(2 , 2), det: réel
+	i, j: entier
+
+debut
+	Pour i ← 0 à 1 pas 1 faire
+		Pour j ← 0 à 1 pas 1 faire
+			Ecrire("X(", i+1, ",", j+1, ") = ")
+			Lire(X(i, j))
+		fin Pour
+	fin Pour
+	
+	det ← X(0 , 0) * X(1 , 1) - X(0 , 1) * X(1 , 0)
+	Ecrire("Determinant de la matrice est : ", det)
+
+fin

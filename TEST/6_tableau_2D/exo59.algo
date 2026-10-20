@@ -1,0 +1,31 @@
+Algorithme somme_deux_matrices
+
+Variable
+	Tableau X(4 , 6), n: réel
+	i, j, occurence: entier
+
+debut
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 5 pas 1 faire
+			Ecrire("X(", i+1, ",", j+1, ") = ")
+			Lire(X(i, j))
+		fin Pour
+	fin Pour
+
+	Ecrire("Entrez N : ")
+	Lire(N)
+	occurence ← 0
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 5 pas 1 faire
+			Si X(i, j) = N alors
+				occurence ← occurence + 1
+			fin Si
+		fin Pour
+	fin Pour
+	
+	Si n = 0 alors
+		Ecrire(n, " ne se trouve pas dans le tableau.")
+	Sinon
+		Ecrire("Le nombre d'occurence de ", n, " dans le tableau est : ", occurence)
+	fin Si
+fin

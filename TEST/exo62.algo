@@ -1,0 +1,21 @@
+Algorithme somme %En utilisant la recursiviter%
+Fonction calcul_somme(X: entier) : entier
+debut
+	Si X = 0 alors
+		Retourne 0
+	Sinon
+		Retourne X + calcul_somme(X - 1)
+	fin Si
+fin
+
+Variables 
+	n: entier 
+
+debut
+	Répeter
+		Ecrire("Entrez N : ")
+		Lire(N)
+	Jusqu'à 0 <= N
+
+	Ecrire("La somme des entiers de 1 à ", n ," = ", calcul_somme(n) )
+fin 

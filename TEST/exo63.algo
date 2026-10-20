@@ -1,0 +1,21 @@
+Algorithme puissance_sans_chapeau_ni_boucle %En utilisant la recursiviter%
+Fonction calcul_puissance(X: entier, puissance: entier) : entier
+debut
+	Si puissance = 0 alors
+		Retourne 1
+	Sinon
+		Retourne X * calcul_puissance(X , puissance - 1)
+	fin Si
+fin
+
+Variables 
+	n, p: entier 
+
+debut
+	Répeter
+		Ecrire("Entrez N et p : ")
+		Lire(N, p)
+	Jusqu'à 0 <= N et 0 <= P
+
+	Ecrire(n, " ^ ", p ," = ", calcul_puissance(n, p) )
+fin 

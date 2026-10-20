@@ -313,8 +313,6 @@ class Interpreteur:
 
             if val_pas <= 0:
                 erreur(f"Le pas d'une boucle 'pour' doit être strictement positif (reçu : {val_pas})")
-            if val_debut > val_fin: #je trouve trop strict
-                erreur(f"Boucle 'pour' impossible : début ({val_debut}) > fin ({val_fin}). La boucle ne s'exécutera jamais")
 
             self.env_courant.definir(nom_indice, val_debut)
 

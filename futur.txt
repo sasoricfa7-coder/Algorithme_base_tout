@@ -5,6 +5,8 @@ Voici le but de EVA :
 
 NB: Decision : toute nos librairies et ecosystème nouveau sera ecrit en EVA pure.
 
+Tu sais j'ai eu une bonne direction pour notre langage : Android : regarde meme avec les langages officielles coder sur Android ou pour 
+Android est difficile mais imaginons si notre compilateur ou interpréteur faisait tout le sale boulot a ta place.
 
 Et pour le mot cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
 Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais

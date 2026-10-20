@@ -2,3 +2,4 @@ lire ne doit pas marcher avec les booléen.
 Pour les tableaux 2D une boucles imbriquers on ne doit pas pouvoir utiliser la même variable pour les meme indices.
 exo 53: le vrai code même bug à la ligne 53 : dit moi de la réexecuter pour te montrer le message d'erreur.
 Dans des boucles imbriquer réutiliser la meme indice est possible.
+Je me demande si on bloque les comparaison Entier vs réel
