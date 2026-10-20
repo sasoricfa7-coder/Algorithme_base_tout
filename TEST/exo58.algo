@@ -1,0 +1,50 @@
+Algorithme somme_deux_matrices
+
+Variable
+	Tableau X(4 , 6): entier
+	i, j: entier
+	min_l , max_l: entier
+	min_c , max_c: entier
+
+debut
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 5 pas 1 faire
+			%X(i, j) ← i + j + 1%
+			Ecrire("C(", i+1, ",", j+1, ") = ")
+			Lire(X(i, j))
+		fin Pour
+	fin Pour
+
+	min_l ← 0
+	max_l ← 0
+	min_c ← 0
+	max_c ← 0
+
+	Pour i ← 0 à 3 pas 1 faire
+		Pour j ← 0 à 5 pas 1 faire
+			Si X(i, j) < min_l alors
+				min_l ← X(i, j)
+			Sinon
+				Si max_l < X(i, j) alors
+					max_l ← X(i, j)
+				fin Si      
+			fin Si
+		fin Pour
+		Ecrire("MAX ligne ", i + 1, " = ", max_l)
+		Ecrire("MIN ligne ", i + 1, " = ", min_l)
+	fin Pour
+	
+	Pour j ← 0 à 5 pas 1 faire
+		Pour i ← 0 à 3 pas 1 faire
+			Si X(i, j) < min_c alors
+				min_c ← X(i, j)
+			Sinon
+				Si max_c < X(i, j) alors
+					max_c ← X(i, j)
+				fin Si      
+			fin Si
+		fin Pour
+		Ecrire("MAX colonne ", j + 1, " = ", max_c)
+		Ecrire("MIN colonne ", j + 1, " = ", min_c)
+	fin Pour
+fin

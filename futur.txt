@@ -3,6 +3,8 @@ Voici le but de EVA :
 	Mais pour les v0.0.1 ou on est précisement ce n'est pas le but. Et on ne changera pas de langage d'hote 
 	: python. Avant la v1.0.9
 
+NB: Decision : toute nos librairies et ecosystème nouveau sera ecrit en EVA pure.
+
 
 Et pour le mot cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
 Les emoji sont petit et celui qui me plait celui de V2F je ne le vois jamais
@@ -82,3 +84,8 @@ ajouter quelque constantes de base comme PI
 ""
 constante passer à une fonction ou autre est toujours imuable.
 ""
+
+"""
+	Ajouter une fonction de boucle sur les colonnes  tableaux car tu vois que c'est difficile à partir de 2D or
+	la ligne est offerte gratuit.
+"""
