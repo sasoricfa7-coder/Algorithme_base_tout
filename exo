@@ -1,32 +1,25 @@
-Algorithme croissant_decroissant %La recursivité%
-	
-	Procedure ordre_croissant(x: entier)
+Algorithme PGCD %La recursivité%
+
+	Fonction calcul_pgcd(S: entier, T: entier): entier
 		Debut
-			Si x <> 0 alors
-				ordre_croissant(x - 1)
-				Ecrire(x)
-			fin Si
-		Fin
-	
-	Procedure ordre_decroissant(y: entier)
-		Debut
-			Si y <> 0 alors
-				Ecrire(y)
-				ordre_decroissant(y - 1)
+			Si T = 0 alors
+				Retourne S
+			Sinon
+				Retourne calcul_pgcd(T, S mod T)
 			fin Si
 		Fin
 
+
 Variables 
-	n: entier 
+	x, y: entier 
 
 Debut 
 	Répeter 
-		Ecrire("Entrez n : ")
-		Lire(n)
-	Jusqu'à 1 <= n
-	
-	Ecrire("Les nombres de 1 à ", n)
-	ordre_croissant(n)
-	Ecrire("Les nombres de ", n, " à 1")
-	ordre_decroissant(n)
+		Ecrire("Entrez un premier nombre positif : ")
+		Lire(x)
+		Ecrire("Entrez un second nombre inferieur au premier : ")
+		Lire(y)
+	Jusqu'à y <= x et 1 <= X et 1 <= y
+	Ecrire("Le PGCD est : ", calcul_pgcd(x, y))
+
 Fin 

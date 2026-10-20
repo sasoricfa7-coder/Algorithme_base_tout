@@ -2,4 +2,11 @@ lire ne doit pas marcher avec les booléen.
 Pour les tableaux 2D une boucles imbriquers on ne doit pas pouvoir utiliser la même variable pour les meme indices.
 exo 53: le vrai code même bug à la ligne 53 : dit moi de la réexecuter pour te montrer le message d'erreur.
 Dans des boucles imbriquer réutiliser la meme indice est possible.
-Je me demande si on bloque les comparaison Entier vs réel
+Bloquer la récursiviter sans cas de base si tu pense que c'est une bonne idée.
+Ecrire(2 / 0) notre interpréteur ou analyseur semantique n'est meme pas capable de bloquer ca.
+Une fonction interieur appellant une exterieur doit etre bloquer et non afficher des messages d'erreur.
+EXO 66 marchait mais aujourd'hui non. J'ai une procedure qui a l'interieur d'elle meme s'appelle. Ca marchait hier.
+Je me demande cela esr du à l'imprevisibilité de python ???
+
+Ca doit être possible car je veux garder une compatibilité avec le pseudo code à 100%. Donc si j'ai bien compris ce que cela impliquer a l'interieur 
+d'une fonction on peut appeller tout ce qui est exterieur mais l'inverse oui ???

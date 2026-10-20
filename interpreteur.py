@@ -22,6 +22,9 @@ class Interpreteur:
         self.procedures: dict[str, Procedure] = procedures  
         self.tout_type: dict[str, str] = {}
 
+    def gestion_erreur(message: str = "") -> None:
+        erreur(f"Interpreteur → {message}")
+
     def interpreter(self, ast: Algorithme) -> None:
         for fonction in ast.fonctions:
             self.fonctions[fonction.nom] = fonction
@@ -53,7 +56,7 @@ class Interpreteur:
             self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau))
             return sous_tableau[indices[1]]
         else:
-            erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
+            self.gestion_erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
     
     def ecrire_tableau(self, tableau: list, indices: list[int], valeur) -> None:
         if len(indices) == 1:
@@ -65,11 +68,11 @@ class Interpreteur:
             self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau))
             sous_tableau[indices[1]] = valeur
         else:
-            erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
+            self.gestion_erreur(f"Tableau : {len(indices)} dimension(s) non supportée(s) (max 2)")
     
     def verifier_bornes(self, tableau: list, indice: int, taille: int) -> None:
         if indice < 0 or indice >= taille:
-            erreur(f"Indice {indice} hors bornes à l'exécution (taille : {taille})")
+            self.gestion_erreur(f"Indice {indice} hors bornes à l'exécution (taille : {taille})")
 
     def ecrire(self, inst) -> None:
         for arg in inst.arguments:
@@ -109,12 +112,12 @@ class Interpreteur:
         if isinstance(un_cas, AppelFonction):
             if un_cas.nom in ("racine", "sqrt"): # C'est exprès
                 if len(un_cas.arguments) != 1:
-                    erreur("La fonction 'racine' prend exactement un argument.")
+                    self.gestion_erreur("La fonction 'racine' prend exactement un argument.")
                 valeur = self.evaluer_expression(un_cas.arguments[0])
                 if not isinstance(valeur, (int, float)):
-                    erreur("L'argument de 'racine' doit être un nombre.")
+                    self.gestion_erreur("L'argument de 'racine' doit être un nombre.")
                 if valeur < 0:
-                    erreur("Impossible de calculer la racine carrée d'un nombre négatif.")
+                    self.gestion_erreur("Impossible de calculer la racine carrée d'un nombre négatif.")
                 import math
                 return math.sqrt(valeur)
 
@@ -122,7 +125,7 @@ class Interpreteur:
                 try:
                     tableau = self.env_courant.obtenir(un_cas.nom)
                 except:
-                    erreur(f"'{un_cas.nom}' n'est ni une fonction ni un tableau")
+                    self.gestion_erreur(f"'{un_cas.nom}' n'est ni une fonction ni un tableau")
             
                 indices = [self.evaluer_expression(arg) for arg in un_cas.arguments]
                 return self.lire_tableau(tableau, indices)
@@ -155,16 +158,16 @@ class Interpreteur:
             indices = [self.evaluer_expression(idx) for idx in un_cas.indices]
             for idx in indices:
                 if not isinstance(idx, int):
-                    erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
+                    self.gestion_erreur(f"{un_cas.nom} : les indices d'un tableau doivent toujours être des entiers.")
             return self.lire_tableau(tableau, indices)
 
         else:
-            erreur("Cas inconnu")
+            self.gestion_erreur("Cas inconnu")
 
     def operation_binaire(self, gauche, droite, operateur):
         def verifie_zero(droite) -> None:
             if droite == 0 or droite == 0.0:
-                erreur("Division par zéro détectée à l'exécution")
+                self.gestion_erreur("Division par zéro détectée à l'exécution")
         match operateur:
             case "+": resultat = gauche + droite
             case "-": resultat = gauche - droite
@@ -222,7 +225,7 @@ class Interpreteur:
                     dim2 = self.evaluer_expression(inst.dimensions[1])
                     tableau = [[valeur for _ in range(dim2)] for _ in range(dim1)]
                 else:
-                    erreur("Tableaux de plus de 2 dimensions non supportés")
+                    self.gestion_erreur("Tableaux de plus de 2 dimensions non supportés")
             self.env_courant.definir(inst.nom, tableau)
                 
         elif isinstance(inst, Affectation):
@@ -249,19 +252,19 @@ class Interpreteur:
                         try:
                             saisie = int(saisie)
                         except ValueError:
-                            erreur(f"{nom} est un entier et ne peut pas recevoir '{saisie}'")
+                            self.gestion_erreur(f"{nom} est un entier et ne peut pas recevoir '{saisie}'")
 
                     case "reel":
                         try:
                             saisie = float(saisie)
                         except ValueError:
-                            erreur(f"{nom} est un réel et ne peut pas recevoir '{saisie}'")
+                            self.gestion_erreur(f"{nom} est un réel et ne peut pas recevoir '{saisie}'")
 
                     case "booleen":
-                        erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
+                        self.gestion_erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
                     case "caractere":
                         if len(saisie) != 1:
-                            erreur(f"{nom} est un caractère et ne peut recevoir qu'un seul élément")
+                            self.gestion_erreur(f"{nom} est un caractère et doit recevoir qu'un seul élément")
         
                 if isinstance(cible, Identifiant):
                     self.env_courant.modifier(nom, saisie)
@@ -293,7 +296,7 @@ class Interpreteur:
                 
                 # Vérification optionnelle de sécurité à l'exécution
                 if type_cible == "caractere" and not isinstance(branche.valeur, Caractere):
-                    erreur("Incompatibilité de type à l'exécution : la branche doit être un caractère entre simples quotes ' '.")
+                    self.gestion_erreur("Incompatibilité de type à l'exécution : la branche doit être un caractère entre simples quotes ' '.")
         
                 if valeur_cible == valeur_branche:
                     trouve = True
@@ -312,7 +315,7 @@ class Interpreteur:
             val_pas = self.evaluer_expression(inst.pas)
 
             if val_pas <= 0:
-                erreur(f"Le pas d'une boucle 'pour' doit être strictement positif (reçu : {val_pas})")
+                self.gestion_erreur(f"Le pas d'une boucle 'pour' doit être strictement positif (reçu : {val_pas})")
 
             self.env_courant.definir(nom_indice, val_debut)
 

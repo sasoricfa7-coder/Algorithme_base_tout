@@ -1,0 +1,21 @@
+Algorithme conversion_entier_en_binaire %La recursivité%
+	Procedure convertir(x: entier)
+		Debut
+			Si x div 2 <> 0 alors
+				convertir(x div 2)
+				Ecrire(x mod 2)
+			fin Si
+		Fin
+
+Variables
+	n: entier 
+
+Debut 
+	Répeter 
+		Ecrire("Entrez n : ")
+		Lire(n)
+	Jusqu'à 0 <= n
+
+	Ecrire(n, " en binaire est ") 
+	convertir(n)
+Fin 

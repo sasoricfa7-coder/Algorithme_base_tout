@@ -1,16 +1,5 @@
 algorithmes test
 
-procedure ma_procedure(X: booléen)
-
 debut
-	Ecrire(x)
-fin
-
-variable
-	valide: booléen
-
-debut
-	lire(valide)
-	Ecrire(valide)
-	ma_procedure(valide)
+	Ecrire(2 / 0)
 fin
