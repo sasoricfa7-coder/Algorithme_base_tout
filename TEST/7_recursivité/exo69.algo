@@ -1,0 +1,19 @@
+Algorithme somme_tableau %Recursiviter%
+Fonction somme(TAB: Tableau entier, j: entier) : entier
+Debut
+	Si j > 0 alors
+		Retourne TAB(j - 1) + somme(TAB, j - 1)
+	Sinon
+		Retourne 0
+	fin Si
+Fin
+
+Variables 
+	Tableau T(5), i : entier 
+
+Debut 
+	Pour i ← 0 à 4 pas 1 faire
+		T(i) ← 1
+	fin Pour
+	Ecrire("somme = ", somme(T, 5))
+Fin 

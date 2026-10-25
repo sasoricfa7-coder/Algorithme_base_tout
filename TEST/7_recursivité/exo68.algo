@@ -1,0 +1,18 @@
+Algorithme affichage_tableau %Recursiviter%
+Procedure afficher(TAB: Tableau entier, j: entier)
+Debut
+	Si j > 0 alors
+		Ecrire("TAB(", j - 1,") = ", TAB(j - 1))
+		afficher(TAB, j - 1)
+	fin Si
+Fin
+
+Variables 
+	Tableau T(5), i : entier 
+
+Debut 
+	Pour i ← 0 à 4 pas 1 faire
+		T(i) ← i
+	fin Pour
+	afficher(T, 5)
+Fin 
