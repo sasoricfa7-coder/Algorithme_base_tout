@@ -86,6 +86,12 @@ class Interpreteur:
             print(valeur, end="")
         print()
 
+    def copie_profonde(self, tableau: list) -> list:
+        """Copie profonde d'un tableau 1D ou 2D."""
+        if tableau and isinstance(tableau[0], list):
+            return [ligne.copy() for ligne in tableau]  # 2D
+        return tableau.copy()  # 1D
+
     def evaluer_expression(self, un_cas):
         if isinstance(un_cas, (Nombre, ChaineCaractere, Caractere, Booleen)):
             if isinstance(un_cas, Booleen):
@@ -141,6 +147,8 @@ class Interpreteur:
             self.env_courant = env_fonction
 
             for parametre, arg in zip(noeud.parametres, arguments):
+                if parametre.est_tableau and isinstance(arg, list):
+                    arg = self.copie_profonde(arg)
                 self.env_courant.definir(parametre.nom, arg)
             for decl in noeud.declarations:
                 self.executer_instruction(decl)
@@ -351,6 +359,8 @@ class Interpreteur:
             self.env_courant = env_proc
 
             for parametre, arg in zip(procedure.parametres, arguments):
+                if parametre.est_tableau and isinstance(arg, list):
+                    arg = self.copie_profonde(arg)
                 self.env_courant.definir(parametre.nom, arg)
 
             for decl in procedure.declarations:

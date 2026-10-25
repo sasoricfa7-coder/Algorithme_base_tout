@@ -93,14 +93,34 @@ class AnalyseurSemantique:
         
         # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
         for fonction in self.ast.fonctions:
+            types_params: list[str] = []
+            for p in fonction.parametres:
+                if p.est_tableau:
+                    types_params.append(f"tableau {p.type}")
+                else:
+                    types_params.append(p.type)
+            
+            if fonction.retour_est_tableau:
+                type_retour = f"tableau {fonction.type_retour}"
+            else:
+                type_retour = fonction.type_retour
+            
             self.tables.declarer(
-                fonction.nom, 
-                Symbole(fonction.nom, fonction.type_retour, False, [p.type for p in fonction.parametres], nature="fonction", est_initialise=True)
+                fonction.nom,
+                Symbole(fonction.nom, type_retour, False, types_params, nature="fonction", est_initialise=True)
             )
+        
         for procedure in self.ast.procedures:
+            types_params: list[str] = []
+            for p in procedure.parametres:
+                if p.est_tableau:
+                    types_params.append(f"tableau {p.type}")
+                else:
+                    types_params.append(p.type)
+            
             self.tables.declarer(
-                procedure.nom, 
-                Symbole(procedure.nom, "procedure", False, [p.type for p in procedure.parametres], nature="procedure", est_initialise=True)
+                procedure.nom,
+                Symbole(procedure.nom, "procedure", False, types_params, nature="procedure", est_initialise=True)
             )
 
         # Passe 2 : Analyser les corps des fonctions et procédures
@@ -127,7 +147,13 @@ class AnalyseurSemantique:
             self.fonction_courante = fonction
 
             for param in fonction.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
+                if param.est_tableau:
+                    self.tables.declarer(
+                        param.nom,
+                        Symbole(param.nom, param.type, nature="tableau", nb_dimensions=1, est_initialise=True)
+                    )
+                else:
+                    self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
 
             self.visiter_declarations(fonction.declarations)
 
@@ -174,8 +200,13 @@ class AnalyseurSemantique:
             self.fonction_courante = None
 
             for param in procedure.parametres:
-                self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
-
+                if param.est_tableau:
+                    self.tables.declarer(
+                        param.nom,
+                        Symbole(param.nom, param.type, nature="tableau", nb_dimensions=1, est_initialise=True)
+                    )
+                else:
+                    self.tables.declarer(param.nom, Symbole(param.nom, param.type, nature="parametre", est_initialise=True))
             self.visiter_declarations(procedure.declarations)
 
             self.appel_instruction(procedure.corps)
@@ -283,6 +314,7 @@ class AnalyseurSemantique:
 
     def visiter_affectation(self, instruction: Affectation) -> None:
         symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
+        symbole.est_utilise = True   # ✅ la cible d'une affectation est "utilisée"
 
         if symbole.est_verrouille:
             self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
@@ -291,7 +323,9 @@ class AnalyseurSemantique:
             self.tables.erreur(f"On ne peut pas affecter une procédure vu qu'elle ne retourne rien : {symbole.nom}")
 
         if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
-            self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un.")
+            # ✅ Exception : T ← f(...) où f retourne un tableau
+            if not isinstance(instruction.valeur, AppelFonction):
+                self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un.")
 
         if symbole.est_constante:
             self.tables.erreur("Une constante est immuable donc par conséquent affectation impossible.")
@@ -315,9 +349,18 @@ class AnalyseurSemantique:
                     self.tables.erreur("L'indice d'un tableau doit être de type entier.")
 
         type_affecte = self.obtenir_type_expression(instruction.valeur)
-        if symbole.type != type_affecte:
-            if not (symbole.type == "reel" and type_affecte == "entier"):
-                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{symbole.type}'.")
+        
+        # Le type "cible" dépend de ce qu'on affecte
+        if isinstance(instruction.cible, Indexation):
+            # ✅ Une case de tableau a le type scalaire (reel, entier, ...)
+            type_cible = symbole.type
+        else:
+            # ✅ Le tableau entier (via AppelFonction) a le type "tableau X"
+            type_cible = f"tableau {symbole.type}" if symbole.nature == "tableau" else symbole.type
+        
+        if type_cible != type_affecte:
+            if not (type_cible == "reel" and type_affecte == "entier"):
+                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.")
 
         symbole.est_initialise = True
 
@@ -563,7 +606,10 @@ class AnalyseurSemantique:
             symbole.est_utilise = True
             if not est_condition:
                 symbole.est_consomme = True
+            if symbole.nature == "tableau":
+                return f"tableau {symbole.type}"
             return symbole.type
+
         elif isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
@@ -623,6 +669,21 @@ class AnalyseurSemantique:
             return type_op
         
         self.tables.erreur("Inconnu")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -710,6 +771,11 @@ class Parseur:
         parametre: list[Parametre] = self.parse_parametres()
         self.consommer("declaration_type")
         
+        retour_est_tableau = False
+        if self.token_courant()["valeur"] == "tableau":
+            retour_est_tableau = True
+            self.consommer("mots_cles", "tableau")
+        
         type_retour: str = str(self.token_courant()["valeur"])
         if type_retour not in LES_TYPES_PRIS :
             self.erreur(f"Type de retour '{type_retour}' non pris en charge.")
@@ -717,8 +783,8 @@ class Parseur:
         self.consommer("mots_cles")
         declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
-
-        return Fonction(nom, parametre, type_retour, declaration, corps_complet)
+    
+        return Fonction(nom, parametre, type_retour, declaration, corps_complet, retour_est_tableau)
 
     def parse_procedure(self) -> Procedure:
         self.consommer( "mots_cles","procedure")
@@ -734,12 +800,18 @@ class Parseur:
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("declaration_type")
+        
+        est_tableau = False
+        if self.token_courant()["valeur"] == "tableau":
+            est_tableau = True
+            self.consommer("mots_cles", "tableau")
+        
         le_type: str = self.token_courant()["valeur"]
         if self.token_courant()["valeur"] not in LES_TYPES_PRIS :
             self.erreur(f"{self.token_courant()['valeur']} type non pris en charge.")
         self.consommer("mots_cles")
-
-        return Parametre(nom, le_type)
+    
+        return Parametre(nom, le_type, est_tableau)
 
     def parse_parametres(self) -> list[Parametre]:
         self.consommer("PAREN_OUVRANT")
@@ -1162,6 +1234,7 @@ class Fonction:
     type_retour: str
     declarations: list[Declaration]
     corps: list[Instruction]
+    retour_est_tableau: bool = False
 
 @dataclass
 class Procedure:
@@ -1174,6 +1247,7 @@ class Procedure:
 class Parametre:
     nom: str
     type: str
+    est_tableau: bool = False
 
 @dataclass
 class DeclarationVariable:
