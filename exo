@@ -1,5 +1,20 @@
-Algorithme hello_world
+Algorithmes mini_calculatrice
+variables
+	n1, n2: entier
+	operateur: caractère
 
 debut
-	Ecrire("Hello world")
+	Ecrire("Entrez successivement deux nombres entiers")
+	lire(n1, n2)
+
+	Ecrire("Entrez l'operation souhaiter entre : + - / * ")
+	lire(operateur)
+
+	cas operateur vaut
+		'+' : Ecrire(n1, " + ", n2, " = ", n1 + n2)
+		'-' : Ecrire(n1, " - ", n2, " = ", n1 - n2)
+		'*' : Ecrire(n1, " * ", n2, " = ", n1 * n2)
+		'/' : Ecrire(n1, " + ", n2, " = ", n1 / n2)
+		Sinon: Ecrire("Operateur non pris en charge : ", operateur)
+	fin cas
 fin

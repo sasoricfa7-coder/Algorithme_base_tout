@@ -1,28 +1,26 @@
 algorithmes nbrs_jours
 variables
-	mois: chaines
+	mois, msg: chaines
 
 debut
 	Ecrire("Entrez le nom du mois en minuscule et sans accent.")
 	lire(mois)
 
 	cas mois vaut
-		"janvier" : 
-			debut
-				Ecrire("31 jours")
-			fin
-		"fevrier" : Ecrire("31 jours")
-		"mars" : Ecrire("31 jours")
-%		"avril"
-		"mai"
-		"juin"
-		"juillet"
-		"août"
-		"septembre"
-		"octobre"
-		"novembre"
-		"decembre"%
+		"janvier" : msg ← "31 jours"
+		"fevrier" : msg ← "28/29 jours"
+		"mars" : msg ← "31 jours"
+		"avril" : msg ← "30 jours"
+		"mai" : msg ← "31 jours"
+		"juin" : msg ← "30 jours"
+		"juillet" : msg ← "31 jours"
+		"août" : msg ← "31 jours"
+		"septembre" : msg ← "30 jours"
+		"octobre" : msg ← "31 jours"
+		"novembre" : msg ← "30 jours"
+		"decembre" : msg ← "31 jours"
 		sinon:
-			Ecrire("Entrez incorrect verifier l'orthographe.")
+			msg ← "Entrez incorrect verifier l'orthographe."
 	fin cas
+	Ecrire(msg)
 fin

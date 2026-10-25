@@ -4,4 +4,26 @@ Dit moi de te montrer mon algo 69 j'ai du penser comme le pc pour que l'analyseu
 Le fait qu'une variable est unique partout levons ca : differentes porter peuvent avoir le meme nom le seul truc unique à 100% est le nom de 
 l'Algorithme
 
+EXO5 notre interpréteur doit pouvoir detecter la division par zero à 100% pour / div et mod actu ce sont des erreurs pythons qui s'affiche.
+Je me demande quand on va publier n'est ce pas mieux de faire un except et donner un message clair à l'utilisateur que le problème vient de nous
+sinon les erreurs python font peur.
+
+EXO 10 : deux constantes avec la meme valeur on doit bloquer ca avant meme la compilation
+car ca ne sert à rien.
+
+Je suis etonner de voir que dans le bloc Si  Sinon on arrive à imbriquer dans le Si je trouve ca comme une mauvaise pratique
+quand pense tu ?? On bloque ??
+
+
+
+
+
+
+
+
 Et j'ai fini tous les exo pour les tests : j'ai en tout 70. 
+Moi je veux que l'on modifie pour faire la distinction net entre a comme mot clé et A comme identifiant.
+
+Il nous reste de trucs majeurs vant de publier la V0.0.0 : 
+Rendre les variables unique par portée et non dans tout le programme
+Gerer le a

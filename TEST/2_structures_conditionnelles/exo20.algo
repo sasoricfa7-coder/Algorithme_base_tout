@@ -1,5 +1,5 @@
 Algorithmes mini_calculatrice
-%variables
+variables
 	n1, n2: entier
 	operateur: caractère
 
@@ -7,21 +7,14 @@ debut
 	Ecrire("Entrez successivement deux nombres entiers")
 	lire(n1, n2)
 
-	Ecrire("Entrez l'operations souhaiter entre : + - / * ")
+	Ecrire("Entrez l'operation souhaiter entre : + - / * ")
+	lire(operateur)
 
 	cas operateur vaut
-		'+' : debut 
-			Ecrire("somme")
-			Ecrire(n1 + n2) 
-			fin
+		'+' : Ecrire(n1, " + ", n2, " = ", n1 + n2)
+		'-' : Ecrire(n1, " - ", n2, " = ", n1 - n2)
+		'*' : Ecrire(n1, " * ", n2, " = ", n1 * n2)
+		'/' : Ecrire(n1, " + ", n2, " = ", n1 / n2)
+		Sinon: Ecrire("Operateur non pris en charge : ", operateur)
 	fin cas
-fin
-%
-constante
-	operateur ← '+'
-debut
-	si operateur = '+' alors
-		Ecrire(operateur)
-	fin si
-	
 fin
