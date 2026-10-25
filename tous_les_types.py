@@ -429,6 +429,12 @@ class AnalyseurSemantique:
         if symbole.type != "entier":
             self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫")
 
+        if symbole.est_verrouille:
+            self.tables.erreur(
+                f"L'indice '{symbole.nom}' est déjà utilisé par une boucle englobante. "
+                f"Utilisez un nom différent pour la boucle imbriquée // Index '{symbole.nom}' already used by an enclosing loop 🚫"
+            )
+
         symbole.est_initialise = True
         symbole.est_utilise = True
         symbole.est_verrouille = True
@@ -589,6 +595,9 @@ class AnalyseurSemantique:
             return symbole.type
         elif isinstance(expr, OperationBinaire):
             type_g = self.obtenir_type_expression(expr.gauche, est_condition)
+            if expr.operateur in ("/", "div", "mod"):
+                if isinstance(expr.droite, Nombre) and expr.droite.valeur == 0:
+                    self.tables.erreur("Division par zéro détectée à la compilation // Division by zero at compile time 🚫")
             type_d = self.obtenir_type_expression(expr.droite, est_condition)
             
             if expr.operateur in ("=", "<>", "<", ">", "<=", ">="):

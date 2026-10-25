@@ -4,6 +4,8 @@ Algorithme conversion_entier_en_binaire %La recursivité%
 			Si x div 2 <> 0 alors
 				convertir(x div 2)
 				Ecrire(x mod 2)
+			Sinon
+				Ecrire(x mod 2)
 			fin Si
 		Fin
 

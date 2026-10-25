@@ -1,5 +1,11 @@
-algorithmes test
-
+algorithme test
+fonction f(x: entier) : entier
 debut
-	Ecrire(2 / 0)
+    retourne f(x)
+fin
+variables
+    y: entier
+debut
+    y ← f(1)
+    Ecrire(y)
 fin

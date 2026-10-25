@@ -21,6 +21,7 @@ class Interpreteur:
         self.fonctions: dict[str, Fonction] = fonctions
         self.procedures: dict[str, Procedure] = procedures  
         self.tout_type: dict[str, str] = {}
+        
 
     def gestion_erreur(message: str = "") -> None:
         erreur(f"Interpreteur → {message}")

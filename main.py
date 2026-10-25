@@ -4,6 +4,7 @@ from tous_les_types import Parseur, afficher_ast, AnalyseurSemantique
 import pprint as p
 from interpreteur import Interpreteur
 import sys
+from erreur import erreur
 
 """LANGAGE EVA"""
 try:
@@ -24,3 +25,11 @@ try:
 except KeyboardInterrupt:
     print("\n\033[1m\033[93mArrêt en cours... // Stopping...\033[0m")
     sys.exit(130)
+
+except RecursionError:
+    erreur(
+        "Profondeur de récursivité maximale dépassée. "
+        "Vérifiez que votre fonction a un cas de base // "
+        "Maximum recursion depth exceeded. "
+        "Check that your function has a base case 🚫"
+    )
