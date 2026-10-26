@@ -1,20 +1,22 @@
-Algorithmes mini_calculatrice
+algorithmes suite_fibonacci
 variables
-	n1, n2: entier
-	operateur: caractère
-
+	x, i, fib: entier
+	fibn, fibn1: entier
 debut
-	Ecrire("Entrez successivement deux nombres entiers")
-	lire(n1, n2)
+	repeter
+		Ecrire("Entrez un entier positif superieur ou egale à 2")
+		lire(x)
+	jusqu'à x >= 2
 
-	Ecrire("Entrez l'operation souhaiter entre : + - / * ")
-	lire(operateur)
-
-	cas operateur vaut
-		'+' : Ecrire(n1, " + ", n2, " = ", n1 + n2)
-		'-' : Ecrire(n1, " - ", n2, " = ", n1 - n2)
-		'*' : Ecrire(n1, " * ", n2, " = ", n1 * n2)
-		'/' : Ecrire(n1, " + ", n2, " = ", n1 / n2)
-		Sinon: Ecrire("Operateur non pris en charge : ", operateur)
-	fin cas
+	fibn ← 0
+	fibn1 ← 1
+	Ecrire("Les termes de la suite de fibonnaci sont : ")
+	Ecrire("Fib0 = ",fibn)
+	Ecrire("Fib1 = ",fibn1)
+	pour i ← 2 à x pas 1 faire
+		fib ← fibn + fibn1
+		Ecrire(fib)
+		fibn ← fibn1
+		fibn1 ← fib
+	fin pour
 fin

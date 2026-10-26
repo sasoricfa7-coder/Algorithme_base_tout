@@ -14,11 +14,8 @@ car ca ne sert à rien.
 Je suis etonner de voir que dans le bloc Si  Sinon on arrive à imbriquer dans le Si je trouve ca comme une mauvaise pratique
 quand pense tu ?? On bloque ??
 
-
-
-
-
-
+EXO21 normalement l'intréteur gère ce cas mais il crache par exemple en entré mettre 2 * 2 pour un int ne devais pas afficher des erreurs 
+pythons mais les tiennent.
 
 
 Et j'ai fini tous les exo pour les tests : j'ai en tout 70. 

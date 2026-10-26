@@ -23,7 +23,7 @@ class Interpreteur:
         self.tout_type: dict[str, str] = {}
         
 
-    def gestion_erreur(message: str = "") -> None:
+    def gestion_erreur(self, message: str = "") -> None:
         erreur(f"Interpreteur → {message}")
 
     def interpreter(self, ast: Algorithme) -> None:
@@ -173,23 +173,24 @@ class Interpreteur:
         else:
             self.gestion_erreur("Cas inconnu")
 
+    def verifie_zero(self, droite) -> None:
+        if droite == 0 or droite == 0.0:
+            self.gestion_erreur("Division par zéro détectée à l'exécution")
+
     def operation_binaire(self, gauche, droite, operateur):
-        def verifie_zero(droite) -> None:
-            if droite == 0 or droite == 0.0:
-                self.gestion_erreur("Division par zéro détectée à l'exécution")
         match operateur:
             case "+": resultat = gauche + droite
             case "-": resultat = gauche - droite
             case "*": resultat = gauche * droite
             case "/": 
-                verifie_zero(droite)
+                self.verifie_zero(droite)
                 resultat = gauche / droite
             case "^": resultat = gauche ** droite
             case "div": 
-                verifie_zero(droite)
+                self.verifie_zero(droite)
                 resultat = gauche // droite
             case "mod": 
-                verifie_zero(droite)
+                self.verifie_zero(droite)
                 resultat = gauche % droite
             case "=": resultat = gauche == droite
             case "<": resultat = gauche < droite
