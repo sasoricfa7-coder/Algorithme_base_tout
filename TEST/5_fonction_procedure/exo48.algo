@@ -6,7 +6,7 @@ constantes
 variables
 	d, s, p: réel
 debut
-	d ← X / 2
+	d ← X * 2
 	S ← PI * X^2
 	P ← 2 * PI * X
 

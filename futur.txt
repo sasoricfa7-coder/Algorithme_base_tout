@@ -91,3 +91,15 @@ constante passer à une fonction ou autre est toujours imuable.
 	Ajouter une fonction de boucle sur les colonnes  tableaux car tu vois que c'est difficile à partir de 2D or
 	la ligne est offerte gratuit.
 """
+Ajout du break mais pas comme en python ou autre mais en go : 
+	ici tu est obliger de nommer le bloc que tu veux quitter meme si
+	c'est une fonction : c'est facile explicite et le cas d'emploi est vaste.
+
+
+'
+Avant j'étais chaud a changer de langage mais maintenant plus car j'ai peut a gagner et la regression est inevitable
+Je resterai sur python et pour ce dont je revais kotlin ou android je peut le faire en python : il me suffira de tout faire moi meme
+par exemple je veux profiter de la JVM de java il me suffit de transpiler le code EVA en Kotlin
+Je veux la JIT pareil,
+Je veux ..., pareil
+'

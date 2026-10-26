@@ -22,6 +22,15 @@ quand pense tu ?? On bloque ??
 EXO21 normalement l'intréteur gère ce cas mais il crache par exemple en entré mettre 2 * 2 pour un int ne devais pas afficher des erreurs 
 pythons mais les tiennent.
 
+regarde : Ecrire(x,y,z,w) par exemple donne ca : 1.02.03.04.0
+C'est trop laid
+
+Ya un exo sur lequel j'étais car je teste tout ce qui me viens en tête surtout les cas tordu : un algorithme qui prends un polynome de degré 3
+calcul la racine et cherche un polynome de degré de sorte que P(x) = (x - racine) (ax² + bx + c) ca vite reveler des buggs dans notre codes.
+
+Avant je voulais tout recoder vite de zero mais plus je regarde  tout ce qu'on n'a corriger et plus je vois qu'avec une réecriture
+la regression est inevitable et meme sure donc on ferai intelligemment en remplacant peut des éléments les plus simple au plus dangereux et ya meme
+d'autre que l'on evitera de changer de zero comme Analyseur semantique car c'est le gardien de notre code.
 
 Et j'ai fini tous les exo pour les tests : j'ai en tout 70. 
 Moi je veux que l'on modifie pour faire la distinction net entre a comme mot clé et A comme identifiant.

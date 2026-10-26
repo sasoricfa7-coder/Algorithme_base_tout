@@ -1,0 +1,66 @@
+Algorithme degre3
+
+Fonction determine_racine(b: réel, c: réel, d: réel, e: réel): entier
+
+constantes
+	Min ← -58
+	Max ← 58
+	ARRET ← -666
+
+
+variables
+	index: entier
+	valide: caractère
+	r: entier
+	verificateur: booleen
+debut
+	Ecrire("Entrez O si vous connaisser la racine de ", b, "x³ ", c,"x² ", d,"x ", e, " : sinon N")
+	lire(valide)
+	verificateur ← FAUX
+	r ← 0
+	Si valide = 'o' alors
+		Ecrire("Entrez la racine : ")
+		lire(r)
+		verificateur ← b(r)^3 + c(r)^2 + d(r) + e = 0
+		Si verificateur alors
+			Ecrire("Racine correct calcul en cours...")
+			retourne r
+		fin Si
+		Ecrire("Racine incorrect, determination de la racine en cours...")
+		valide ← 'n'
+	fin Si
+
+	verificateur ← FAUX
+	Si valide <> 'o' alors
+		pour index ← Min à Max pas 1 faire
+			Si b(index)^3 + c(index)^2 + d(index) + e = 0 alors
+				r ← index
+				verificateur ← VRAI
+			fin Si
+		fin pour
+	fin Si
+
+	Si verificateur alors
+		Ecrire("Racine trouvée, calcul en cours...")
+		Retourne r
+	Sinon
+		Ecrire("Racine non trouver, fin du programme.")
+		Retourne ARRET
+	fin Si
+fin
+
+variables
+	x, y, z, w: réel
+	la_racine: entier
+
+debut
+	Ecrire("========================================================================================================")
+	Ecrire("	Algorithme qui determine le polynome Q(x) de degré 2 pour que P(x) = (x - a) . Q(x)")
+	Ecrire("========================================================================================================")
+
+	Ecrire("Entrez successivement les valeurs de a, b, c et d : ")
+	Lire(x, y, z, w)
+	
+	la_racine ← determine_racine(x, y, z, w)
+	Ecrire(la_racine)
+fin
