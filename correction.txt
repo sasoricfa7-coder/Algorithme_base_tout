@@ -1,3 +1,8 @@
+Objectif de cette version : la v0.0.0
+executer tout le pseudo code de Hassan El Bahi avant de penser a ajouter des trucs.
+
+
+
 Accession dynamique a des indices hors bornes on doit controler nous meme pas afficher des erreurs python.
 Le fait de garantir de retourne dans toutes les branches je t'assure que c'est très bien ca aide à structurer la pensée algorithmique
 Dit moi de te montrer mon algo 69 j'ai du penser comme le pc pour que l'analyseur semantique me laisse passer.
@@ -24,3 +29,4 @@ Moi je veux que l'on modifie pour faire la distinction net entre a comme mot cl�
 Il nous reste de trucs majeurs vant de publier la V0.0.0 : 
 Rendre les variables unique par portée et non dans tout le programme
 Gerer le a
+La prise en charge complète de la declaration des tableaux sur une seule ligne

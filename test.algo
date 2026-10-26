@@ -1,22 +1,7 @@
 algorithme test
-
-procedure remplir_zero(T: tableau entier)
-variables
-    i1: entier
+variable
+	valide : booléen
 debut
-    pour i1 ← 0 à 4 pas 1 faire
-        T(i1) ← 0
-    fin pour
-fin
-
-variables
-    tableau Tab(5): entier
-    i: entier
-debut
-    pour i ← 0 à 4 pas 1 faire
-        Tab(i) ← 42
-    fin pour
-    Ecrire("Avant : ", Tab(0))
-    remplir_zero(Tab)
-    Ecrire("Après : ", Tab(0))
+	valide ← vrai
+	Ecrire(valide)
 fin

@@ -374,7 +374,7 @@ class AnalyseurSemantique:
             if symbole.est_constante:
                 self.tables.erreur("Impossible de lire dans une constante.")
             if symbole.type == "booleen":
-                self.tables.erreur("On ne peut pas affecter un contenu à un booléen: non pris en charge dans le langage EVA")
+                self.tables.erreur("On ne peut pas lire un booléen. Veuillez faire une affectation directe.")
             if symbole.est_verrouille:
                 self.tables.erreur(f"Impossible de modifier '{symbole.nom}' via 'lire' car c'est l'indice d'une boucle 'pour' en cours d'exécution. 🚫")
             if isinstance(element, Indexation):
