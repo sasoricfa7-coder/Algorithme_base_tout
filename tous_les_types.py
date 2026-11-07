@@ -1058,7 +1058,9 @@ class Parseur:
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         debut: Expression = self.parse_expression()
-        self.consommer("mots_cles", "a")
+
+        self.consommer("identifiant", "a")
+
         fin: Expression = self.parse_expression()
         self.consommer("mots_cles", "pas")
         pas: Expression = self.parse_expression()

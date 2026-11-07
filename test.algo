@@ -1,10 +1,10 @@
 Algorithmes essai
 
-constante
-x ← 2
-y ← 3
-z ← 4
+variable
+A: entier
 
 debut
-	Ecrire(x, y, z)
+	pour A ← 0 a 3 pas 1 faire
+		Ecrire("Hello world")
+	fin pour
 fin
