@@ -34,7 +34,7 @@ class Symbole:
 @dataclass
 class TableSymboles:
     pile: list[dict[str, Symbole]] = field(default_factory=list)
-    symboles_globaux: set[str] = field(default_factory=set)
+    noms_globaux: set[str] = field(default_factory=set)
 
     def entrer_portee(self) -> None:
         self.pile.append({})
@@ -63,9 +63,14 @@ class TableSymboles:
             self.erreur("Le nom 'racine' est réservé par le langage pour la fonction racine carrée 🚫")
         if nom == "sqrt":
             self.erreur("Le nom 'sqrt' est réservé par le langage pour la fonction racine carrée 🚫")
-        if nom in self.symboles_globaux:
-            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans le programme (Nom unique obligatoire dans EVA) 🚫 : NB: aucune donnée ne doit avoir le nom de votre algortihme.")
-        self.symboles_globaux.add(nom)
+        if nom in self.pile[-1]:
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans cette portée 🚫")
+
+        if symbole.nature in ("fonction", "procedure") or len(self.pile) == 1:
+            if nom in self.noms_globaux:
+                self.erreur(f"Le symbole global '{nom}' est déjà déclaré 🚫 : NB: aucune donnée ne doit avoir le nom de votre algorithme.")
+            self.noms_globaux.add(nom)
+
         self.pile[-1][nom] = symbole
 
     def rechercher(self, nom: str) -> Symbole:
@@ -86,9 +91,9 @@ class AnalyseurSemantique:
 
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
-        self.tables.symboles_globaux.add(self.ast.nom)
-        self.tables.symboles_globaux.add("racine")
-        self.tables.symboles_globaux.add("sqrt")
+        self.tables.noms_globaux.add(self.ast.nom)
+        self.tables.noms_globaux.add("racine")
+        self.tables.noms_globaux.add("sqrt")
         self.visiter_declarations(self.ast.declarations)
         
         # Passe 1 : Enregistrer toutes les signatures de fonctions et procédures
@@ -902,33 +907,68 @@ class Parseur:
 
     def parse_aide_tableau(self) -> list[Declaration]:
         self.consommer("mots_cles", "tableau")
+        
+        tableaux: list[tuple[str, list[Expression]]] = []
+        
+        # 1. Premier tableau
         nom: str = self.token_courant()["valeur"]
-        dimensions: list[Expression] = []
         self.consommer("identifiant")
         self.consommer("PAREN_OUVRANT")
-        dimensions.append(self.parse_expression())
-        if self.token_courant()["type"] == "separateur" :
+        dimensions: list[Expression] = [self.parse_expression()]
+        if self.token_courant()["type"] == "separateur":
             self.consommer("separateur")
             dimensions.append(self.parse_expression())
         self.consommer("PAREN_FERMANT")
-    
-        # ✅ Noms supplémentaires après le tableau (ex: T(5), i, j: entier)
-        autres_noms: list[str] = []
+        
+        nb_dim = len(dimensions)
+        tableaux.append((nom, dimensions))
+        
+        # 2. Tableaux suivants
         while self.token_courant()["type"] == "separateur":
             self.consommer("separateur")
-            autres_noms.append(self.token_courant()["valeur"])
-            self.consommer("identifiant")
-    
+            
+            # On s'attend obligatoirement à un autre tableau
+            if self.token_courant()["type"] == "identifiant" and self.token_suivant()["type"] == "PAREN_OUVRANT":
+                nom2: str = self.token_courant()["valeur"]
+                self.consommer("identifiant")
+                self.consommer("PAREN_OUVRANT")
+                dims2: list[Expression] = [self.parse_expression()]
+                if self.token_courant()["type"] == "separateur":
+                    self.consommer("separateur")
+                    dims2.append(self.parse_expression())
+                self.consommer("PAREN_FERMANT")
+                
+                # ✅ Vérification de la dimension avec message détaillé
+                if len(dims2) != nb_dim:
+                    self.erreur(
+                        f"Impossible de mélanger des dimensions différentes : "
+                        f"le tableau '{nom}' est en {nb_dim}D, "
+                        f"mais '{nom2}' est en {len(dims2)}D. "
+                        f"Tous les tableaux d'une même ligne doivent avoir la même dimension. 🚫"
+                    )
+                
+                tableaux.append((nom2, dims2))
+            else:
+                # ✅ Si ce n'est pas un tableau, on bloque avec message détaillé
+                val = self.token_courant()["valeur"]
+                self.erreur(
+                    f"Impossible de mélanger tableaux et variables : "
+                    f"le tableau '{nom}' ne peut pas être déclaré sur la même ligne que '{val}'. "
+                    f"Déclarez les tableaux et les variables sur des lignes séparées. 🚫"
+                )
+
+        # 3. Le type commun
         self.consommer("declaration_type")
         type_: str = self.token_courant()["valeur"]
-        if type_ not in LES_TYPES_PRIS :
+        if type_ not in LES_TYPES_PRIS:
             self.erreur(f"{type_} non pris en charge dans le langage EVA")
         self.consommer("mots_cles")
-    
-        # ✅ On retourne une liste : le tableau + les variables
-        resultats: list[Declaration] = [DeclarationTableau(nom, type_, dimensions)]
-        for autre in autres_noms:
-            resultats.append(DeclarationVariable(autre, type_))
+
+        # 4. On construit le résultat
+        resultats: list[Declaration] = []
+        for t_nom, t_dims in tableaux:
+            resultats.append(DeclarationTableau(t_nom, type_, t_dims))
+
         return resultats
 
     def parse_instructions(self) -> list[Instruction]:

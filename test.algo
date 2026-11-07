@@ -1,10 +1,8 @@
-Algorithmes essai
+algorithme test_portee
 
-variable
-A: entier
-
+variables
+    i: entier
 debut
-	pour A ← 0 a 3 pas 1 faire
-		Ecrire("Hello world")
-	fin pour
+    Lire(i)
+    Ecrire(i * (3)^1)
 fin
