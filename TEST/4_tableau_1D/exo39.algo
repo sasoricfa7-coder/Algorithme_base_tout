@@ -1,7 +1,7 @@
 algorithmes nombres_d_occurences
 variables
-	tableau T(50), i: entier
-	n: entier
+	tableau T(50): entier
+	n, i: entier
 	occurence: entier
 
 debut

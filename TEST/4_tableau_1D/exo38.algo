@@ -1,6 +1,7 @@
 ALGORITHMES MAX_10_ENTIERS
 variables
-	tableau T(10), i, n: entier
+	tableau T(10): entier
+	i, n: entier
 	trouver: booleen
 
 debut

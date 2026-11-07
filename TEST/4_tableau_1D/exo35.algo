@@ -1,7 +1,7 @@
 ALGORITHMES PRODUIT_SCALAIRE
 variables
-	tableau u(3), i: entier
-	tableau v(3), PS: entier
+	tableau u(3), v(3): entier
+	i, PS: entier
 	%Produit scalaire%
 
 DEBUT

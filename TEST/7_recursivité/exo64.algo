@@ -22,6 +22,11 @@ Debut
 		Ecrire("Entrez le nombre de combinaison possible p : ")
 		Lire(p)
 	Jusqu'à 1 <= n et 1 <= p
-	Ecrire("Le nombre de combinaison est : ", combinaison(p, n))
+
+	Si p <= n alors
+		Ecrire("Le nombre de combinaison est : ", combinaison(p, n))
+	Sinon
+		Ecrire("Le nombre de combinaison est : ", 0)
+	fin SI
 
 Fin 

@@ -1,6 +1,7 @@
 algorithmes somme_mohamed
 variables
-	tableau T(50), s: réel
+	tableau T(50): réel
+	s: réel
 	i: entier
 constantes
 	somme_base ← 1000.0

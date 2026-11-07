@@ -1,8 +1,8 @@
 Algorithme Triangle_pascal
 
 Variable
-	Tableau X(20 , 20), N: entier
-	i, j: entier
+	Tableau X(20 , 20): entier
+	i, j, N: entier
 
 debut
 	Répeter

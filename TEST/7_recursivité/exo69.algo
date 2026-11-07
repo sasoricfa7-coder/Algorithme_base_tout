@@ -9,7 +9,8 @@ Debut
 Fin
 
 Variables 
-	Tableau T(5), i : entier 
+	Tableau T(5): entier 
+	i: entier
 
 Debut 
 	Pour i ← 0 à 4 pas 1 faire

@@ -1,7 +1,7 @@
 algorithmes inverser_tableau
 variables
-	tableau t1(6), i: entier
-	tableau t2(6): entier
+	tableau t1(6), t2(6): entier
+	i: entier
 
 debut
 	pour i ← 0 à 5 pas 1 faire

@@ -1,7 +1,7 @@
 algorithmes cacul_tableau
 variables
-	tableau T(10), i: entier
-	s, p, element: entier
+	tableau T(10): entier
+	s, p, element, i: entier
 	m: reel
 
 debut

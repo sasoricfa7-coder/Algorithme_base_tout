@@ -1,6 +1,7 @@
 ALGORITHMES MAX_10_ENTIERS
 variables
-	tableau T(10), i, max: entier
+	tableau T(10): entier
+	i, max: entier
 
 debut
 	pour i ← 0 à 9 pas 1 faire

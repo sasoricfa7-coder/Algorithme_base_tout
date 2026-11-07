@@ -1,7 +1,8 @@
 Algorithme somme_deux_matrices
 
 Variable
-	Tableau X(4 , 6), n: réel
+	Tableau X(4 , 6): réel
+	n: réel
 	i, j, occurence: entier
 
 debut

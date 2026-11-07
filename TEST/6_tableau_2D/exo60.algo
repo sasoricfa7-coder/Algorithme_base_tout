@@ -1,7 +1,8 @@
 Algorithme somme_deux_matrices
 
 Variable
-	Tableau X(2 , 2), det: réel
+	Tableau X(2 , 2): réel
+	det: réel
 	i, j: entier
 
 debut
