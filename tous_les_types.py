@@ -503,7 +503,7 @@ class AnalyseurSemantique:
         if self.fonction_courante is None:
             self.tables.erreur("L'instruction 'retourne' est interdite dans une procédure.")
 
-        type_retour_attendu: str = self.fonction_courante.type_retour
+        type_retour_attendu: str = f"tableau {self.fonction_courante.type_retour}" if self.fonction_courante.retour_est_tableau else self.fonction_courante.type_retour
         type_retour_reel: str = self.obtenir_type_expression(instruction.valeur)
 
         if type_retour_attendu != type_retour_reel:

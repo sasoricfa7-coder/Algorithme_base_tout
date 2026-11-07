@@ -1,32 +1,32 @@
 algorithme test
-fonction doubler(T: tableau entier) : tableau entier
+fonction doubler(T1: tableau entier) : tableau entier
 variables
     tableau R(3): entier
-    i: entier
+    i1: entier
 debut
-    pour i ← 0 à 2 pas 1 faire
-        R(i) ← T(i) * 2
+    pour i1 ← 0 à 2 pas 1 faire
+        R(i1) ← T1(i1) * 2
     fin pour
     retourne R
 fin
 
-fonction somme(T: tableau entier) : entier
+fonction somme(T2: tableau entier) : entier
 variables
-    s, i: entier
+    total, i2: entier
 debut
-    s ← 0
-    pour i ← 0 à 2 pas 1 faire
-        s ← s + T(i)
+    total ← 0
+    pour i2 ← 0 à 2 pas 1 faire
+        total ← total + T2(i2)
     fin pour
-    retourne s
+    retourne total
 fin
 
 variables
     tableau Tab(3): entier
-    i: entier
+    i3: entier
 debut
-    pour i ← 0 à 2 pas 1 faire
-        Tab(i) ← i + 1
+    pour i3 ← 0 à 2 pas 1 faire
+        Tab(i3) ← i3 + 1
     fin pour
     Ecrire("Somme : ", somme(doubler(Tab)))
 fin
