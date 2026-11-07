@@ -1,25 +1,10 @@
-algorithme test
-procedure f(M: tableau entier)
-variables
-    i1, j1: entier
-debut
-    pour i1 ← 0 à 1 pas 1 faire
-        pour j1 ← 0 à 2 pas 1 faire
-            M(i1, j1) ← 99
-        fin pour
-    fin pour
-fin
+Algorithmes essai
 
-variables
-    tableau M(2, 3): entier
-    i, j: entier
+constante
+x ← 2
+y ← 3
+z ← 4
+
 debut
-    pour i ← 0 à 1 pas 1 faire
-        pour j ← 0 à 2 pas 1 faire
-            M(i, j) ← 1
-        fin pour
-    fin pour
-    Ecrire("Avant : ", M(0, 0))
-    f(M)
-    Ecrire("Après : ", M(0, 0))
+	Ecrire(x, y, z)
 fin

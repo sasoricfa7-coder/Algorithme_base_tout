@@ -83,7 +83,7 @@ class Interpreteur:
             elif isinstance(valeur, (int, float)):
                 valeur = self.formater(valeur)
 
-            print(valeur, end="")
+            print(valeur, end=" ")
         print()
 
     def copie_profonde(self, tableau: list) -> list:
