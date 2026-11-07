@@ -1,0 +1,21 @@
+algorithme test
+procedure f(T: tableau entier)
+variables
+    i1: entier
+debut
+    pour i1 ← 0 à 2 pas 1 faire
+        T(i1) ← 99
+    fin pour
+fin
+
+variables
+    tableau Tab(3): entier
+    i: entier
+debut
+    pour i ← 0 à 2 pas 1 faire
+        Tab(i) ← 1
+    fin pour
+    Ecrire("Avant : ", Tab(0))
+    f(Tab)
+    Ecrire("Après : ", Tab(0))
+fin
