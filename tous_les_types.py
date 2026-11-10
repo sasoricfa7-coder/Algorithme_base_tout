@@ -79,9 +79,9 @@ class TableSymboles:
                 return portee[nom]
         self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫")
 
-    def erreur(self, message: str ="") -> None:
+    def erreur(self, message: str ="", ligne: int = -1) -> None:
         message = f"Analyseur_semantique → {message}"
-        erreur(message)
+        erreur(message, ligne)
 
 @dataclass
 class AnalyseurSemantique:
@@ -1009,30 +1009,32 @@ class Parseur:
         return corps
 
     def parse_affectation(self) -> Affectation:
+        token_debut = self.token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         retour: Expression = self.parse_expression()
-        return Affectation(Identifiant(nom), retour)
+        return Affectation(Identifiant(nom, token_debut["ligne"]), retour, token_debut["ligne"])
 
-    def parse_instruction(self) -> Instruction : # parse_
-        if self.token_courant()["type"] == "identifiant" :
+    def parse_instruction(self) -> Instruction :
+        token_debut = self.token_courant()
+        if token_debut["type"] == "identifiant" :
             if self.token_suivant()["type"] == "operateurs_affectation" :
                 return self.parse_affectation()
             elif (self.token_suivant()["type"] == "PAREN_OUVRANT") :
-                nom: str = self.token_courant()["valeur"]
+                nom: str = token_debut["valeur"]
                 self.consommer("identifiant")
                 les_arguments = self.parse_arguments()
                 if self.token_courant()["type"] == "operateurs_affectation" :
                     self.consommer("operateurs_affectation")
                     retour: Expression = self.parse_expression()
-                    return Affectation(Indexation(nom, les_arguments), retour)
+                    return Affectation(Indexation(nom, les_arguments, token_debut["ligne"]), retour, token_debut["ligne"])
                 else :
-                    return AppelInstruction(nom, les_arguments)
+                    return AppelInstruction(nom, les_arguments, token_debut["ligne"])
             else :
                 self.erreur("Instruction invalide : identifiant tout seul")
         else :
-            match self.token_courant()["valeur"] :
+            match token_debut["valeur"] :
                 case "ecrire" : return self.parse_ecrire()
                 case "lire" : return self.parse_lire()
                 case "si" : return self.parse_si()
@@ -1044,8 +1046,9 @@ class Parseur:
                 case _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
 
     def parse_ecrire(self) -> Ecrire:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "ecrire")
-        return Ecrire(self.parse_arguments())
+        return Ecrire(self.parse_arguments(), token_debut["ligne"])
 
     def parse_cible(self) -> Identifiant | Indexation:
         nom: str = self.token_courant()["valeur"]
@@ -1056,6 +1059,7 @@ class Parseur:
         return Identifiant(nom)
 
     def parse_lire(self) -> Lire:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "lire")
         self.consommer("PAREN_OUVRANT")
         cibles: list[Identifiant | Indexation] = []
@@ -1064,9 +1068,10 @@ class Parseur:
             self.consommer("separateur")
             cibles.append(self.parse_cible())
         self.consommer("PAREN_FERMANT")
-        return Lire(cibles)
+        return Lire(cibles, token_debut["ligne"])
         
     def parse_si(self) -> Si:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "si")
         condition: Expression = self.parse_expression()
         self.consommer("mots_cles", "alors")
@@ -1075,11 +1080,11 @@ class Parseur:
         if self.token_courant()["valeur"] == "sinon" :
             self.consommer("mots_cles", "sinon")
             sinon = self.parse_instructions()
-
         self.consommer("mots_cles", "fin si")
-        return Si(condition, alors, sinon)
+        return Si(condition, alors, sinon, token_debut["ligne"])
 
     def parse_branche_cas(self) -> BrancheCas:
+        token_debut = self.token_courant()
         valeur: Expression = self.parse_expression()
         self.consommer("declaration_type")
         if self.token_courant()["valeur"] in ("si", "cas", "pour", "tant que", "repeter") :
@@ -1097,9 +1102,10 @@ class Parseur:
         else :
             corps = [self.parse_instruction()]
             self.fin_de_ligne()
-        return BrancheCas(valeur, corps)
+        return BrancheCas(valeur, corps, token_debut["ligne"])
 
     def parse_cas(self) -> Cas:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "cas")
         nom: Identifiant | Indexation = self.parse_cible()
         self.consommer("mots_cles", "vaut")
@@ -1114,45 +1120,46 @@ class Parseur:
         self.consommer("declaration_type")
         sinon: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin cas")
-        return Cas(nom, les_branches, sinon)
+        return Cas(nom, les_branches, sinon, token_debut["ligne"])
 
     def parse_pour(self) -> Pour:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "pour")
         indice: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         debut: Expression = self.parse_expression()
-
         self.consommer("identifiant", "a")
-
         fin: Expression = self.parse_expression()
         self.consommer("mots_cles", "pas")
         pas: Expression = self.parse_expression()
         self.consommer("mots_cles", "faire")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin pour")
-
-        return Pour(Identifiant(indice), debut, fin, pas, corps)
+        return Pour(Identifiant(indice, token_debut["ligne"]), debut, fin, pas, corps, token_debut["ligne"])
 
     def parse_tant_que(self) -> TantQue:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "tant que")
         condition: Expression = self.parse_expression()
         self.consommer("mots_cles","faire")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin tant que")
-        return TantQue(condition, corps)
+        return TantQue(condition, corps, token_debut["ligne"])
 
     def parse_repeter(self) -> Repeter:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "repeter")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "jusqu'a")
         condition: Expression = self.parse_expression()
-        return Repeter(corps, condition)
+        return Repeter(corps, condition, token_debut["ligne"])
 
     def parse_retourne(self) -> Retourne:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "retourne")
         valeur: Expression = self.parse_expression()
-        return Retourne(valeur)
+        return Retourne(valeur, token_debut["ligne"])
 
     def parse_arguments(self) -> list[Expression]:
         self.consommer("PAREN_OUVRANT")
@@ -1170,76 +1177,84 @@ class Parseur:
         return self.parse_ou_expr()
 
     def parse_ou_expr(self) :
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_et_expr()
         
         while self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "ou" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "ou") # je veux rester coherent
             droite: Expression = self.parse_et_expr()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
 
         return gauche
 
     def parse_et_expr(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_non_expr()
         
         while  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "et" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "et") # je veux rester coherent
             droite: Expression = self.parse_non_expr()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
 
         return gauche
 
     def parse_non_expr(self) -> Expression:
+        token_debut = self.token_courant()
         if  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "non" :
             self.consommer("operateurs_logiques", "non")
             operande: Expression = self.parse_non_expr()
-            return OperationUnaire("non", operande)
+            return OperationUnaire("non", operande, token_debut["ligne"])
         return self.parse_comparaison()
 
     def parse_comparaison(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_additif()
         if self.token_courant()["type"] == "operateurs_comparaison" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_comparaison")
             droite: Expression = self.parse_additif()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
 
     def parse_additif(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_multiplicatif()
         while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_multiplicatif()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_multiplicatif(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_puissance()
         while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("*", "/", "mod", "div") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_puissance()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_puissance(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_unaire()
         if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] == "^" :
             operateur: str = str(self.token_courant()["valeur"])
             self.consommer("operateurs_arihmetiques", "^")
             droite: Expression = self.parse_puissance()  # Récursion à droite
-            return OperationBinaire(operateur, gauche, droite)
+            return OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_unaire(self) -> Expression:
+        token_debut = self.token_courant()
         if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             operande: Expression = self.parse_unaire()
-            return OperationUnaire(operateur, operande)
+            return OperationUnaire(operateur, operande, token_debut["ligne"])
         return self.parse_primaire()
 
     def parse_primaire(self) -> Expression:
@@ -1249,30 +1264,23 @@ class Parseur:
 
         if type_token == "NOMBRE" :
             self.consommer("NOMBRE")
-            return Nombre(valeur_token)
-
+            return Nombre(valeur_token, token["ligne"])
         elif type_token == "CHAINE_CARACTERE" :
             self.consommer("CHAINE_CARACTERE")
-            return ChaineCaractere(str(valeur_token))
-
+            return ChaineCaractere(str(valeur_token), token["ligne"])
         elif type_token == "CARACTERE" :
             self.consommer("CARACTERE")
-            return Caractere(str(valeur_token))
-
+            return Caractere(str(valeur_token), token["ligne"])
         elif type_token == "valeur_booleen" :
             self.consommer("valeur_booleen")
-            return Booleen(valeur_token == "vrai")
-
+            return Booleen(valeur_token == "vrai", token["ligne"])
         elif type_token == "identifiant" :
             nom: str = str(valeur_token)
             self.consommer("identifiant")
-
             if self.token_courant()["type"] == "PAREN_OUVRANT" :
                 les_arguments: list[Expression] = self.parse_arguments()
-                return AppelFonction(nom, les_arguments)
-
-            return Identifiant(nom)
-
+                return AppelFonction(nom, les_arguments, token["ligne"])
+            return Identifiant(nom, token["ligne"])
         elif type_token == "PAREN_OUVRANT" :
             self.consommer("PAREN_OUVRANT")
             expr: Expression = self.parse_expression()
@@ -1280,7 +1288,6 @@ class Parseur:
             return expr
         else :
             self.erreur(f"Expression inattendue : token '{type_token}' ({valeur_token})")
-
 #------------PARSEUR-------------------------------------------
 
 MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"
@@ -1292,6 +1299,7 @@ class Algorithme:
     procedures: list[Procedure]
     declarations: list[Declaration]
     corps: list[Instruction]
+    ligne: int = -1
 
 @dataclass
 class Fonction:
@@ -1301,6 +1309,7 @@ class Fonction:
     declarations: list[Declaration]
     corps: list[Instruction]
     retour_est_tableau: bool = False
+    ligne: int = -1
 
 @dataclass
 class Procedure:
@@ -1308,23 +1317,27 @@ class Procedure:
     parametres: list[Parametre]
     declarations: list[Declaration]
     corps: list[Instruction]
+    ligne: int = -1
 
 @dataclass
 class Parametre:
     nom: str
     type: str
     est_tableau: bool = False
+    ligne: int = -1
 
 @dataclass
 class DeclarationVariable:
     nom: str
     type: str
+    ligne: int = -1
     
 @dataclass
 class DeclarationConstante:
     nom: str
     valeur: Expression
     type: str | None = None
+    ligne: int = -1
 
 @dataclass
 class DeclarationTableau:
@@ -1332,36 +1345,43 @@ class DeclarationTableau:
     type: str | None = None
     dimensions: list[Expression] | None = None
     valeurs_initiales: list[Expression] | None = None
+    ligne: int = -1
 
 @dataclass
 class Affectation:
     cible: Identifiant | Indexation
     valeur: Expression
+    ligne: int = -1
 
 @dataclass
 class Ecrire:
     arguments: list[Expression]
+    ligne: int = -1
 
 @dataclass
 class Lire:
     cibles: list[Identifiant | Indexation]
+    ligne: int = -1
 
 @dataclass
 class Si:
     condition: Expression
     alors: list[Instruction]
     sinon: list[Instruction] = field(default_factory=list)
+    ligne: int = -1
 
 @dataclass
 class Cas:
     expression: Identifiant | Indexation
     branches: list[BrancheCas]
     sinon: list[Instruction] = field(default_factory=list)
+    ligne: int = -1
 
 @dataclass
 class BrancheCas:
     valeur: Expression
     instructions: list[Instruction]
+    ligne: int = -1
 
 @dataclass
 class Pour:
@@ -1370,66 +1390,80 @@ class Pour:
     fin: Expression
     pas: Expression
     corps: list[Instruction]
+    ligne: int = -1
 
 @dataclass
 class TantQue:
     condition: Expression
     corps: list[Instruction]
+    ligne: int = -1
 
 @dataclass
 class Repeter:
     corps: list[Instruction]
     condition: Expression
+    ligne: int = -1
 
 @dataclass
 class Retourne:
     valeur: Expression
+    ligne: int = -1
 
 @dataclass
 class AppelInstruction:
     nom: str
     arguments: list[Expression]
+    ligne: int = -1
 
 @dataclass
 class Nombre:
     valeur: int | float
+    ligne: int = -1
 
 @dataclass
 class ChaineCaractere:
     valeur: str
+    ligne: int = -1
 
 @dataclass
 class Caractere:
     valeur: str
+    ligne: int = -1
 
 @dataclass
 class Booleen:
     valeur: bool
+    ligne: int = -1
 
 @dataclass
 class Identifiant:
     nom: str
+    ligne: int = -1
 
 @dataclass
 class OperationBinaire:
     operateur: str #(+, -, *, /, ^, div, mod, =, <, >, <=, >=, <>, et, ou)
     gauche: Expression
     droite: Expression
+    ligne: int = -1
 
 @dataclass
 class OperationUnaire:
     operateur: str # (non, - pour négation)
     operande: Expression
+    ligne: int = -1
 
 @dataclass
 class AppelFonction:
     nom: str
     arguments: list[Expression]
+    ligne: int = -1
 
 @dataclass
 class Indexation:
     nom: str
     indices: list[Expression]
+    ligne: int = -1
 
 
 
