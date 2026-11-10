@@ -811,7 +811,7 @@ class Parseur:
         return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, declaration, corps_complet, self.tokens[index_nom]["ligne"] )
 
     def parse_fonction(self) -> Fonction:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "fonction")
         nom: str = str(self.token_courant()["valeur"])
         self.consommer("identifiant")
@@ -834,7 +834,7 @@ class Parseur:
         return Fonction(nom, parametre, type_retour, declaration, corps_complet, retour_est_tableau, token_debut["ligne"])
 
     def parse_procedure(self) -> Procedure:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         self.consommer( "mots_cles","procedure")
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
@@ -845,7 +845,7 @@ class Parseur:
         return Procedure(nom, parametre, declaration, corps_complet, token_debut["ligne"])
 
     def parse_aide_parametre(self) -> Parametre:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("declaration_type")
@@ -875,7 +875,7 @@ class Parseur:
         
 
     def parse_declaration(self) -> list[Declaration]:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         Variable_bloc: list[DeclarationVariable] = []
         Constante_bloc: list[DeclarationConstante] = []
         
@@ -903,7 +903,7 @@ class Parseur:
         return resultats
 
     def parse_aide_constante(self) -> DeclarationConstante:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
@@ -936,7 +936,7 @@ class Parseur:
         return resultats
 
     def parse_aide_variable(self) -> list[DeclarationVariable]:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         noms: list[str] = []
         noms.append(self.token_courant()["valeur"])
         self.consommer("identifiant")
@@ -953,7 +953,7 @@ class Parseur:
         return [DeclarationVariable(nom, type_) for nom in noms]
 
     def parse_aide_tableau(self) -> list[Declaration]:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "tableau")
         
         tableaux: list[tuple[str, list[Expression]]] = []
@@ -1077,7 +1077,7 @@ class Parseur:
         return Ecrire(self.parse_arguments(), token_debut["ligne"])
 
     def parse_cible(self) -> Identifiant | Indexation:
-        token_debut = token_courant()
+        token_debut = self.token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         if self.token_courant()["type"] == "PAREN_OUVRANT" :
