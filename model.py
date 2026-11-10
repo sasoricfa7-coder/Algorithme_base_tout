@@ -322,41 +322,41 @@ class AnalyseurSemantique:
         symbole.est_utilise = True   # ✅ la cible d'une affectation est "utilisée"
 
         if symbole.est_verrouille:
-            self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.")
+            self.tables.erreur(f"Impossible de modifier '{symbole.nom}' car c'est l'indice d'une boucle 'pour' en cours d'exécution.", instruction.ligne)
 
         if symbole.nature == "procedure":
-            self.tables.erreur(f"On ne peut pas affecter une procédure vu qu'elle ne retourne rien : {symbole.nom}")
+            self.tables.erreur(f"On ne peut pas affecter une procédure vu qu'elle ne retourne rien : {symbole.nom}", instruction.ligne)
 
         if symbole.nature == "tableau" and not isinstance(instruction.cible, Indexation):
             # ✅ Exception : T ← f(...) où f retourne un tableau
             if not isinstance(instruction.valeur, AppelFonction):
-                self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un.")
+                self.tables.erreur(f"L'affectation globale du tableau '{symbole.nom}' est interdite. Vous devez copier les éléments un par un.", instruction.ligne)
 
         if symbole.est_constante:
-            self.tables.erreur("Une constante est immuable donc par conséquent affectation impossible.")
+            self.tables.erreur("Une constante est immuable donc par conséquent affectation impossible.", instruction.ligne)
 
         # Interdiction de l'affectation d'une variable à elle-même (ex: x <- x)
         if isinstance(instruction.cible, Identifiant) and isinstance(instruction.valeur, Identifiant):
             if instruction.cible.nom == instruction.valeur.nom:
-                self.tables.erreur(f"Réaffectation d'une variable à elle-même interdite : '{instruction.cible.nom} <- {instruction.valeur.nom}' n'a pas de sens 🚫")
+                self.tables.erreur(f"Réaffectation d'une variable à elle-même interdite : '{instruction.cible.nom} <- {instruction.valeur.nom}' n'a pas de sens 🚫", instruction.ligne)
 
         # Interdiction de la réaffectation d'un élément de tableau à lui-même (ex: T(i) <- T(i))
         if isinstance(instruction.cible, Indexation) and isinstance(instruction.valeur, Indexation):
             if instruction.cible.nom == instruction.valeur.nom and instruction.cible.indices == instruction.valeur.indices:
-                self.tables.erreur(f"Réaffectation de l'élément de tableau à lui-même interdite : '{instruction.cible.nom}' 🚫")
+                self.tables.erreur(f"Réaffectation de l'élément de tableau à lui-même interdite : '{instruction.cible.nom}' 🚫", instruction.ligne)
 
         if isinstance(instruction.cible, Indexation):
 
             if symbole.nature != "tableau":
-                self.tables.erreur(f"La variable '{instruction.cible.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫")
+                self.tables.erreur(f"La variable '{instruction.cible.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫", instruction.ligne)
 
             
             self.visiter_indexation_statique(symbole, instruction.cible)
             if len(instruction.cible.indices) != symbole.nb_dimensions:
-                self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
+                self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.", instruction.ligne)
             for indice in instruction.cible.indices:
                 if self.obtenir_type_expression(indice) != "entier":
-                    self.tables.erreur("L'indice d'un tableau doit être de type entier.")
+                    self.tables.erreur("L'indice d'un tableau doit être de type entier.", instruction.ligne)
 
         type_affecte = self.obtenir_type_expression(instruction.valeur)
         
@@ -370,7 +370,7 @@ class AnalyseurSemantique:
         
         if type_cible != type_affecte:
             if not (type_cible == "reel" and type_affecte == "entier"):
-                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.")
+                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.", instruction.ligne)
 
         symbole.est_initialise = True
 
@@ -382,11 +382,11 @@ class AnalyseurSemantique:
         for element in instruction.cibles :
             symbole: Symbole = self.tables.rechercher(element.nom)
             if symbole.est_constante:
-                self.tables.erreur("Impossible de lire dans une constante.")
+                self.tables.erreur("Impossible de lire dans une constante.", instruction.ligne)
             if symbole.type == "booleen":
-                self.tables.erreur("On ne peut pas lire un booléen. Veuillez faire une affectation directe.")
+                self.tables.erreur("On ne peut pas lire un booléen. Veuillez faire une affectation directe.", instruction.ligne)
             if symbole.est_verrouille:
-                self.tables.erreur(f"Impossible de modifier '{symbole.nom}' via 'lire' car c'est l'indice d'une boucle 'pour' en cours d'exécution. 🚫")
+                self.tables.erreur(f"Impossible de modifier '{symbole.nom}' via 'lire' car c'est l'indice d'une boucle 'pour' en cours d'exécution. 🚫", instruction.ligne)
             if isinstance(element, Indexation):
                 for args in element.indices:
                     self.obtenir_type_expression(args)
@@ -429,12 +429,12 @@ class AnalyseurSemantique:
 
     def verifier_pas_tautologie(self, condition):
         if self.est_tautologie(condition) :
-            self.tables.erreur("Comparaison tautologique détectée : les deux côtés sont identiques 🚫")
+            self.tables.erreur("Comparaison tautologique détectée : les deux côtés sont identiques 🚫", condition.ligne)
             
 
     def visiter_si(self, instruction: Si) -> None:
         if self.obtenir_type_expression(instruction.condition, est_condition=False) != "booleen":
-            self.tables.erreur("Une condition doit toujours produire un booleen")
+            self.tables.erreur("Une condition doit toujours produire un booleen", instruction.ligne)
 
         self.verifier_pas_tautologie(instruction.condition)
         # Sauvegarde des états d'initialisation avant le bloc Si
@@ -464,7 +464,7 @@ class AnalyseurSemantique:
 
     def visiter_tant_que(self, instruction: TantQue) -> None:
         if self.obtenir_type_expression(instruction.condition) != "booleen":
-            self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen")
+            self.tables.erreur("La condition de la boucle 'tant que' doit toujours produire un booleen", instruction.ligne)
 
         self.verifier_pas_tautologie(instruction.condition)
         # Sauvegarde de l'état (la boucle pouvant s'exécuter 0 fois)
@@ -480,12 +480,13 @@ class AnalyseurSemantique:
         symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
         
         if symbole.type != "entier":
-            self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫")
+            self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫", instruction.ligne)
 
         if symbole.est_verrouille:
             self.tables.erreur(
                 f"L'indice '{symbole.nom}' est déjà utilisé par une boucle englobante. "
-                f"Utilisez un nom différent pour la boucle imbriquée // Index '{symbole.nom}' already used by an enclosing loop 🚫"
+                f"Utilisez un nom différent pour la boucle imbriquée // Index '{symbole.nom}' already used by an enclosing loop 🚫",
+                instruction.ligne
             )
 
         symbole.est_initialise = True
@@ -497,27 +498,27 @@ class AnalyseurSemantique:
         type_pas = self.obtenir_type_expression(instruction.pas)
 
         if isinstance(instruction.pas, Nombre) and instruction.pas.valeur <= 0:
-            self.tables.erreur("Le pas d'une boucle 'pour' doit être strictement positif // The 'pour' loop step must be strictly positive 🚫") 
+            self.tables.erreur("Le pas d'une boucle 'pour' doit être strictement positif // The 'pour' loop step must be strictly positive 🚫", instruction.ligne) 
 
         if isinstance(instruction.debut, Nombre) and isinstance(instruction.fin, Nombre):
             if not (instruction.debut.valeur <= instruction.fin.valeur):
-                self.tables.erreur("Boucle 'pour' impossible : début > fin, la boucle ne s'exécutera jamais // Impossible 'pour' loop: start > end, loop will never run 🚫")
+                self.tables.erreur("Boucle 'pour' impossible : début > fin, la boucle ne s'exécutera jamais // Impossible 'pour' loop: start > end, loop will never run 🚫", instruction.ligne)
 
         if type_debut != "entier" or type_fin != "entier" or type_pas != "entier":
-            self.tables.erreur("Les bornes (début, fin) et le pas d'une boucle 'pour' doivent tous être de type entier. 🚫")
+            self.tables.erreur("Les bornes (début, fin) et le pas d'une boucle 'pour' doivent tous être de type entier. 🚫", instruction.ligne)
 
         self.appel_instruction(instruction.corps)
         symbole.est_verrouille = False
 
     def visiter_retourne(self, instruction: Retourne) -> None:
         if self.fonction_courante is None:
-            self.tables.erreur("L'instruction 'retourne' est interdite dans une procédure.")
+            self.tables.erreur("L'instruction 'retourne' est interdite dans une procédure.", instruction.ligne)
 
         type_retour_attendu: str = f"tableau {self.fonction_courante.type_retour}" if self.fonction_courante.retour_est_tableau else self.fonction_courante.type_retour
         type_retour_reel: str = self.obtenir_type_expression(instruction.valeur)
 
         if type_retour_attendu != type_retour_reel:
-            self.tables.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.")
+            self.tables.erreur(f"Type de retour invalide : la fonction attend '{type_retour_attendu}', mais l'expression est de type '{type_retour_reel}'.", instruction.ligne)
 
     def visiter_branche_cas(self, type_: str, une_branche: BrancheCas) -> None:
         type_branche = self.obtenir_type_expression(une_branche.valeur)
@@ -526,7 +527,8 @@ class AnalyseurSemantique:
         if type_ != type_branche:
             self.tables.erreur(
                 f"Incompatibilité de type dans la structure 'cas' : "
-                f"l'expression cible est de type '{type_}', mais la branche propose une valeur de type '{type_branche}' 🚫"
+                f"l'expression cible est de type '{type_}', mais la branche propose une valeur de type '{type_branche}' 🚫",
+                instruction.ligne
             )
     
         self.appel_instruction(une_branche.instructions)
@@ -536,7 +538,7 @@ class AnalyseurSemantique:
             retour_rencontrer: bool = False
             for instruction in grande_instruction:
                 if retour_rencontrer:
-                    self.tables.erreur("Code inaccessible détecté après une instruction 'retourne' 🚫")
+                    self.tables.erreur("Code inaccessible détecté après une instruction 'retourne' 🚫", instruction.ligne)
                     
                 self.visiter_instruction(instruction)
                 if isinstance(instruction, Retourne):
@@ -550,7 +552,8 @@ class AnalyseurSemantique:
                 if indice_expr.valeur < 0 or indice_expr.valeur > taille_max:
                     self.tables.erreur(
                         f"Débordement de tableau détecté à la compilation : "
-                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max - 1}] pour '{symbole.nom}' 🚫"
+                        f"indice {indice_expr.valeur} hors des bornes [1..{taille_max - 1}] pour '{symbole.nom}' 🚫",
+                        symbole.ligne
                     )
 
     def visiter_cas(self, instruction: Cas) -> None:
@@ -612,7 +615,7 @@ class AnalyseurSemantique:
         elif isinstance(expr, Identifiant):
             symbole = self.tables.rechercher(expr.nom)
             if not symbole.est_initialise:
-                self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫")
+                self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫", expr.ligne)
             symbole.est_utilise = True
             if not est_condition:
                 symbole.est_consomme = True
@@ -624,11 +627,11 @@ class AnalyseurSemantique:
             symbole = self.tables.rechercher(expr.nom)
 
             if symbole.nature != "tableau":
-                self.tables.erreur(f"La variable '{expr.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫")
+                self.tables.erreur(f"La variable '{expr.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫", expr.ligne)
 
             
             if not symbole.est_initialise:
-                self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫")
+                self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫", expr.ligne)
 
             symbole.est_utilise = True
 
@@ -637,16 +640,16 @@ class AnalyseurSemantique:
 
             for indice in expr.indices:
                 if self.obtenir_type_expression(indice, est_condition) != "entier":
-                    self.tables.erreur("L'indice d'un tableau doit être un entier.")
+                    self.tables.erreur("L'indice d'un tableau doit être un entier.", expr.ligne)
             return symbole.type
         elif isinstance(expr, AppelFonction):
             if expr.nom in ("racine", "sqrt"):
                 if len(expr.arguments) != 1:
-                    self.tables.erreur("La fonction 'racine/sqrt' prend exactement un argument.")
+                    self.tables.erreur("La fonction 'racine/sqrt' prend exactement un argument.", expr.ligne)
                 type_arg = self.obtenir_type_expression(expr.arguments[0])
 
                 if type_arg not in ("entier", "reel"):
-                    self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.")
+                    self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.", expr.ligne)
 
                 return "reel"
 
@@ -657,7 +660,7 @@ class AnalyseurSemantique:
             if symbole.nature == "tableau":
                 for arg in expr.arguments:
                     if self.obtenir_type_expression(arg, est_condition=False) != "entier":
-                        self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être un entier.")
+                        self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être un entier.", expr.ligne)
                 return symbole.type
 
             # ✅ CAS 2 : C'est une fonction → c'est un appel
@@ -666,38 +669,48 @@ class AnalyseurSemantique:
                     self.obtenir_type_expression(arg, est_condition=False)
                 return symbole.type
 
-            self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau. Impossible d'utiliser des parenthèses. 🚫")
+            self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau. Impossible d'utiliser des parenthèses. 🚫", expr.ligne)
 
         elif isinstance(expr, OperationBinaire):
             type_g = self.obtenir_type_expression(expr.gauche, est_condition)
             if expr.operateur in ("/", "div", "mod"):
                 if isinstance(expr.droite, Nombre) and expr.droite.valeur == 0:
-                    self.tables.erreur("Division par zéro détectée à la compilation // Division by zero at compile time 🚫")
+                    self.tables.erreur("Division par zéro détectée à la compilation // Division by zero at compile time 🚫", expr.ligne)
             type_d = self.obtenir_type_expression(expr.droite, est_condition)
             
             if expr.operateur in ("=", "<>", "<", ">", "<=", ">="):
                 return "booleen"
             elif expr.operateur in ("et", "ou"):
                 if type_g != "booleen" or type_d != "booleen":
-                    self.tables.erreur(f"Les opérateurs 'et'/'ou' exigent des booléens, pas '{type_g}' et '{type_d}'.")
+                    self.tables.erreur(f"Les opérateurs 'et'/'ou' exigent des booléens, pas '{type_g}' et '{type_d}'.", expr.ligne)
                 return "booleen"
             elif expr.operateur in ("+", "-", "*", "/", "div", "mod", "^"):
                 if expr.operateur == "/":
                     return "reel"
                 if expr.operateur in ("div", "mod"): # return toujours des entiers même si des réels les appels.
                     if not (type_g in ("entier", "reel")) or not (type_d in ("entier", "reel")):
-                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux nombres.")
+                        self.tables.erreur(f"L'opérateur '{expr.operateur}' exige deux nombres.", expr.ligne)
                     return "entier"
                 return "entier" if type_g != "reel" and type_d != "reel" else "reel"
         elif isinstance(expr, OperationUnaire):
             type_op = self.obtenir_type_expression(expr.operande, est_condition)
             if expr.operateur == "non":
                 if type_op != "booleen":
-                    self.tables.erreur("L'opérateur 'non' s'applique uniquement à un booléen.")
+                    self.tables.erreur("L'opérateur 'non' s'applique uniquement à un booléen.", expr.ligne)
                 return "booleen"
             return type_op
         
-        self.tables.erreur("Inconnu")
+        self.tables.erreur("Inconnu", expr.ligne)
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1009,30 +1022,32 @@ class Parseur:
         return corps
 
     def parse_affectation(self) -> Affectation:
+        token_debut = self.token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         retour: Expression = self.parse_expression()
-        return Affectation(Identifiant(nom), retour)
+        return Affectation(Identifiant(nom, token_debut["ligne"]), retour, token_debut["ligne"])
 
-    def parse_instruction(self) -> Instruction : # parse_
-        if self.token_courant()["type"] == "identifiant" :
+    def parse_instruction(self) -> Instruction :
+        token_debut = self.token_courant()
+        if token_debut["type"] == "identifiant" :
             if self.token_suivant()["type"] == "operateurs_affectation" :
                 return self.parse_affectation()
             elif (self.token_suivant()["type"] == "PAREN_OUVRANT") :
-                nom: str = self.token_courant()["valeur"]
+                nom: str = token_debut["valeur"]
                 self.consommer("identifiant")
                 les_arguments = self.parse_arguments()
                 if self.token_courant()["type"] == "operateurs_affectation" :
                     self.consommer("operateurs_affectation")
                     retour: Expression = self.parse_expression()
-                    return Affectation(Indexation(nom, les_arguments), retour)
+                    return Affectation(Indexation(nom, les_arguments, token_debut["ligne"]), retour, token_debut["ligne"])
                 else :
-                    return AppelInstruction(nom, les_arguments)
+                    return AppelInstruction(nom, les_arguments, token_debut["ligne"])
             else :
                 self.erreur("Instruction invalide : identifiant tout seul")
         else :
-            match self.token_courant()["valeur"] :
+            match token_debut["valeur"] :
                 case "ecrire" : return self.parse_ecrire()
                 case "lire" : return self.parse_lire()
                 case "si" : return self.parse_si()
@@ -1044,8 +1059,9 @@ class Parseur:
                 case _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
 
     def parse_ecrire(self) -> Ecrire:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "ecrire")
-        return Ecrire(self.parse_arguments())
+        return Ecrire(self.parse_arguments(), token_debut["ligne"])
 
     def parse_cible(self) -> Identifiant | Indexation:
         nom: str = self.token_courant()["valeur"]
@@ -1056,6 +1072,7 @@ class Parseur:
         return Identifiant(nom)
 
     def parse_lire(self) -> Lire:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "lire")
         self.consommer("PAREN_OUVRANT")
         cibles: list[Identifiant | Indexation] = []
@@ -1064,9 +1081,10 @@ class Parseur:
             self.consommer("separateur")
             cibles.append(self.parse_cible())
         self.consommer("PAREN_FERMANT")
-        return Lire(cibles)
+        return Lire(cibles, token_debut["ligne"])
         
     def parse_si(self) -> Si:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "si")
         condition: Expression = self.parse_expression()
         self.consommer("mots_cles", "alors")
@@ -1075,11 +1093,11 @@ class Parseur:
         if self.token_courant()["valeur"] == "sinon" :
             self.consommer("mots_cles", "sinon")
             sinon = self.parse_instructions()
-
         self.consommer("mots_cles", "fin si")
-        return Si(condition, alors, sinon)
+        return Si(condition, alors, sinon, token_debut["ligne"])
 
     def parse_branche_cas(self) -> BrancheCas:
+        token_debut = self.token_courant()
         valeur: Expression = self.parse_expression()
         self.consommer("declaration_type")
         if self.token_courant()["valeur"] in ("si", "cas", "pour", "tant que", "repeter") :
@@ -1097,9 +1115,10 @@ class Parseur:
         else :
             corps = [self.parse_instruction()]
             self.fin_de_ligne()
-        return BrancheCas(valeur, corps)
+        return BrancheCas(valeur, corps, token_debut["ligne"])
 
     def parse_cas(self) -> Cas:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "cas")
         nom: Identifiant | Indexation = self.parse_cible()
         self.consommer("mots_cles", "vaut")
@@ -1114,45 +1133,46 @@ class Parseur:
         self.consommer("declaration_type")
         sinon: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin cas")
-        return Cas(nom, les_branches, sinon)
+        return Cas(nom, les_branches, sinon, token_debut["ligne"])
 
     def parse_pour(self) -> Pour:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "pour")
         indice: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
         debut: Expression = self.parse_expression()
-
         self.consommer("identifiant", "a")
-
         fin: Expression = self.parse_expression()
         self.consommer("mots_cles", "pas")
         pas: Expression = self.parse_expression()
         self.consommer("mots_cles", "faire")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin pour")
-
-        return Pour(Identifiant(indice), debut, fin, pas, corps)
+        return Pour(Identifiant(indice, token_debut["ligne"]), debut, fin, pas, corps, token_debut["ligne"])
 
     def parse_tant_que(self) -> TantQue:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "tant que")
         condition: Expression = self.parse_expression()
         self.consommer("mots_cles","faire")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "fin tant que")
-        return TantQue(condition, corps)
+        return TantQue(condition, corps, token_debut["ligne"])
 
     def parse_repeter(self) -> Repeter:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "repeter")
         corps: list[Instruction] = self.parse_instructions()
         self.consommer("mots_cles", "jusqu'a")
         condition: Expression = self.parse_expression()
-        return Repeter(corps, condition)
+        return Repeter(corps, condition, token_debut["ligne"])
 
     def parse_retourne(self) -> Retourne:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "retourne")
         valeur: Expression = self.parse_expression()
-        return Retourne(valeur)
+        return Retourne(valeur, token_debut["ligne"])
 
     def parse_arguments(self) -> list[Expression]:
         self.consommer("PAREN_OUVRANT")
@@ -1170,76 +1190,84 @@ class Parseur:
         return self.parse_ou_expr()
 
     def parse_ou_expr(self) :
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_et_expr()
         
         while self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "ou" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "ou") # je veux rester coherent
             droite: Expression = self.parse_et_expr()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
 
         return gauche
 
     def parse_et_expr(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_non_expr()
         
         while  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "et" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_logiques", "et") # je veux rester coherent
             droite: Expression = self.parse_non_expr()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
 
         return gauche
 
     def parse_non_expr(self) -> Expression:
+        token_debut = self.token_courant()
         if  self.token_courant()["type"] == "operateurs_logiques" and self.token_courant()["valeur"] == "non" :
             self.consommer("operateurs_logiques", "non")
             operande: Expression = self.parse_non_expr()
-            return OperationUnaire("non", operande)
+            return OperationUnaire("non", operande, token_debut["ligne"])
         return self.parse_comparaison()
 
     def parse_comparaison(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_additif()
         if self.token_courant()["type"] == "operateurs_comparaison" :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_comparaison")
             droite: Expression = self.parse_additif()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
 
     def parse_additif(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_multiplicatif()
         while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_multiplicatif()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_multiplicatif(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_puissance()
         while  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("*", "/", "mod", "div") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             droite: Expression = self.parse_puissance()
-            gauche = OperationBinaire(operateur, gauche, droite)
+            gauche = OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_puissance(self) -> Expression:
+        token_debut = self.token_courant()
         gauche: Expression = self.parse_unaire()
         if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] == "^" :
             operateur: str = str(self.token_courant()["valeur"])
             self.consommer("operateurs_arihmetiques", "^")
             droite: Expression = self.parse_puissance()  # Récursion à droite
-            return OperationBinaire(operateur, gauche, droite)
+            return OperationBinaire(operateur, gauche, droite, token_debut["ligne"])
         return gauche
         
     def parse_unaire(self) -> Expression:
+        token_debut = self.token_courant()
         if  self.token_courant()["type"] == "operateurs_arihmetiques" and self.token_courant()["valeur"] in ("+", "-") :
             operateur: str = self.token_courant()["valeur"]
             self.consommer("operateurs_arihmetiques")
             operande: Expression = self.parse_unaire()
-            return OperationUnaire(operateur, operande)
+            return OperationUnaire(operateur, operande, token_debut["ligne"])
         return self.parse_primaire()
 
     def parse_primaire(self) -> Expression:
@@ -1249,30 +1277,23 @@ class Parseur:
 
         if type_token == "NOMBRE" :
             self.consommer("NOMBRE")
-            return Nombre(valeur_token)
-
+            return Nombre(valeur_token, token["ligne"])
         elif type_token == "CHAINE_CARACTERE" :
             self.consommer("CHAINE_CARACTERE")
-            return ChaineCaractere(str(valeur_token))
-
+            return ChaineCaractere(str(valeur_token), token["ligne"])
         elif type_token == "CARACTERE" :
             self.consommer("CARACTERE")
-            return Caractere(str(valeur_token))
-
+            return Caractere(str(valeur_token), token["ligne"])
         elif type_token == "valeur_booleen" :
             self.consommer("valeur_booleen")
-            return Booleen(valeur_token == "vrai")
-
+            return Booleen(valeur_token == "vrai", token["ligne"])
         elif type_token == "identifiant" :
             nom: str = str(valeur_token)
             self.consommer("identifiant")
-
             if self.token_courant()["type"] == "PAREN_OUVRANT" :
                 les_arguments: list[Expression] = self.parse_arguments()
-                return AppelFonction(nom, les_arguments)
-
-            return Identifiant(nom)
-
+                return AppelFonction(nom, les_arguments, token["ligne"])
+            return Identifiant(nom, token["ligne"])
         elif type_token == "PAREN_OUVRANT" :
             self.consommer("PAREN_OUVRANT")
             expr: Expression = self.parse_expression()
@@ -1280,7 +1301,6 @@ class Parseur:
             return expr
         else :
             self.erreur(f"Expression inattendue : token '{type_token}' ({valeur_token})")
-
 #------------PARSEUR-------------------------------------------
 
 MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"
