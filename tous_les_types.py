@@ -914,6 +914,7 @@ class Parseur:
         return DeclarationConstante(nom, valeur, None, token_debut["ligne"])
 
     def aide_constante_tableau(self) -> DeclarationTableau:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "tableau")
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
@@ -921,7 +922,7 @@ class Parseur:
         les_arguments = self.parse_arguments()
 
         self.fin_de_ligne()
-        return DeclarationTableau(nom, None, None, les_arguments)
+        return DeclarationTableau(nom, None, None, les_arguments, token_debut["ligne"])
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
@@ -950,7 +951,7 @@ class Parseur:
             self.erreur(f"{type_} non pris en charge dans le langage EVA", token_debut["ligne"])
         self.consommer("mots_cles")
         
-        return [DeclarationVariable(nom, type_) for nom in noms]
+        return [DeclarationVariable(nom, type_, token_debut["ligne"]) for nom in noms]
 
     def parse_aide_tableau(self) -> list[Declaration]:
         token_debut = self.token_courant()
@@ -1017,7 +1018,7 @@ class Parseur:
         # 4. On construit le résultat
         resultats: list[Declaration] = []
         for t_nom, t_dims in tableaux:
-            resultats.append(DeclarationTableau(t_nom, type_, t_dims))
+            resultats.append(DeclarationTableau(nom=t_nom, type=type_, dimensions=t_dims, ligne=token_debut["ligne"]))
 
         return resultats
 
@@ -1083,7 +1084,7 @@ class Parseur:
         if self.token_courant()["type"] == "PAREN_OUVRANT" :
             indices = self.parse_arguments()
             return Indexation(nom, indices, token_debut["ligne"])
-        return Identifiant(nom, token_courant["ligne"])
+        return Identifiant(nom, token_debut["ligne"])
 
     def parse_lire(self) -> Lire:
         token_debut = self.token_courant()
