@@ -346,6 +346,11 @@ class AnalyseurSemantique:
                 self.tables.erreur(f"Réaffectation de l'élément de tableau à lui-même interdite : '{instruction.cible.nom}' 🚫")
 
         if isinstance(instruction.cible, Indexation):
+
+            if symbole.nature != "tableau":
+                self.tables.erreur(f"La variable '{instruction.cible.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫")
+
+            
             self.visiter_indexation_statique(symbole, instruction.cible)
             if len(instruction.cible.indices) != symbole.nb_dimensions:
                 self.tables.erreur(f"Le tableau '{symbole.nom}' attend {symbole.nb_dimensions} dimension(s), mais {len(instruction.cible.indices)} ont été fournies.")
@@ -617,6 +622,11 @@ class AnalyseurSemantique:
 
         elif isinstance(expr, Indexation):
             symbole = self.tables.rechercher(expr.nom)
+
+            if symbole.nature != "tableau":
+                self.tables.erreur(f"La variable '{expr.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫")
+
+            
             if not symbole.est_initialise:
                 self.tables.erreur(f"Le tableau '{expr.nom}' est utilisé avant d'être initialisé 🚫")
 
@@ -632,18 +642,32 @@ class AnalyseurSemantique:
         elif isinstance(expr, AppelFonction):
             if expr.nom in ("racine", "sqrt"):
                 if len(expr.arguments) != 1:
-                    self.tables.erreur("La fonction 'racine' prend exactement un argument.")
+                    self.tables.erreur("La fonction 'racine/sqrt' prend exactement un argument.")
                 type_arg = self.obtenir_type_expression(expr.arguments[0])
 
                 if type_arg not in ("entier", "reel"):
                     self.tables.erreur(f"L'argument de 'racine' doit être numérique, pas '{type_arg}'.")
 
                 return "reel"
+
             symbole = self.tables.rechercher(expr.nom)
             symbole.est_utilise = True
-            for arg in expr.arguments:
-                self.obtenir_type_expression(arg, est_condition=False)
-            return symbole.type
+
+            # ✅ CAS 1 : C'est un tableau → c'est une indexation
+            if symbole.nature == "tableau":
+                for arg in expr.arguments:
+                    if self.obtenir_type_expression(arg, est_condition=False) != "entier":
+                        self.tables.erreur(f"L'indice du tableau '{expr.nom}' doit être un entier.")
+                return symbole.type
+
+            # ✅ CAS 2 : C'est une fonction → c'est un appel
+            if symbole.nature == "fonction":
+                for arg in expr.arguments:
+                    self.obtenir_type_expression(arg, est_condition=False)
+                return symbole.type
+
+            self.tables.erreur(f"'{expr.nom}' n'est ni une fonction ni un tableau. Impossible d'utiliser des parenthèses. 🚫")
+
         elif isinstance(expr, OperationBinaire):
             type_g = self.obtenir_type_expression(expr.gauche, est_condition)
             if expr.operateur in ("/", "div", "mod"):

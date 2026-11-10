@@ -133,6 +133,9 @@ class Interpreteur:
                     tableau = self.env_courant.obtenir(un_cas.nom)
                 except:
                     self.gestion_erreur(f"'{un_cas.nom}' n'est ni une fonction ni un tableau")
+
+                if not isinstance(tableau, list):
+                    self.gestion_erreur(f"La variable '{un_cas.nom}' n'est pas un tableau. Impossible d'utiliser des parenthèses.")
             
                 indices = [self.evaluer_expression(arg) for arg in un_cas.arguments]
                 return self.lire_tableau(tableau, indices)
@@ -164,6 +167,9 @@ class Interpreteur:
 
         if isinstance(un_cas, Indexation):
             tableau = self.env_courant.obtenir(un_cas.nom)
+
+            if not isinstance(tableau, list):
+                self.gestion_erreur(f"La variable '{un_cas.nom}' n'est pas un tableau, impossible d'utiliser des paranthèses.")
             indices = [self.evaluer_expression(idx) for idx in un_cas.indices]
             for idx in indices:
                 if not isinstance(idx, int):
