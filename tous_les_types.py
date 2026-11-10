@@ -45,7 +45,7 @@ class TableSymboles:
 
         for nom, symbole in portee_actuelle.items():
             if symbole.nature == "variable" and symbole.est_lu and not symbole.est_consomme:
-                self.erreur(f"La variable '{nom}' est lue mais sa valeur n'est jamais exploitée 🚫")
+                self.erreur(f"La variable '{nom}' est lue mais sa valeur n'est jamais exploitée 🚫", symbole.ligne)
         
             if not symbole.est_utilise and symbole.nature in ("variable", "constante", "tableau", "fonction", "procedure"):
 
@@ -56,20 +56,20 @@ class TableSymboles:
                     case "fonction": vrai_nom = "La fonction"
                     case "procedure": vrai_nom = "La procedure"
                     case _ : vrai_nom = symbole
-                self.erreur(f"{vrai_nom}  '{nom}' est déclaré mais jamais utilisé 🚫")
+                self.erreur(f"{vrai_nom}  '{nom}' est déclaré mais jamais utilisé 🚫", symbole.ligne)
         self.pile.pop()
 
     def declarer(self, nom: str, symbole: Symbole) -> None:
         if nom == "racine":
-            self.erreur("Le nom 'racine' est réservé par le langage pour la fonction racine carrée 🚫")
+            self.erreur("Le nom 'racine' est réservé par le langage pour la fonction racine carrée 🚫", symbole.ligne)
         if nom == "sqrt":
-            self.erreur("Le nom 'sqrt' est réservé par le langage pour la fonction racine carrée 🚫")
+            self.erreur("Le nom 'sqrt' est réservé par le langage pour la fonction racine carrée 🚫", symbole.ligne)
         if nom in self.pile[-1]:
-            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans cette portée 🚫")
+            self.erreur(f"Le symbole '{nom}' est déjà déclaré dans cette portée 🚫", symbole.ligne)
 
         if symbole.nature in ("fonction", "procedure") or len(self.pile) == 1:
             if nom in self.noms_globaux:
-                self.erreur(f"Le symbole global '{nom}' est déjà déclaré 🚫 : NB: aucune donnée ne doit avoir le nom de votre algorithme.")
+                self.erreur(f"Le symbole global '{nom}' est déjà déclaré 🚫 : NB: aucune donnée ne doit avoir le nom de votre algorithme.", symbole.ligne)
             self.noms_globaux.add(nom)
 
         self.pile[-1][nom] = symbole
@@ -78,7 +78,7 @@ class TableSymboles:
         for portee in reversed(self.pile):
             if nom in portee:
                 return portee[nom]
-        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫")
+        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫", symbole.ligne)
 
     def erreur(self, message: str ="", ligne: int = -1) -> None:
         message = f"Analyseur_semantique → {message}"
@@ -272,7 +272,7 @@ class AnalyseurSemantique:
                             nb_dimensions=nb_dim,
                             est_initialise=True,
                             dimensions_statiques=dims_statiques,
-                            decl.ligne,
+                            ligne=decl.ligne,
                         )
                     )
                 else:
@@ -532,7 +532,7 @@ class AnalyseurSemantique:
             self.tables.erreur(
                 f"Incompatibilité de type dans la structure 'cas' : "
                 f"l'expression cible est de type '{type_}', mais la branche propose une valeur de type '{type_branche}' 🚫",
-                instruction.ligne
+                une_branche.ligne,
             )
     
         self.appel_instruction(une_branche.instructions)
@@ -808,9 +808,10 @@ class Parseur:
         declaration = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
 
-        return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, declaration, corps_complet )
+        return Algorithme(self.tokens[index_nom]["valeur"], Fonction_bloc, Procedure_bloc, declaration, corps_complet, self.tokens[index_nom]["ligne"] )
 
     def parse_fonction(self) -> Fonction:
+        token_debut = token_courant()
         self.consommer("mots_cles", "fonction")
         nom: str = str(self.token_courant()["valeur"])
         self.consommer("identifiant")
@@ -830,9 +831,10 @@ class Parseur:
         declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
     
-        return Fonction(nom, parametre, type_retour, declaration, corps_complet, retour_est_tableau)
+        return Fonction(nom, parametre, type_retour, declaration, corps_complet, retour_est_tableau, token_debut["ligne"])
 
     def parse_procedure(self) -> Procedure:
+        token_debut = token_courant()
         self.consommer( "mots_cles","procedure")
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
@@ -840,9 +842,10 @@ class Parseur:
         declaration: list[Declaration] = self.parse_declaration()
         corps_complet: list[Instruction] = self.parse_corps()
 
-        return Procedure(nom, parametre, declaration, corps_complet)
+        return Procedure(nom, parametre, declaration, corps_complet, token_debut["ligne"])
 
     def parse_aide_parametre(self) -> Parametre:
+        token_debut = token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("declaration_type")
@@ -854,7 +857,7 @@ class Parseur:
         
         le_type: str = self.token_courant()["valeur"]
         if self.token_courant()["valeur"] not in LES_TYPES_PRIS :
-            self.erreur(f"{self.token_courant()['valeur']} type non pris en charge.")
+            self.erreur(f"{self.token_courant()['valeur']} type non pris en charge.", token_debut["ligne"])
         self.consommer("mots_cles")
     
         return Parametre(nom, le_type, est_tableau)
@@ -872,6 +875,7 @@ class Parseur:
         
 
     def parse_declaration(self) -> list[Declaration]:
+        token_debut = token_courant()
         Variable_bloc: list[DeclarationVariable] = []
         Constante_bloc: list[DeclarationConstante] = []
         
@@ -879,7 +883,7 @@ class Parseur:
         while self.token_courant()["valeur"] in ("variable", "constante") :
             mot = self.token_courant()["valeur"]
             if mot in vus :
-                self.erreur(f'Bloc "{mot}" déjà déclaré // "{mot}" block already declared 🚫')    
+                self.erreur(f'Bloc "{mot}" déjà déclaré // "{mot}" block already declared 🚫', token_debut["ligne"])    
             vus.add(mot)
             if mot == "variable" :
                 Variable_bloc += self.parse_bloc_variables()
@@ -899,6 +903,7 @@ class Parseur:
         return resultats
 
     def parse_aide_constante(self) -> DeclarationConstante:
+        token_debut = token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         self.consommer("operateurs_affectation")
@@ -906,7 +911,7 @@ class Parseur:
 
         self.fin_de_ligne()
         # ✅ Déléguer le type de la constante à l'analyseur sémantique
-        return DeclarationConstante(nom, valeur, None)
+        return DeclarationConstante(nom, valeur, None, token_debut["ligne"])
 
     def aide_constante_tableau(self) -> DeclarationTableau:
         self.consommer("mots_cles", "tableau")
@@ -931,6 +936,7 @@ class Parseur:
         return resultats
 
     def parse_aide_variable(self) -> list[DeclarationVariable]:
+        token_debut = token_courant()
         noms: list[str] = []
         noms.append(self.token_courant()["valeur"])
         self.consommer("identifiant")
@@ -941,12 +947,13 @@ class Parseur:
         self.consommer("declaration_type")
         type_: str = self.token_courant()["valeur"]
         if type_ not in LES_TYPES_PRIS :
-            self.erreur(f"{type_} non pris en charge dans le langage EVA")
+            self.erreur(f"{type_} non pris en charge dans le langage EVA", token_debut["ligne"])
         self.consommer("mots_cles")
         
         return [DeclarationVariable(nom, type_) for nom in noms]
 
     def parse_aide_tableau(self) -> list[Declaration]:
+        token_debut = token_courant()
         self.consommer("mots_cles", "tableau")
         
         tableaux: list[tuple[str, list[Expression]]] = []
@@ -985,7 +992,8 @@ class Parseur:
                         f"Impossible de mélanger des dimensions différentes : "
                         f"le tableau '{nom}' est en {nb_dim}D, "
                         f"mais '{nom2}' est en {len(dims2)}D. "
-                        f"Tous les tableaux d'une même ligne doivent avoir la même dimension. 🚫"
+                        f"Tous les tableaux d'une même ligne doivent avoir la même dimension. 🚫",
+                        token_debut["ligne"],
                     )
                 
                 tableaux.append((nom2, dims2))
@@ -995,14 +1003,15 @@ class Parseur:
                 self.erreur(
                     f"Impossible de mélanger tableaux et variables : "
                     f"le tableau '{nom}' ne peut pas être déclaré sur la même ligne que '{val}'. "
-                    f"Déclarez les tableaux et les variables sur des lignes séparées. 🚫"
+                    f"Déclarez les tableaux et les variables sur des lignes séparées. 🚫",
+                    token_debut["ligne"],
                 )
 
         # 3. Le type commun
         self.consommer("declaration_type")
         type_: str = self.token_courant()["valeur"]
         if type_ not in LES_TYPES_PRIS:
-            self.erreur(f"{type_} non pris en charge dans le langage EVA")
+            self.erreur(f"{type_} non pris en charge dans le langage EVA", token_debut["ligne"])
         self.consommer("mots_cles")
 
         # 4. On construit le résultat
@@ -1049,7 +1058,7 @@ class Parseur:
                 else :
                     return AppelInstruction(nom, les_arguments, token_debut["ligne"])
             else :
-                self.erreur("Instruction invalide : identifiant tout seul")
+                self.erreur("Instruction invalide : identifiant tout seul", token_debut["ligne"])
         else :
             match token_debut["valeur"] :
                 case "ecrire" : return self.parse_ecrire()
@@ -1060,7 +1069,7 @@ class Parseur:
                 case "tant que" : return self.parse_tant_que()
                 case "repeter" : return self.parse_repeter()
                 case "retourne" : return self.parse_retourne()
-                case _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé")
+                case _ : self.erreur("voici ce qui était attendu : Identifiant | un mots clé", token_debut["ligne"])
 
     def parse_ecrire(self) -> Ecrire:
         token_debut = self.token_courant()
@@ -1068,12 +1077,13 @@ class Parseur:
         return Ecrire(self.parse_arguments(), token_debut["ligne"])
 
     def parse_cible(self) -> Identifiant | Indexation:
+        token_debut = token_courant()
         nom: str = self.token_courant()["valeur"]
         self.consommer("identifiant")
         if self.token_courant()["type"] == "PAREN_OUVRANT" :
             indices = self.parse_arguments()
-            return Indexation(nom, indices)
-        return Identifiant(nom)
+            return Indexation(nom, indices, token_debut["ligne"])
+        return Identifiant(nom, token_courant["ligne"])
 
     def parse_lire(self) -> Lire:
         token_debut = self.token_courant()
@@ -1105,7 +1115,7 @@ class Parseur:
         valeur: Expression = self.parse_expression()
         self.consommer("declaration_type")
         if self.token_courant()["valeur"] in ("si", "cas", "pour", "tant que", "repeter") :
-            self.erreur("Un bloc ne peut pas tenir sur une ligne dans un Cas : entourer le dans un debut ... fin")
+            self.erreur("Un bloc ne peut pas tenir sur une ligne dans un Cas : entourer le dans un debut ... fin", token_debut["ligne"])
 
         corps: list[Instruction] = []
         if self.token_courant()["valeur"] == "debut" :
@@ -1114,7 +1124,8 @@ class Parseur:
                 self.erreur(
                     "Utilisation inutile de 'debut ... fin' : "
                     "un bloc 'debut ... fin' dans un cas doit contenir au moins 2 instructions. "
-                    "Pour une seule instruction, écrivez-la directement sur la ligne."
+                    "Pour une seule instruction, écrivez-la directement sur la ligne.",
+                    token_debut["ligne"],
                 )
         else :
             corps = [self.parse_instruction()]
@@ -1131,7 +1142,7 @@ class Parseur:
             les_branches.append(self.parse_branche_cas())
             
         if self.token_courant()["valeur"] != "sinon" :
-            self.erreur("Le Sinon est obligatoire dans Cas")
+            self.erreur("Le Sinon est obligatoire dans Cas", token_debut["ligne"])
             
         self.consommer("mots_cles", "sinon")
         self.consommer("declaration_type")
