@@ -78,7 +78,7 @@ class TableSymboles:
         for portee in reversed(self.pile):
             if nom in portee:
                 return portee[nom]
-        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫", symbole.ligne)
+        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫")
 
     def erreur(self, message: str ="", ligne: int = -1) -> None:
         message = f"Analyseur_semantique → {message}"

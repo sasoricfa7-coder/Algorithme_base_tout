@@ -8,9 +8,9 @@ class Environnement:
     dict_valeur: dict = field(default_factory=dict)
     parent: Environnement | None = None
 
-    def erreur(self, message: str=""):
+    def erreur(self, message: str="", ligne: int = -1):
         message = f"Interpréteur → {message}"
-        erreur(message)
+        erreur(message, ligne)
 
     def definir(self, nom: str, valeur) -> None:
         self.dict_valeur[nom] = valeur

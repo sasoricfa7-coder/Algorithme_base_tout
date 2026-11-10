@@ -1,8 +1,4 @@
-algorithme test
-variables
-    tableau T(3): entier
-    i: entier
+algorithme test_bug
 debut
-    i ← 5
-    T(i) ← 10
+    x ← 5
 fin

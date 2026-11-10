@@ -52,7 +52,7 @@ class Interpreteur:
             self.verifier_bornes(tableau, indices[0], len(tableau), ligne)
             return tableau[indices[0]]
         elif len(indices) == 2:
-            self.verifier_bornes(tableau, indices[0], len(tableau))
+            self.verifier_bornes(tableau, indices[0], len(tableau), ligne)
             sous_tableau = tableau[indices[0]]
             self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau), ligne)
             return sous_tableau[indices[1]]
@@ -64,7 +64,7 @@ class Interpreteur:
             self.verifier_bornes(tableau, indices[0], len(tableau), ligne)
             tableau[indices[0]] = valeur
         elif len(indices) == 2:
-            self.verifier_bornes(tableau, indices[0], len(tableau))
+            self.verifier_bornes(tableau, indices[0], len(tableau), ligne)
             sous_tableau = tableau[indices[0]]
             self.verifier_bornes(sous_tableau, indices[1], len(sous_tableau), ligne)
             sous_tableau[indices[1]] = valeur
