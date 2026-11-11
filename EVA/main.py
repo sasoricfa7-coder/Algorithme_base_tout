@@ -1,12 +1,15 @@
-import AVANT_TOUS.avant_lexer
-import LEXER.lexer
-import PARSEUR.parseur #AnalyseurSemantique
-import UTILS.afficher_ast
-import SEMANTIQUE.AnalyseurSemantique
+#FICHIER EXTERNES
+from AVANT_TOUS.avant_lexer import main as avant_lexer
+from LEXER.lexer import main as lexer
+from PARSEUR.parseur import Parseur
+from UTILS.afficher_ast import afficher_ast
+from SEMANTIQUE.analyseur_semantique import AnalyseurSemantique
+from INTERPRETEUR.interpreteur import Interpreteur
+from UTILS.erreur import erreur
+
+#FICHIER PYTHON
 import pprint as p
-import INTERPRETEUR.interpreteur
 import sys
-import UTILS.erreur
 
 """LANGAGE EVA"""
 try:
