@@ -74,11 +74,12 @@ class TableSymboles:
 
         self.pile[-1][nom] = symbole
 
-    def rechercher(self, nom: str) -> Symbole:
+    def rechercher(self, nom: str, ligne: int = -1) -> Symbole:
         for portee in reversed(self.pile):
             if nom in portee:
                 return portee[nom]
-        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫")
+        self.erreur(f"Le symbole '{nom}' n'est pas déclaré 🚫", ligne) 
+        #%Car dans un gros programme on veut savoir exactement ou on a pas declaré%
 
     def erreur(self, message: str ="", ligne: int = -1) -> None:
         message = f"Analyseur_semantique → {message}"
@@ -172,7 +173,7 @@ class AnalyseurSemantique:
                 symbole = self.tables.rechercher(param.nom)
                 if not symbole.est_utilise:
                     self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la fonction {fonction.nom}", fonction.ligne)
-            
+
             self.fonction_courante = None
 
             self.tables.sortir_portee()
@@ -188,7 +189,7 @@ class AnalyseurSemantique:
                     retour_sinon: bool = self.verifier_chemins_retour(inst.sinon)
                     if retour_alors and retour_sinon:
                         return True
-                    
+
             elif isinstance(inst, Cas):
                 tous_retournent: bool = True
                 for branche in inst.branches:
@@ -256,6 +257,11 @@ class AnalyseurSemantique:
                     type_tableau = None
                     if decl.valeurs_initiales:
                         dims_statiques.append(len(decl.valeurs_initiales))
+                        if dims_statiques[0] <= 1:
+                            self.tables.erreur(
+                                f"Un tableau de constantes doit contenir au minimum deux éléments : {decl.nom}",
+                                decl.ligne,
+                            )
                         # Déduction du type et validation des éléments par le sémantique
                         type_tableau = self.obtenir_type_expression(decl.valeurs_initiales[0])
                         for elem in decl.valeurs_initiales[1:]:
@@ -281,6 +287,8 @@ class AnalyseurSemantique:
                     for dim in decl.dimensions:
                         if isinstance(dim, Nombre):
                             dims_statiques.append(int(dim.valeur))
+                            if int(dim.valeur) <= 1:
+                                self.tables.erreur(f"Les dimensions du tableau {decl.nom} doivent etre > 1", decl.ligne)
 
                     self.tables.declarer(
                         decl.nom,
@@ -322,7 +330,7 @@ class AnalyseurSemantique:
             self.visiter_appel_instruction(instruction)
 
     def visiter_affectation(self, instruction: Affectation) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.cible.nom)
+        symbole: Symbole = self.tables.rechercher(instruction.cible.nom, instruction.ligne)
         symbole.est_utilise = True   # ✅ la cible d'une affectation est "utilisée"
 
         if symbole.est_verrouille:
@@ -384,7 +392,7 @@ class AnalyseurSemantique:
 
     def visiter_lire(self, instruction: Lire) -> None:
         for element in instruction.cibles :
-            symbole: Symbole = self.tables.rechercher(element.nom)
+            symbole: Symbole = self.tables.rechercher(element.nom, instruction.ligne)
             if symbole.est_constante:
                 self.tables.erreur("Impossible de lire dans une constante.", instruction.ligne)
             if symbole.type == "booleen":
@@ -481,7 +489,7 @@ class AnalyseurSemantique:
             self.tables.pile[-1][nom].est_initialise = est_init
 
     def visiter_pour(self, instruction: Pour) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.indice.nom)
+        symbole: Symbole = self.tables.rechercher(instruction.indice.nom, instruction.ligne)
         
         if symbole.type != "entier":
             self.tables.erreur(f"L'indice de la boucle 'pour' ('{symbole.nom}') doit être de type entier, pas '{symbole.type}'. 🚫", instruction.ligne)
@@ -592,7 +600,7 @@ class AnalyseurSemantique:
         self.verifier_pas_tautologie(instruction.condition)
 
     def visiter_appel_instruction(self, instruction: AppelInstruction) -> None:
-        symbole: Symbole = self.tables.rechercher(instruction.nom)
+        symbole: Symbole = self.tables.rechercher(instruction.nom, instruction.ligne)
         if symbole.nature != "procedure":
             self.tables.erreur(f"L'identifiant '{instruction.nom}' n'est pas une procédure appelable.", instruction.ligne)
             
@@ -617,7 +625,7 @@ class AnalyseurSemantique:
         elif isinstance(expr, Booleen):
             return "booleen"
         elif isinstance(expr, Identifiant):
-            symbole = self.tables.rechercher(expr.nom)
+            symbole = self.tables.rechercher(expr.nom, expr.ligne)
             if not symbole.est_initialise:
                 self.tables.erreur(f"La variable '{expr.nom}' est utilisée avant d'être initialisée 🚫", expr.ligne)
             symbole.est_utilise = True
@@ -628,7 +636,7 @@ class AnalyseurSemantique:
             return symbole.type
 
         elif isinstance(expr, Indexation):
-            symbole = self.tables.rechercher(expr.nom)
+            symbole = self.tables.rechercher(expr.nom, expr.ligne)
 
             if symbole.nature != "tableau":
                 self.tables.erreur(f"La variable '{expr.nom}' est de type '{symbole.type}', ce n'est pas un tableau. Impossible d'utiliser des parenthèses. 🚫", expr.ligne)
@@ -657,7 +665,7 @@ class AnalyseurSemantique:
 
                 return "reel"
 
-            symbole = self.tables.rechercher(expr.nom)
+            symbole = self.tables.rechercher(expr.nom, expr.ligne)
             symbole.est_utilise = True
 
             # ✅ CAS 1 : C'est un tableau → c'est une indexation

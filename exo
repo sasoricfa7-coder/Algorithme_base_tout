@@ -1,4 +1,7 @@
 algorithme test_bug
+
+constante
+	tableau t← (1, 2)
 debut
-    x ← 5
+	Ecrire("Hello world", t(0))
 fin
