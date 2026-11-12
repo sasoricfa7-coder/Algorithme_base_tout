@@ -16,3 +16,4 @@ debut
 	Ecrire("Hello world")
 fin
 
+Dans environnement voir le cas de ligne car personne ne l'envoi a certaines methodes

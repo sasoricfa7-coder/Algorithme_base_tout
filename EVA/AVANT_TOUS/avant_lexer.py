@@ -1,6 +1,6 @@
 import json
 import sys
-from /home/sasori/mon_langage/EVA/UTILS/erreur import aide_remonter, erreur
+from ..UTILS import aide_remonter, erreur
 from utils import sans_accents
 import os
 

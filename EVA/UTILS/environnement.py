@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field, is_dataclass, fields
+from dataclasses import dataclass, field
 from erreur import erreur
 from typing import Any
 
@@ -15,15 +15,15 @@ class Environnement:
     def definir(self, nom: str, valeur) -> None:
         self.dict_valeur[nom] = valeur
 
-    def obtenir(self, nom: str) -> Any:
+    def obtenir(self, nom: str, ligne: int = -1) -> Any:
         if nom in self.dict_valeur:
             return self.dict_valeur[nom]
 
         if self.parent is not None:
             return self.parent.obtenir(nom)
-        self.erreur(f"{nom} inconnu")
+        self.erreur(f"{nom} inconnu", ligne)
 
-    def modifier(self, nom: str, valeur) -> None:
+    def modifier(self, nom: str, valeur, ligne: int = -1) -> None:
         if nom in self.dict_valeur:
             self.dict_valeur[nom] = valeur
             return
@@ -31,4 +31,4 @@ class Environnement:
         if self.parent is not None:
             self.parent.modifier(nom, valeur)
             return
-        self.erreur(f"{nom} valeur inconnue")
+        self.erreur(f"{nom} valeur inconnue", ligne)
