@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, is_dataclass, fields
-from typing import TypedDict, Union
+from typing import Union
 
 MOTS_FIN_BLOC: tuple[str, ...] = (
     "fin", "fin si", "fin cas", "fin pour", "fin tant que",
@@ -189,23 +189,6 @@ class Indexation:
     indices: list[Expression]
     ligne: int = -1
 
-class Token(TypedDict):
-    ligne: int
-    type: str
-    valeur: str | int | float | None
-
-class Langage(TypedDict):
-        mots_cles: list[str]
-        operateurs_logiques: list[str]
-        operateurs_comparaison: list[str]
-        operateurs_arihmetiques: list[str]
-        valeur_booleen: list[str]
-        operateurs_affectation: list[str]
-        commentaire: list[str]
-        separateur: list[str]
-        declaration_type: list[str]
-        normalisation: dict[str, str]                 # ✅ ajouté
-        table_mots: dict[str, tuple[str, str]]        # ✅ type mis à jour
 
 Expression = Union[Nombre, ChaineCaractere, Caractere, Booleen, Identifiant,
                    OperationBinaire, OperationUnaire, AppelFonction, Indexation]
