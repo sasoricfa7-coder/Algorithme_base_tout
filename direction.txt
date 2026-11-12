@@ -1,5 +1,0 @@
-Je prevois de rester sur Python jusqu'a la v1.0.9 ensuite passer en kotlin car mon but
-C'est android tu ecris un simple et seul ficher eva et non on fera tout le sale boulot.
-
-Par exemple regarde pour une simple application il faut plus de 15 fichiers gerer des gros trucs pour un simple resultat : voici la promesse
-Avec EVA coder pour Android devient comme un Hello world

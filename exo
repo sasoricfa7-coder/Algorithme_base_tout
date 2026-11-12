@@ -1,7 +1,0 @@
-algorithme test_bug
-
-constante
-	tableau t← (1, 2)
-debut
-	Ecrire("Hello world", t(0))
-fin

@@ -411,11 +411,8 @@ Exemples :
   Ce sont des tokens consommés par le parseur pour savoir où il en est.
   L'information structurelle est portée par les nœuds eux-mêmes.
 
-Le langage est insensible à la casse et aux accents : à egale a
+Le langage est insensible à la casse et aux accents : à egale a,
 algortihme egale algorithmes egale ALGOTIHME
-
-le nom d'une donnée doit être unique dans tout le code. Donc même des fonctions ou procedure differente ne doivent 
-pas avoir des données portants le même nom.
 
 Données declarer mais inutiliser est inacceptable : même fonction et procedure
 

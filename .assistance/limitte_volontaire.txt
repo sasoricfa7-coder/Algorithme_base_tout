@@ -7,7 +7,6 @@ Pas d'initialisation directe des variables	Évite les cas ambigus
 Pas de comparaison chaînée (a < b < c)	Pas nécessaire
 Pas d'affectation chaînée (a ← b ← c)	Pas nécessaire
 Une instruction par ligne	Simplicité
-a réservé	Compromis accepté
 
 Une limitation écrite n'est pas un défaut. C'est une décision. Et c'est ce qui distingue un langage pensé d'un langage bricolé.
 pas de pas negatif
