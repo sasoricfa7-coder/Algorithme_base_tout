@@ -9,6 +9,10 @@ class AnalyseurSemantique:
     tables: TableSymboles = field(default_factory=TableSymboles)
     fonction_courante: Fonction | None = None
 
+    # ✅ Lance l'analyse dès l'instanciation
+    def __post_init__(self):
+        self.visiter_algorithme()
+
     def visiter_algorithme(self) -> None:
         self.tables.entrer_portee()
         self.tables.noms_globaux.add(self.ast.nom)
@@ -90,7 +94,7 @@ class AnalyseurSemantique:
             for param in fonction.parametres:
                 symbole = self.tables.rechercher(param.nom)
                 if not symbole.est_utilise:
-                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la fonction {fonction.nom}", fonction.ligne)
+                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la fonction {fonction.nom}", param.ligne)
 
             self.fonction_courante = None
 
@@ -138,7 +142,7 @@ class AnalyseurSemantique:
             for param in procedure.parametres:
                 symbole = self.tables.rechercher(param.nom)
                 if not symbole.est_utilise:
-                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la procedure {procedure.nom}", symbole.ligne)
+                    self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la procedure {procedure.nom}", param.ligne)
 
             self.tables.sortir_portee()
 

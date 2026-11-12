@@ -101,7 +101,7 @@ class Interpreteur:
             return un_cas.valeur
 
         if isinstance(un_cas, Identifiant):
-            return self.env_courant.obtenir(un_cas.nom)
+            return self.env_courant.obtenir(un_cas.nom, un_cas.ligne)
 
         if isinstance(un_cas, OperationBinaire):
             gauche = self.evaluer_expression(un_cas.gauche)
@@ -132,7 +132,7 @@ class Interpreteur:
 
             if un_cas.nom not in self.fonctions:
                 try:
-                    tableau = self.env_courant.obtenir(un_cas.nom)
+                    tableau = self.env_courant.obtenir(un_cas.nom, un_cas.ligne)
                 except:
                     self.gestion_erreur(f"'{un_cas.nom}' n'est ni une fonction ni un tableau", un_cas.ligne)
 
@@ -168,7 +168,7 @@ class Interpreteur:
             return valeur_retour
 
         if isinstance(un_cas, Indexation):
-            tableau = self.env_courant.obtenir(un_cas.nom)
+            tableau = self.env_courant.obtenir(un_cas.nom, un_cas.ligne)
 
             if not isinstance(tableau, list):
                 self.gestion_erreur(f"La variable '{un_cas.nom}' n'est pas un tableau, impossible d'utiliser des paranthèses.", un_cas.ligne)
@@ -250,9 +250,9 @@ class Interpreteur:
             valeur = self.evaluer_expression(inst.valeur)
             nom = inst.cible.nom
             if isinstance(inst.cible, Identifiant):
-                self.env_courant.modifier(nom, valeur)
+                self.env_courant.modifier(nom, valeur, inst.ligne)
             else:
-                tableau = self.env_courant.obtenir(nom)
+                tableau = self.env_courant.obtenir(nom, inst.ligne)
                 indices = [self.evaluer_expression(idx) for idx in inst.cible.indices]
                 self.ecrire_tableau(tableau, indices, valeur, inst.ligne)
 
@@ -285,9 +285,9 @@ class Interpreteur:
                             self.gestion_erreur(f"{nom} est un caractère et doit recevoir qu'un seul élément", inst.ligne)
         
                 if isinstance(cible, Identifiant):
-                    self.env_courant.modifier(nom, saisie)
+                    self.env_courant.modifier(nom, saisie, inst.ligne)
                 else:
-                    tableau = self.env_courant.obtenir(nom)
+                    tableau = self.env_courant.obtenir(nom, inst.ligne)
                     indices = [self.evaluer_expression(idx) for idx in cible.indices]
                     self.ecrire_tableau(tableau, indices, saisie, inst.ligne)
 
@@ -337,11 +337,11 @@ class Interpreteur:
 
             self.env_courant.definir(nom_indice, val_debut)
 
-            while self.env_courant.obtenir(nom_indice) <= val_fin:
+            while self.env_courant.obtenir(nom_indice, inst.ligne) <= val_fin:
                 for sub_inst in inst.corps:
                     self.executer_instruction(sub_inst)
-                courant = self.env_courant.obtenir(nom_indice)
-                self.env_courant.modifier(nom_indice, courant + val_pas)
+                courant = self.env_courant.obtenir(nom_indice, inst.ligne)
+                self.env_courant.modifier(nom_indice, courant + val_pa, inst.lignes)
 
         elif isinstance(inst, TantQue):
             while self.evaluer_expression(inst.condition):

@@ -1,5 +1,4 @@
 from UTILS.erreur import aide_remonter
-import unicodedata
 from TYPES_CREER.__lexer import Token, Langage, MAX
 from UTILS.utils import sans_accents
 

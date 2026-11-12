@@ -14,23 +14,18 @@ def stopper(n: int = 1):
 
 """LANGAGE EVA"""
 try:
-    code_source: str
-    fichier_json: dict
 
     #CHARGEMENT DU CODE SOURCE 
     code_source, fichier_json = avant_lexer()
-    original_code_source: str = code_source
 
     #FORMATION DES TOKENS PAR LE LEXER
     token: list[dict] = lexer(code_source, fichier_json)
 
     #FORMATION DE L'AST PAR LE PARSEUR
-    parseur = Parseur(token)
-    ast = parseur.parse_programme()
+    ast = Parseur(token).ast
 
     #VERIFICATION DE L'AST PAR L'ANALYSEUR SEMATIQUE
     ANA_SEMAN = AnalyseurSemantique(ast)
-    ANA_SEMAN.visiter_algorithme()
 
     #INTERPRÉTATION
     interprete = Interpreteur(AST = ast)

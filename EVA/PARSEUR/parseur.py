@@ -8,6 +8,7 @@ class Parseur:
     def __init__(self, tokens: list[Token]) -> None :
         self.tokens: list[Token] = tokens
         self.position: int = 0
+        self.ast: Algorithme = self.parse_programme()
 
     def token_courant(self) -> Token:
         return self.tokens[self.position]
@@ -35,9 +36,11 @@ class Parseur:
             return True
         return False
 
-    def erreur(self, message) -> None:
+    def erreur(self, message, ligne: int | None = None) -> None:
         message = f"Parseur → {message}"
-        erreur(message, self.tokens[self.position]["ligne"])
+        if ligne is None:
+            ligne = self.tokens[self.position]["ligne"]
+        erreur(message, ligne)
 
     def fin_de_ligne(self) -> None:
         """Vérifie que le token courant est sur une autre ligne que le précédent."""
@@ -149,6 +152,7 @@ class Parseur:
         return Variable_bloc + Constante_bloc
 
     def parse_bloc_constantes(self) -> list[Declaration]:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "constante")
         resultats: list[Declaration] = []
         while self.token_courant()["valeur"] == "tableau" or self.token_courant()["type"] == "identifiant" :
@@ -156,6 +160,9 @@ class Parseur:
                 resultats.append(self.aide_constante_tableau())
             else :
                 resultats.append(self.parse_aide_constante())
+
+        if not resultats:
+            self.erreur("Un bloc 'constante' doit contenir au moins une déclaration 🚫", token_debut["ligne"])
 
         return resultats
 
@@ -183,6 +190,7 @@ class Parseur:
         
 
     def parse_bloc_variables(self) -> list[Declaration]:
+        token_debut = self.token_courant()
         self.consommer("mots_cles", "variable")
         resultats: list[Declaration] = []
         while self.token_courant()["valeur"] == "tableau" or self.token_courant()["type"] == "identifiant" :
@@ -190,6 +198,9 @@ class Parseur:
                 resultats += self.parse_aide_tableau()
             else :
                 resultats.extend(self.parse_aide_variable())
+
+        if not resultats:
+            self.erreur("Un bloc 'variable' doit contenir au moins une déclaration 🚫", token_debut["ligne"])
 
         return resultats
 

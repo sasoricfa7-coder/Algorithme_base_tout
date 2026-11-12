@@ -12,7 +12,7 @@ class Environnement:
         message = f"Interpréteur → {message}"
         erreur(message, ligne)
 
-    def definir(self, nom: str, valeur) -> None:
+    def definir(self, nom: str, valeur, ligne: int = -1) -> None:
         self.dict_valeur[nom] = valeur
 
     def obtenir(self, nom: str, ligne: int = -1) -> Any:
@@ -20,7 +20,7 @@ class Environnement:
             return self.dict_valeur[nom]
 
         if self.parent is not None:
-            return self.parent.obtenir(nom)
+            return self.parent.obtenir(nom, ligne)
         self.erreur(f"{nom} inconnu", ligne)
 
     def modifier(self, nom: str, valeur, ligne: int = -1) -> None:
@@ -29,6 +29,6 @@ class Environnement:
             return
 
         if self.parent is not None:
-            self.parent.modifier(nom, valeur)
+            self.parent.modifier(nom, valeur, ligne)
             return
         self.erreur(f"{nom} valeur inconnue", ligne)

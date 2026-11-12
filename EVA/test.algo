@@ -1,5 +1,9 @@
-ALGORITHMES SALUT
+algorithme test_erreur
+fonction ma_fonction() : entier
+debut
+    retourne x  % <- x n'existe pas
+fin
 
-DEBUT
-	Ecrire("HELLO WORLD")
-FIN
+debut
+    Ecrire(ma_fonction())
+fin

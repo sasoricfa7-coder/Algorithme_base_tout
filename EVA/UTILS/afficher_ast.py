@@ -1,6 +1,6 @@
 from dataclasses import field, is_dataclass, fields
 
-def afficher(node, indent="", last=True):
+def afficher_ast(node, indent="", last=True):
     """Affiche un AST fait de dataclasses sous forme d'arbre ASCII."""
     prefix = "└── " if last else "├── "
     child_indent = indent + ("    " if last else "│   ")
