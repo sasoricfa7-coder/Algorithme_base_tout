@@ -1,3 +1,8 @@
+from dataclasses import dataclass, field
+from TYPES_CREER.__parseur import *
+from SEMANTIQUE.tables import TableSymboles
+from SEMANTIQUE.symbole import Symbole
+
 @dataclass
 class AnalyseurSemantique:
     ast: Algorithme

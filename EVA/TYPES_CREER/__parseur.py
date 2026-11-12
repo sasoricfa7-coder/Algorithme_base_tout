@@ -14,8 +14,6 @@ LES_TYPES_PRIS: tuple[str, ...] = (
     "booleen",
 )
 
-MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"
-
 @dataclass
 class Algorithme:
     nom: str

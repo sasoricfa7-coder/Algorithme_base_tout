@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 @dataclass
 class Symbole:
     nom: str

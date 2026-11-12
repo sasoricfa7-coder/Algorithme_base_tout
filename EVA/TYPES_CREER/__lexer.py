@@ -17,3 +17,5 @@ class Langage(TypedDict):
         declaration_type: list[str]
         normalisation: dict[str, str]                 # ✅ ajouté
         table_mots: dict[str, tuple[str, str]]        # ✅ type mis à jour
+
+MAX: int = 3 # nombre max de mots pouvant former un mot-clé : "Fin tant que"

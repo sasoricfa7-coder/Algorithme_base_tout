@@ -17,3 +17,16 @@ debut
 fin
 
 Dans environnement voir le cas de ligne car personne ne l'envoi a certaines methodes
+
+Regarde gerons ce cas : 
+Traceback (most recent call last):
+  File "/home/sasori/mon_langage/EVA/main.py", line 21, in <module>
+    code_source, fichier_json = avant_lexer()
+                                ^^^^^^^^^^^^^
+  File "/home/sasori/mon_langage/EVA/AVANT_TOUS/avant_lexer.py", line 61, in main
+    code_source: str = charger_code(nom)
+                       ^^^^^^^^^^^^^^^^^
+  File "/home/sasori/mon_langage/EVA/AVANT_TOUS/avant_lexer.py", line 26, in charger_code
+    with open(nom, "r", encoding="utf-8") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/home/sasori/Bureau/wifi_programme.txt'

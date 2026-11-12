@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from erreur import erreur
+from UTILS.erreur import erreur
 from typing import Any
 
 @dataclass

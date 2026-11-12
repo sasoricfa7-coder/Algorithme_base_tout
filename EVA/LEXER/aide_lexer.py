@@ -1,7 +1,7 @@
-from erreur import aide_remonter
+from UTILS.erreur import aide_remonter
 import unicodedata
-from tous_les_types import Token, Langage, MAX
-from utils import sans_accents
+from TYPES_CREER.__lexer import Token, Langage, MAX
+from UTILS.utils import sans_accents
 
 def index_Error(code_source: str, index: int) -> bool:
     if index < len(code_source):

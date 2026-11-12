@@ -1,7 +1,7 @@
 from __future__ import annotations
-from environnement import Environnement
-from erreur import erreur
-from tous_les_types import (
+from UTILS.environnement import Environnement
+from UTILS.erreur import erreur
+from TYPES_CREER.__parseur import (
     Algorithme, Fonction, Procedure, DeclarationVariable, DeclarationConstante,
     DeclarationTableau, Affectation, Ecrire, Lire, Si, Cas, Pour, TantQue, Repeter,
     Retourne, AppelInstruction, Nombre, ChaineCaractere, Caractere, Booleen,

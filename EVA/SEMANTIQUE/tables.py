@@ -1,3 +1,6 @@
+from dataclasses import dataclass, field
+from SEMANTIQUE.symbole import Symbole
+
 @dataclass
 class TableSymboles:
     pile: list[dict[str, Symbole]] = field(default_factory=list)

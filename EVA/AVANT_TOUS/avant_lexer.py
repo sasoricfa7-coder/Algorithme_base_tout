@@ -1,14 +1,20 @@
+#FICHIER EXTERNE
+from UTILS.erreur import aide_remonter, erreur
+from UTILS.utils import sans_accents
+
+#IMPORTATION PYTHON
+import os
 import json
 import sys
-from ..UTILS import aide_remonter, erreur
-from utils import sans_accents
-import os
-
+from pathlib import Path
 
 def verificateur() -> str:
     if len(sys.argv) < 2:
         erreur("Aucun fichier indiqué // No file provided 📁")
     nom: str = sys.argv[1]
+    
+    # ✅ Convertit en chemin absolu
+    nom = os.path.abspath(nom)
 
     if not os.path.isfile(nom):
         erreur(f"Le fichier {nom} n'existe pas // File {nom} not found 🔍")
@@ -28,18 +34,13 @@ def charger_json(nom: str) -> dict:
 
 
 def construire_table(le_json: dict) -> dict[str, tuple[str, str]]:
-    """
-    Construit une table unique : mot normalisé -> (type, valeur_canonique).
-    La valeur_canonique est la forme singulière/standard à stocker dans le token.
-    """
-    # 1. Normaliser la table de normalisation (accents + minuscules)
+    # ... (ton code de construction de table reste inchangé)
     normalisation_brute: dict[str, str] = le_json.get("normalisation", {})
     normalisation: dict[str, str] = {
         sans_accents(alias): sans_accents(canonique)
         for alias, canonique in normalisation_brute.items()
     }
 
-    # 2. Construire la table principale
     table: dict[str, tuple[str, str]] = {}
     for cle, type_ in (
         ("mots_cles",               "mots_cles"),
@@ -58,12 +59,15 @@ def construire_table(le_json: dict) -> dict[str, tuple[str, str]]:
 def main() -> tuple[str, dict]:
     nom: str = verificateur()
     code_source: str = charger_code(nom)
-    fichier_json: dict = charger_json("langage.json")
+    
+    # ✅ Chemin basé sur l'emplacement du script
+    chemin_json = Path(__file__).parent / "langage.json"
+    fichier_json: dict = charger_json(chemin_json)
 
     if code_source.strip() == "":
         erreur(f"{nom} est vide // {nom} is empty 🕳️")
 
-    # ✅ pré-calcul unique : la table sera réutilisée à chaque appel d'alpha
+    # ✅ pré-calcul unique
     fichier_json["table_mots"] = construire_table(fichier_json)
 
     return code_source, fichier_json

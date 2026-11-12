@@ -1,7 +1,6 @@
-from aide_lexer import *
-from erreur import aide_remonter
-from tous_les_types import Token, Langage
-
+from LEXER.aide_lexer import *
+from UTILS.erreur import aide_remonter
+from TYPES_CREER.__lexer import Token, Langage
 
 def main(code_source: str, le_json: Langage) -> list[Token]:
     token: list[Token] = []

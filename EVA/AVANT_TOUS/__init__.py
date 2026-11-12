@@ -1,1 +1,1 @@
-from avant_lexer import main
+from .avant_lexer import main
