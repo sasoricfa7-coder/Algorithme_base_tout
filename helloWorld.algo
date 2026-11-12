@@ -1,0 +1,5 @@
+Algorithme hello_world
+
+debut
+	Ecrire("Hello world")
+fin
