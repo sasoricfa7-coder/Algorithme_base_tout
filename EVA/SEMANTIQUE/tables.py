@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from SEMANTIQUE.symbole import Symbole
+from UTILS.erreur import erreur
 
 @dataclass
 class TableSymboles:

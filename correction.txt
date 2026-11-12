@@ -20,3 +20,14 @@ Dans environnement voir le cas de ligne car personne ne l'envoi a certaines meth
 
 Regarde gerons ce cas : 
 j'ai ajouter au patch mais ca ne marche pas partout
+
+
+Je suis plus rapide 	a l'execution que dart 
+❯ time eva hello.algo
+HELLO WORLD 
+python3 /home/sasori/mon_langage/EVA/main.py hello.algo  0,09s user 0,01s system 99% cpu 0,100 total
+❯ time dart run hello.dart
+Hello World depuis Dart !
+dart run hello.dart  0,35s user 0,13s system 146% cpu 0,324 total
+
+    ~ ▓▒░    

@@ -19,7 +19,6 @@ try:
 
     #CHARGEMENT DU CODE SOURCE 
     code_source, fichier_json = avant_lexer()
-
     original_code_source: str = code_source
 
     #FORMATION DES TOKENS PAR LE LEXER
@@ -34,8 +33,7 @@ try:
     ANA_SEMAN.visiter_algorithme()
 
     #INTERPRÉTATION
-    interprete = Interpreteur()
-    interprete.interpreter(ast)
+    interprete = Interpreteur(AST = ast)
 
 except KeyboardInterrupt:
     print("\n\033[1m\033[93mArrêt en cours... // Stopping...\033[0m")

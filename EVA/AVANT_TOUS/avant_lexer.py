@@ -11,15 +11,15 @@ from pathlib import Path
 def verificateur() -> str:
     if len(sys.argv) < 2:
         erreur("Aucun fichier indiqué // No file provided 📁")
-    nom: str = sys.argv[1]
+    guide: str = sys.argv[1]
     
     # ✅ Convertit en chemin absolu
-    nom = os.path.abspath(nom)
+    nom = os.path.abspath(guide)
 
     if not os.path.isfile(nom):
-        erreur(f"Le fichier {nom} n'existe pas // File {nom} not found 🔍")
+        erreur(f"Le fichier {guide} n'existe pas // File {guide} not found 🔍")
 
-    return nom
+    return nom, guide
 
 
 def charger_code(nom: str) -> str:
@@ -57,7 +57,7 @@ def construire_table(le_json: dict) -> dict[str, tuple[str, str]]:
 
 
 def main() -> tuple[str, dict]:
-    nom: str = verificateur()
+    nom, guide = verificateur()
     code_source: str = charger_code(nom)
     
     # ✅ Chemin basé sur l'emplacement du script
@@ -65,7 +65,7 @@ def main() -> tuple[str, dict]:
     fichier_json: dict = charger_json(chemin_json)
 
     if code_source.strip() == "":
-        erreur(f"{nom} est vide // {nom} is empty 🕳️")
+        erreur(f"{guide} est vide // {nom} is empty 🕳️")
 
     # ✅ pré-calcul unique
     fichier_json["table_mots"] = construire_table(fichier_json)
