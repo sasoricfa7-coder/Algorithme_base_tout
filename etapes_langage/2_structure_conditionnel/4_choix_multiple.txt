@@ -1,0 +1,35 @@
+Cas nom_variable vaut
+	valeur1 : ...
+	valeur2 : ...
+	Sinon : ...
+Fin Cas
+
+Exemple : 
+Age ← "mangue"
+Cas Age vaut
+	"pomme" : Ecrire("Kilo 2200 Franc")
+	"banane" : Ecrire("Kilo 3200 Franc")
+	sinon : 
+		Ecrire("Fruit inconnu")
+Fin cas
+
+Ici je me demande comment faire plusieurs instructions par cas. Car ici tu remarque une instruction par ligne
+Alors voici ce que je decide pour plusieurs instructions
+
+Age ← "mangue"
+Cas Age vaut
+	"pomme" : 
+		Debut
+			Ecrire("Kilo 2200 Franc")
+			Ecrire("Une reduction de 25% si vous payer plus de 12 kilo")
+		Fin
+	"banane" : 
+		Debut
+			Ecrire("Kilo 3200 Franc")
+			Ecrire("Une reduction de 35% si vous payer plus de 22 kilo")
+		Fin
+	sinon : 
+		Ecrire("Fruit inconnu")
+		% Mais au niveau du sinon je me dis pas besoin de délimitter %
+Fin cas
+

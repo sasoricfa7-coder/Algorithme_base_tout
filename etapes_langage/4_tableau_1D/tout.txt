@@ -1,0 +1,28 @@
+Indice commence à 0
+====================================================================================
+*** Declaration
+Variables
+	Tableau nom_tab(Taille) : Type
+
+c'est possible aussi d'initialiser un tableau variable
+Variables
+	Tableau nom_tab(Taille) : Type ← (valeur1, valeur2, valeur3, ..., valeurTaille)
+
+
+
+Constantes
+/*
+Ici pour declarer un tableau constant préciser le type est obligatoire mais pas la taille car tous les éléments sont declarer direct
+*/
+	Tableau nom_tab : Type ← {valeur1, valeur2, valeur3}
+====================================================================================
+Affectation :
+nom_tab (indice) ← valeur
+====================================================================================
+Lecture :
+Lire(nom_tab(indice))
+====================================================================================
+Ecriture :
+Ecrire(nom_tab(indice))
+====================================================================================
+

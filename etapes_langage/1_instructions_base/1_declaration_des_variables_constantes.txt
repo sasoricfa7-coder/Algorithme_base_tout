@@ -1,0 +1,19 @@
+*** Variables
+/*
+Type obligatoire
+Possiblité d'initialiser
+*/
+
+Variables
+	Nom_Variables: Type
+	Nom_Variables: Type ← valeur
+
+
+*** Constantes
+/*
+Type non obligatoire
+Initialisation obligatoire
+donnée immutable
+*/
+Constantes
+	Nom_Constante ← valeur

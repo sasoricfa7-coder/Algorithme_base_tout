@@ -1,0 +1,27 @@
+LA STRUCTURE D'UN ALGORITHME.
+3 BLOCS : 
+bloc 1
+ ===================================
+ |								   |
+ |Algorithme Nom_Algorithme		   |   ← En-tête de l'Algorithme
+ |								   |
+ ===================================
+
+
+bloc 2
+ ===================================
+ |variables						   |
+ | 	Nom_Variable: Type			   |
+ |constantes					   |  ← Declaration des données	
+ |	Nom_constante ← valeur		   |
+ ===================================
+
+bloc 3
+
+===================================
+|Debut							  |
+|	... 						  |
+|	... 						  |  ← Instructions
+|	... 						  |
+|Fin 							  |
+===================================

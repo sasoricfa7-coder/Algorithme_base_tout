@@ -1,0 +1,14 @@
+Ecrire("une chaine de caractère" / nom_de_la_variable)
+exemple : 
+x ← 2
+Ecrire(2) ou Ecrire("x = ", x)  : resultat : x = 2
+
+Lire(nom_de_la_variable)  et on recupère la valeur.
+exemple : 
+variables 
+	x : Entier
+
+Lire(x) // On suppose que l'utilisateur va entré un entier que l'on recupère.
+
+
+// Quand je dis nom_de_la_variable ca marche aussi pour les constantes.
