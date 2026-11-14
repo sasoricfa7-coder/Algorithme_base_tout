@@ -19,7 +19,11 @@ try:
     code_source, fichier_json = avant_lexer()
 
     #FORMATION DES TOKENS PAR LE LEXER
-    token: list[dict] = lexer(code_source, fichier_json)
+    token: list[dict] = lexer(
+        le_json = fichier_json,
+        code_source = code_source,
+        _commentaire = fichier_json["commentaire"]
+    )
 
     #FORMATION DE L'AST PAR LE PARSEUR
     ast = Parseur(token).ast

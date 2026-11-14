@@ -1,52 +1,79 @@
-from LEXER.aide_lexer import *
+from dataclasses import dataclass, field
+from TYPES_CREER.__lexer import Token, Langage, MAX
 from UTILS.erreur import aide_remonter
-from TYPES_CREER.__lexer import Token, Langage
+from LEXER.aide_lexer import AideLexer
+from UTILS.utils import sans_accents
 
-def main(code_source: str, le_json: Langage) -> list[Token]:
-    token: list[Token] = []
+@dataclass
+class Lexer(AideLexer):
+    le_json: Langage
+    code_source: str
+    _commentaire: list[str]
+
+    token: list[Token] = field(default_factory=list())
     ligne: int = 1
     index: int = 0
-
-    _commentaire: list[str] = le_json["commentaire"]
     cas_symbole: list[str] = ["=", "<", ">", "+", "-", "*", "/", "^", "←", ":", ","]
 
-    while index < len(code_source):
-        caractere: str = code_source[index]
+    def __post_init__(self):
+        self.orchestreur()
 
-        if caractere in (" ", "\t"):
-            ligne, index = espace(ligne, index)
+    def erreur(self, message: str = "", ligne_depart: int = -1) -> None:
+        ligne_depart = self.ligne if ligne_depart != -1 else ligne_depart
+        aide_remonter(
+            self.index,
+            self.code_source,
+            ligne_depart,
+            f"LEXER --> {message}",
+        )
 
-        elif caractere == "\n":
-            ligne, index = retour_ligne(ligne, index)
+    def token_append(
+        self,
+        type_: str,
+        valeur: str | int | float | None,
+        ligne_depart: int = -1
+    ) -> None:
+        ligne_depart = self.ligne if ligne_depart != -1 else ligne_depart
+        self.token.append({
+            "type" : type_,
+            "valeur" : valeur,
+            "ligne" : ligne_depart,
+        })
 
-        elif caractere in _commentaire:
-            ligne, index = commentaire(ligne, index, code_source, _commentaire)
+    def orchestreur(self) -> None:
+        while self.index < len(self.code_source):
+            caractere: str = self.code_source[self.index]
 
-        elif caractere == "'":
-            ligne, index = un_seul_caractere(ligne, index, code_source, token)
+            if caractere in (" ", "\t"):
+                self.espace()
 
-        elif caractere == '"':
-            ligne, index = chaine_caractere(ligne, index, code_source, token)
+            elif caractere == "\n":
+                self.retour_ligne()
 
-        elif caractere in ("(", ")"):
-            ligne, index = parenthese(ligne, index, code_source, token)
+            elif caractere in _commentaire:
+                self.commentaire()
 
-        elif caractere.isdigit():
-            ligne, index = numerique(ligne, index, code_source, token)
+            elif caractere == "'":
+                self.un_seul_caractere()
 
-        elif caractere in cas_symbole:
-            ligne, index = symbole(ligne, index, code_source, token, le_json)
+            elif caractere == '"':
+                self.chaine_caractere()
 
-        elif caractere.isalpha() or caractere == "_":
-            ligne, index = alpha(ligne, index, code_source, token, le_json)
+            elif caractere in ("(", ")"):
+                self.parenthese()
 
-        else:
-            aide_remonter(index, code_source, ligne,
-                          f"Terme non pris en charge : '{caractere}' // Unsupported token: '{caractere}' 🚫")
+            elif caractere.isdigit():
+                self.numerique()
 
-    token_append("FIN_FICHIER", None, ligne, token)
-    return token
+            elif caractere in cas_symbole:
+                self.symbole()
 
+            elif caractere.isalpha() or caractere == "_":
+                self.alpha()
 
-if __name__ == "__main__":
-    main()
+            else:
+                self.erreur(
+                    f"Terme non pris en charge : '{caractere}' // Unsupported token: '{caractere}' 🚫",
+                )
+
+        self.token_append("FIN_FICHIER", None, ligne, token)

@@ -341,7 +341,7 @@ class Interpreteur:
                 for sub_inst in inst.corps:
                     self.executer_instruction(sub_inst)
                 courant = self.env_courant.obtenir(nom_indice, inst.ligne)
-                self.env_courant.modifier(nom_indice, courant + val_pa, inst.lignes)
+                self.env_courant.modifier(nom_indice, courant + val_pas, inst.ligne)
 
         elif isinstance(inst, TantQue):
             while self.evaluer_expression(inst.condition):

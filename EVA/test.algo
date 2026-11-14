@@ -1,9 +1,17 @@
-algorithme test_erreur
-fonction ma_fonction() : entier
-debut
-    retourne x  % <- x n'existe pas
-fin
+algorithme salut
 
+variables
+	i: entier
+	valide: booleen
 debut
-    Ecrire(ma_fonction())
+	i ← 0
+	valide ← VRAI
+    tant que valide faire
+		Ecrire("ZALLE", i)
+		i ← i + 1
+		si i >= 0 alors
+			valide ← FAUX
+		fin si	
+    fin tant que
+
 fin
