@@ -23,7 +23,7 @@ try:
         le_json = fichier_json,
         code_source = code_source,
         _commentaire = fichier_json["commentaire"]
-    )
+    ).token
 
     #FORMATION DE L'AST PAR LE PARSEUR
     ast = Parseur(token).ast

@@ -14,6 +14,7 @@ class SignalRetour(Exception):
         self.valeur = valeur
         super().__init__(str(valeur))
 
+#@dataclass
 class Interpreteur:
     def __init__(self, env_global=None, env_courant=None, fonctions={}, procedures={}, AST=None):
         self.env_global = Environnement() if env_global is None else env_global
