@@ -1,0 +1,71 @@
+name: Sync depuis Nest
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"   # toutes les 2 heures (heure UTC)
+  workflow_dispatch:         # permet de le lancer à la main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-nest
+  cancel-in-progress: false
+
+env:
+  NEST_URL: https://nest.pijul.com/sasoricfa7-coder/EVANA
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt GitHub
+        uses: actions/checkout@v4
+
+      - name: Dépendances système pour compiler Pijul
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config clang libssl-dev libsodium-dev libzstd-dev libxxhash-dev
+
+      - name: Cache du binaire Pijul
+        id: cache-pijul
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/pijul
+          key: pijul-${{ runner.os }}-v1   # change v1 en v2 pour forcer une recompilation
+
+      - name: Installer Pijul (long la première fois, ensuite en cache)
+        if: steps.cache-pijul.outputs.cache-hit != 'true'
+        run: cargo install pijul --version "^1.0.0-beta" --locked
+
+      - name: Cloner EVANA depuis Nest
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          pijul --version
+          pijul clone "$NEST_URL" "$RUNNER_TEMP/nest"
+
+      - name: Vérification de sécurité avant d'écraser
+        run: |
+          # Évite de vider GitHub si le clone est vide ou cassé
+          test -f "$RUNNER_TEMP/nest/main.py" || { echo "main.py absent du clone Nest : abandon"; exit 1; }
+
+      - name: Écraser le contenu de GitHub par celui de Nest
+        run: |
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.pijul/' \
+            "$RUNNER_TEMP/nest/" ./
+
+      - name: Commit et push s'il y a des changements
+        run: |
+          git config core.quotepath off
+          git config user.name  "sync-nest[bot]"
+          git config user.email "sync-nest@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Aucun changement depuis Nest."
+          else
+            git commit -m "Sync depuis Nest ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+            git push
+          fi
