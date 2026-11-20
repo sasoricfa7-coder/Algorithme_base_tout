@@ -1,6 +1,6 @@
 #FICHIER EXTERNES
 from AVANT_TOUS.avant_lexer import main as avant_lexer
-from LEXER.lexer import main as lexer
+from LEXER.lexer import Lexer
 from PARSEUR.parseur import Parseur
 from SEMANTIQUE.analyseur_semantique import AnalyseurSemantique
 from INTERPRETEUR.interpreteur import Interpreteur
@@ -19,7 +19,7 @@ try:
     code_source, fichier_json = avant_lexer()
 
     #FORMATION DES TOKENS PAR LE LEXER
-    token: list[dict] = lexer(
+    token: list[dict] = Lexer(
         le_json = fichier_json,
         code_source = code_source,
         _commentaire = fichier_json["commentaire"]

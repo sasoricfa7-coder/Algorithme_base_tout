@@ -10,16 +10,18 @@ class Lexer(AideLexer):
     code_source: str
     _commentaire: list[str]
 
-    token: list[Token] = field(default_factory=list())
+    token: list[Token] = field(default_factory=list)
     ligne: int = 1
     index: int = 0
-    cas_symbole: list[str] = ["=", "<", ">", "+", "-", "*", "/", "^", "←", ":", ","]
+    cas_symbole: list[str] = field(default_factory=lambda: ["=", "<", ">", "+", "-", "*", "/", "^", "←", ":", ","])
 
     def __post_init__(self):
         self.orchestreur()
 
     def erreur(self, message: str = "", ligne_depart: int = -1) -> None:
-        ligne_depart = self.ligne if ligne_depart != -1 else ligne_depart
+        if ligne_depart == -1:
+            ligne_depart = self.ligne
+        
         aide_remonter(
             self.index,
             self.code_source,
@@ -33,7 +35,8 @@ class Lexer(AideLexer):
         valeur: str | int | float | None,
         ligne_depart: int = -1
     ) -> None:
-        ligne_depart = self.ligne if ligne_depart != -1 else ligne_depart
+        if ligne_depart == -1:
+            ligne_depart = self.ligne
         self.token.append({
             "type" : type_,
             "valeur" : valeur,
@@ -50,7 +53,7 @@ class Lexer(AideLexer):
             elif caractere == "\n":
                 self.retour_ligne()
 
-            elif caractere in _commentaire:
+            elif caractere in self._commentaire:
                 self.commentaire()
 
             elif caractere == "'":
@@ -65,7 +68,7 @@ class Lexer(AideLexer):
             elif caractere.isdigit():
                 self.numerique()
 
-            elif caractere in cas_symbole:
+            elif caractere in self.cas_symbole:
                 self.symbole()
 
             elif caractere.isalpha() or caractere == "_":
@@ -76,4 +79,4 @@ class Lexer(AideLexer):
                     f"Terme non pris en charge : '{caractere}' // Unsupported token: '{caractere}' 🚫",
                 )
 
-        self.token_append("FIN_FICHIER", None, ligne, token)
+        self.token_append("FIN_FICHIER", None)

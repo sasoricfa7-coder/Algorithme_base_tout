@@ -1,2 +1,0 @@
-Objectif de cette version : la v0.0.0
-executer tout le pseudo code de Hassan El Bahi avant de penser a ajouter des trucs.

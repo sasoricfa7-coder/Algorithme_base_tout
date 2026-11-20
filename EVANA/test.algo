@@ -1,0 +1,4 @@
+algorithme salut
+debut
+	Ecrire("hello wordl")
+fin

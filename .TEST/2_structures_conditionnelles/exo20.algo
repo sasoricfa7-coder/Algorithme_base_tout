@@ -14,7 +14,7 @@ debut
 		'+' : Ecrire(n1, " + ", n2, " = ", n1 + n2)
 		'-' : Ecrire(n1, " - ", n2, " = ", n1 - n2)
 		'*' : Ecrire(n1, " * ", n2, " = ", n1 * n2)
-		'/' : Ecrire(n1, " + ", n2, " = ", n1 / n2)
+		'/' : Ecrire(n1, " / ", n2, " = ", n1 / n2)
 		Sinon: Ecrire("Operateur non pris en charge : ", operateur)
 	fin cas
 fin

@@ -1,3 +1,6 @@
+from TYPES_CREER.__lexer import MAX
+from UTILS.utils import sans_accents
+
 class AideLexer:
 
     def index_Error(self, L: int = 0) -> bool:
@@ -176,7 +179,6 @@ class AideLexer:
     def alpha(self) -> None:
         depart_index: int = self.index
 
-        # ✅ table pré-calculée : mot normalisé -> (type, valeur_canonique)
         table: dict[str, tuple[str, str]] = self.le_json["table_mots"]
 
         meilleur_fin_i: int = self.index
@@ -188,7 +190,8 @@ class AideLexer:
 
         while len(mots) < MAX:
             mot: str = ""
-            while (self.index_Error(temp_i)
+            # ✅ Correction ici : on vérifie temp_i directement
+            while (temp_i < len(self.code_source)
                    and (self.code_source[temp_i].isalnum() or self.code_source[temp_i] in ("_", "'"))):
                 mot += self.code_source[temp_i]
                 temp_i += 1
@@ -201,15 +204,20 @@ class AideLexer:
 
             if candidat_norm in table:
                 meilleur_fin_i = temp_i
-                meilleur_type, meilleur_valeur = table[candidat_norm]   # ✅ déballage du tuple
+                meilleur_type, meilleur_valeur = table[candidat_norm]
 
             debut_esp: int = temp_i
-            while (index_Error(code_source, temp_i)
-                   and code_source[temp_i] in (" ", "\t")):
+            # ✅ Correction ici aussi
+            while (temp_i < len(self.code_source)
+                   and self.code_source[temp_i] in (" ", "\t")):
                 temp_i += 1
 
             if temp_i == debut_esp:
                 break
+
+        if not mots:
+            self.erreur("Erreur interne : aucun mot trouvé dans alpha()")
+            return
 
         if meilleur_type == "identifiant":
             mot_brut: str = mots[0]
