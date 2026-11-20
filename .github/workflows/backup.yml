@@ -1,0 +1,37 @@
+name: Backup Pijul from Nest
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Tous les jours à 3h du matin
+  workflow_dispatch:      # Permet de déclencher manuellement
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    # Permet de pousser vers le dépôt GitHub
+    steps:
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+
+      - name: Install Pijul and pijul-export
+        run: |
+          source $HOME/.cargo/env
+          cargo install pijul --version "~1.0.0-beta"
+          cargo install --git https://nest.pijul.com/laumann/pijul-export
+
+      - name: Clone from Nest via HTTPS
+        run: |
+          source $HOME/.cargo/env
+          pijul clone https://nest.pijul.com/sasoricfa7-coder/EVANA /tmp/eva-pijul
+
+      - name: Convert to Git and push
+        run: |
+          mkdir /tmp/eva-git && cd /tmp/eva-git
+          git init
+          # Convertir l'historique du canal principal de Pijul en Git (historique linéaire)
+          pijul-export --repo /tmp/eva-pijul | git fast-import
+          git checkout main
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin main --force
