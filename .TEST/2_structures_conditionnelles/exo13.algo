@@ -1,3 +1,11 @@
+%
+Un magasin facture a 0.3 francs ses 10 premières photocopies,
+0.25 les 20 suivantes et 0.2 au dela.
+Redigez un algorithme qui demandera le nombre
+de photocopies a effectuer et affichera la facture correspondante
+%
+
+
 algorithme photocopie
 
 variables

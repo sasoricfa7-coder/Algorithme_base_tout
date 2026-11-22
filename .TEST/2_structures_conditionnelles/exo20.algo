@@ -1,3 +1,9 @@
+%
+Redigez un algorithme qui demande deux nombres
+entiers et l'une des operations suivantes : + - / *
+puis effectue l'operation correspondante et affiche le resultat
+%
+
 Algorithmes mini_calculatrice
 variables
 	n1, n2: entier

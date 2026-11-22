@@ -1,4 +1,7 @@
 algorithme salut
+variable
+	message: chaines des caractere
 debut
-	Ecrire("hello wordl")
+	message <-- "hello wordl"
+	Ecrire(message)
 fin

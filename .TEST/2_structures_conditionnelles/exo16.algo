@@ -1,3 +1,13 @@
+%
+Un algorithme qui affiche la ou les solutions d'une equations du second degré
+de la forme ax² + bx + c
+Pour calculer la racine carrée d'un nombre nous utilisons la fonction racine (sqrt aussi marche)
+exemple : 
+A ← racine(4) signifie A = 2.0
+A ← sqrt(4) signifie A = 2.0
+%
+
+
 algorithmes equation_second_degré
 variable
 z, b, c, D, s0, s1, s2: réel

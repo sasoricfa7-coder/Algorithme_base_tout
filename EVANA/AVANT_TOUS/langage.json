@@ -40,6 +40,14 @@
 		"fin si",
 		"fin cas",
 		"fin tant que",
+		"chaines de caractère",
+		"chaines de caractères",
+		"chaine de caractères",
+		"chaine de caractère",
+		"chaines des caractère",
+		"chaines des caractères",
+		"chaine des caractères",
+		"chaine des caractère",
 		"pas",
 		"tant que",
 		"faire"
@@ -48,12 +56,13 @@
 	"operateurs_comparaison" : ["=", "<", ">", "<=", ">=", "<>"],
 	"operateurs_arihmetiques" : ["+", "-", "*", "/", "^", "mod", "div"],
 	"valeur_booleen" : ["vrai", "faux"],
-	"operateurs_affectation" : ["←"],
+	"operateurs_affectation" : ["←", "<--"],
 	"commentaire" : ["%"],
 	"separateur" : [","],
 	"declaration_type" : [":"],
 
 	"normalisation" : {
+		"<--" : "←",
 		"algorithmes": "algorithme",
 		"variables":   "variable",
 		"constantes":  "constante",
@@ -65,6 +74,14 @@
 		"tableaux":    "tableau",
 		"fonctions":   "fonction",
 		"procedures":  "procedure",
-		"retourner":   "retourne"
+		"retourner":   "retourne",
+		"chaines de caractère" : "chaine",
+		"chaines de caractères" : "chaine",
+		"chaine de caractères" : "chaine",
+		"chaine de caractère" : "chaine",
+		"chaines des caractère" : "chaine",
+		"chaines des caractères" : "chaine",
+		"chaine des caractères" : "chaine",
+		"chaine des caractère" : "chaine"
 	}
 }

@@ -1,3 +1,17 @@
+%
+Un algorithme permettant de saisir trois notes d'un etudiant,
+calculant sa moyenne et affichant celle-ci avec la mention.
+(
+	"Très bien" a partir de 16, 
+	"Bien" entre 14 et 16,
+	"Assez bien" entre 12 et 14,
+	"Passable" entre 10 et 12,
+	"Insuffisant" en dessous de 10	
+)
+On suppose que l'etudiant va saisir des notes comprise
+entre 0 et 20
+%
+
 Algorithmes mention_moyenne
 variables
 	n1, n2, n3, moyenne: reel

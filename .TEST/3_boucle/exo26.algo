@@ -1,3 +1,10 @@
+%
+Ecrire un Algorithme qui demande à l'utilisateur de taper un entier n.
+Puis qui calcule la somme des carrées des n premiers impaires
+Par exemple si n = 5, le resultat est :
+1² + 3² + 5² + 7² + 9² = 165
+%
+
 Algorithme nombre_impaire
 variables
 	x, i, j: entier

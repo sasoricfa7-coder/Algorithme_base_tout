@@ -1,3 +1,9 @@
+%
+Etant donné un mois, ecrivez un algorithmes
+nbrs_jours qui retourne le nombre de jours
+de ce mois.
+%
+
 algorithmes nbrs_jours
 variables
 	mois, msg: chaines

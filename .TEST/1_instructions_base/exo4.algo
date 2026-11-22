@@ -1,3 +1,8 @@
+%
+Un algorithme qui calcul et affiche
+la puissance de X par Y
+%
+
 Algorithmes puissance
 variables
 X, Y, p: réel

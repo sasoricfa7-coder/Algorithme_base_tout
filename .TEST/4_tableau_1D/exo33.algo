@@ -1,3 +1,10 @@
+%
+Ecrire un algorithme qui declare 
+remplit et affiche un tableau contenant les six voyelles 
+de l'alphabet français.
+%
+
+
 ALGORITHMES TABLEAU_VOYELLE
 VARIABLES
 	TABLEAU VOYELLE(6): CARACTÈRE

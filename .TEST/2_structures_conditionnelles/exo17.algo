@@ -1,3 +1,14 @@
+%
+Les habitants d'une ville paient les inpôts selos les règles suivantes:
+- Les homme plus de 20 ans paient l'impôt.
+- Les femmes paient l'impôt si elle est entre 18 et 35 années.
+- Les autres ne paient pas les impôts
+
+Ecrire un algorithmes qui demande a l'utilisauteur son age
+et son sexe et dit s'il paie 
+%
+
+
 algorithmes impôt
 variables
 	age: entier

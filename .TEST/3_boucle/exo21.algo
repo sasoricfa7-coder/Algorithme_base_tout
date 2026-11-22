@@ -1,3 +1,10 @@
+%
+Ecrire un programme qui demande un nombre de depart
+et qui ensuite affiche les 10 nombres suivants
+en utilisant la boucle Pour.
+Par exemple si l'utilisateur entre 33, le programme affichera les nombres de 34 à 43.
+%
+
 algorithmes dix_prochains_nombres
 variables
 	x, i: entier

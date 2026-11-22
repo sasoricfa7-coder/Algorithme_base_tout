@@ -1,3 +1,9 @@
+%
+Un Algorithme qui echange le contenu de deux variables numeriques
+si elles sont de même signe sinon met la somme dans le contenu de la première
+variable et leur produit dans le second
+%
+
 ALGORITHMES ECHANGE_COND
 VARIABLES
 	X, Y, S, P: ENTIERS

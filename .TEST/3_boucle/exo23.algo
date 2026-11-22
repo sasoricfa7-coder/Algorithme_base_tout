@@ -1,3 +1,9 @@
+%
+Un algorithme qui calcule et affiche la somme : 
+S = 1/1 + 1/2 + 1/3 + 1/4 + ... 1/n
+%
+
+
 ALGORITHMES TEST
 VARIABLES
 	X, I: entier
@@ -5,7 +11,7 @@ VARIABLES
 DEBUT
 	LIRE(X)
 	S ← 0
-	POUR I ← 1 A x PAS 1 FAIRE
+	POUR I <-- 1 A x PAS 1 FAIRE
 		S ← S + 1/I
 	FIN POUR
 	ECRIRE(S)

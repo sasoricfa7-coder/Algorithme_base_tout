@@ -1,3 +1,12 @@
+%
+La population de la ville de Maraketch est de 1_000_000 d'habitants et 
+elle grandit de 50_000 habitants par an. celle de la ville de Agadir
+est de 500_000 habitants et elle grandit de 8pourcents par an.
+Ecrire un Algorithme permettant de determiner dans combien d'année 
+la population de la ville Agadir depassera celle de marakech
+%
+
+
 Algorithme calcul_population
 constantes
 	population_marakech ← 1_000_000

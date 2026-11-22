@@ -1,3 +1,8 @@
+%
+algorithme qui retourne si deux nombres sont de 
+meme signe ou non
+%
+
 algorithmes signe
 variables
 	x, y: entiers

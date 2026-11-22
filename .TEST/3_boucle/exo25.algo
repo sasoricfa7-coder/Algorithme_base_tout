@@ -1,3 +1,9 @@
+%
+Ecrire un ALGORITHME qui demande un nombre positif non nul au depart,
+et qui cacule sa factorielle : exemple : la factorielle de 6 est noté 6!
+et vaut 1 * 2 * 3 * 4 * 5 * 6
+%
+
 ALGORITHMES TEST
 VARIABLES
 	X, f, i: entier

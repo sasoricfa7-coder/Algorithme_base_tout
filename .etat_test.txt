@@ -1,1 +1,4 @@
-exo23.algo
+TEST : exo23.algo
+
+
+TITRE : exo27.algo

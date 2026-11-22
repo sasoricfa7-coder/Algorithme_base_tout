@@ -1,3 +1,12 @@
+%
+A la naissance de Amal, son grand père ALI, lui ouvre un compte en banque.
+Ensuite a chaque Anniversaire son grand père lui verse la somme de 500
+auquel il ajoute le triple de l'age de Amal.
+Par exemple, lorsqu'elle a 4 ans : il lui verse 512.
+Ecrire un algorithme qui permet de determiner quelle somme auras Amal
+lors de son nième anniversaire
+%
+
 algorithmes somme_verser
 variables
 	age, somme, i: entier

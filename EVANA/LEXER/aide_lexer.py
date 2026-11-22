@@ -143,6 +143,13 @@ class AideLexer:
                 self.token_append(type_, valeur_deux)
                 return # Je ne sais pas comment me passer du return
 
+            valeur_trois: str = valeur_deux + self.code_source[self.index]
+            valide, type_ = self.verificateur(valeur_trois)
+            if valide:
+                self.index += 2
+                self.token_append(type_, self.le_json["normalisation"][valeur_trois])
+                return
+
         # fallback 1 caractère
         valide, type_ = self.verificateur(valeur_un)
         if not valide:

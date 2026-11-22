@@ -1,14 +1,19 @@
-%algorithmes temps
+%
+algorithme qui convertie une durée T en seconde : 
+en heure, minute, seconde
+%
+
+algorithmes temps
 
 debut
-	Ecrire("T = ", 56263)
-	Ecrire("H = ", 56263 div 3600)
-	Ecrire("M = ", (56263 mod 3600) div 60)
-	Ecrire("S = ", ((56263 mod 3600) mod 60))
+	Ecrire("Temps = ", 56263)
+	Ecrire("Heures = ", 56263 div 3600)
+	Ecrire("Minutes = ", (56263 mod 3600) div 60)
+	Ecrire("Secondes = ", ((56263 mod 3600) mod 60))
 fin
- version stables
-% %J'essai ce cas tordu sur les constantes pour voir jusqu'ou va le langage%
-algorithmes temps
+
+
+%algorithmes temps
 constantes
 t ← 56263
 z ← 56263
@@ -23,3 +28,4 @@ debut
 	
 fin
 
+%

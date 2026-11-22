@@ -1,3 +1,10 @@
+%
+Ecrire un algorithme qui demande à l'utilisateur de taper un entier n (rang)
+et qui calcul le terme Un de la suite U defini par : 
+	U0 = 6
+	Un+1 = 4Un + 10
+%
+
 algorithmes suite
 constantes
 	U0 ← 6
@@ -12,5 +19,5 @@ debut
 	pour i ← 1 à N pas 1 faire
 		Un ← 4 * Un + 10
 	fin pour
-	Ecrire("U", n, " = ", UN)
+	Ecrire("U",n, " = ", UN)
 fin

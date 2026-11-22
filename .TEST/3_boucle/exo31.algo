@@ -1,3 +1,16 @@
+%
+Ecrire un algorithme qui demande à l'utilisateur 
+de taper un entier n superieur a 2 jusqu'a
+ce que la reponse convienne puis calcule 
+et affiche tous les termes de la suite de fibonnaci inferieur
+ou egaux a n.
+La suite de fibonnaci est defini comme suit :
+	U0 = 0
+	U1 = 1
+	Un+2 = Un+1 + Un
+%
+
+
 algorithmes suite_fibonacci
 variables
 	x, i, fib: entier

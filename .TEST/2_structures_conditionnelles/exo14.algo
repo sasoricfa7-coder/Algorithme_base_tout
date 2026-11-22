@@ -1,3 +1,12 @@
+%
+Un algorithme qui demande l'age de l'enfant à l'utilisateur 
+Ensuite il l'informe de sa categorie :
+"Poussin" de 6 - 7 ans, "Pupille" 8 - 9 ans
+"Minime" : 10 - 11 ans
+"Cadet après 12 ans"
+%
+
+
 algorithme categorie_age
 variables
 	age: entiers

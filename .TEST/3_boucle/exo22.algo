@@ -1,3 +1,11 @@
+%
+Ecrire un programme qui demande un nombre de depart
+et qui ensuite affiche les 10 nombres suivants
+en utilisant les boucles tant que et repeter jusqu'à.
+Par exemple si l'utilisateur entre 33, le programme affichera les nombres de 34 à 43.
+%
+
+
 ALGORITHMES DIX_PROCHAINS_NOMBRES
 VARIABLES
 	X, I: ENTIERS
