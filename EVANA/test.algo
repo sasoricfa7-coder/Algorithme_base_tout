@@ -1,7 +1,8 @@
-algorithme salut
-variable
-	message: chaines des caractere
+algorithme test
+variables
+    a: caractere
 debut
-	message <-- "hello wordl"
-	Ecrire(message)
+    % un commentaire %
+    a <-- 'a'
+    Ecrire(a)
 fin

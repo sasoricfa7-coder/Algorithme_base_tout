@@ -12,7 +12,7 @@ import sys
 def stopper(n: int = 1):
     sys.exit(n)
 
-"""LANGAGE EVA"""
+"""LANGAGE EVANA"""
 try:
 
     #CHARGEMENT DU CODE SOURCE 

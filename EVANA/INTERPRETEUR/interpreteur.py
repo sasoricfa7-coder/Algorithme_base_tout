@@ -250,6 +250,13 @@ class Interpreteur:
         elif isinstance(inst, Affectation):
             valeur = self.evaluer_expression(inst.valeur)
             nom = inst.cible.nom
+            
+            # ✅ Compatibilité Hassan El Bahi : "a" (chaine de 1) affecté à un caractere
+            if isinstance(inst.valeur, ChaineCaractere) and len(inst.valeur.valeur) == 1:
+                # On garde la valeur telle quelle (c'est déjà une string de 1)
+                # La conversion est naturelle en Python
+                pass
+            
             if isinstance(inst.cible, Identifiant):
                 self.env_courant.modifier(nom, valeur, inst.ligne)
             else:

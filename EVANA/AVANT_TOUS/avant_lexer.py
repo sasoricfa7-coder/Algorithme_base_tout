@@ -19,6 +19,8 @@ def verificateur() -> str:
     if not os.path.isfile(nom):
         erreur(f"Le fichier {guide} n'existe pas // File {guide} not found 🔍")
 
+    print(f"\n=== {os.path.basename(guide)} ===\n")
+
     return nom, guide
 
 

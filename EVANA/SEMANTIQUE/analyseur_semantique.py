@@ -92,7 +92,7 @@ class AnalyseurSemantique:
                 self.tables.erreur(f"La fonction '{fonction.nom}' ne garantit pas de 'retourne' dans tous ses chemins d'exécution.", fonction.ligne)
 
             for param in fonction.parametres:
-                symbole = self.tables.rechercher(param.nom)
+                symbole = self.tables.rechercher(param.nom, param.ligne)
                 if not symbole.est_utilise:
                     self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la fonction {fonction.nom}", param.ligne)
 
@@ -140,7 +140,7 @@ class AnalyseurSemantique:
 
             self.appel_instruction(procedure.corps)
             for param in procedure.parametres:
-                symbole = self.tables.rechercher(param.nom)
+                symbole = self.tables.rechercher(param.nom, param.ligne)
                 if not symbole.est_utilise:
                     self.tables.erreur(f"Le paramètre {param.nom} n'est jamais utiliser dans la procedure {procedure.nom}", param.ligne)
 
@@ -296,16 +296,25 @@ class AnalyseurSemantique:
         
         # Le type "cible" dépend de ce qu'on affecte
         if isinstance(instruction.cible, Indexation):
-            # ✅ Une case de tableau a le type scalaire (reel, entier, ...)
             type_cible = symbole.type
         else:
-            # ✅ Le tableau entier (via AppelFonction) a le type "tableau X"
             type_cible = f"tableau {symbole.type}" if symbole.nature == "tableau" else symbole.type
         
-        if type_cible != type_affecte:
+        # ✅ Compatibilité Hassan El Bahi : "a" (chaine de 1) affecté à un caractere
+        if type_cible == "caractere" and type_affecte == "chaine":
+            if isinstance(instruction.valeur, ChaineCaractere) and len(instruction.valeur.valeur) == 1:
+                pass  # accepté
+            else:
+                self.tables.erreur(
+                    f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.",
+                    instruction.ligne
+                )
+        elif type_cible != type_affecte:
             if not (type_cible == "reel" and type_affecte == "entier"):
-                self.tables.erreur(f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.", instruction.ligne)
-
+                self.tables.erreur(
+                    f"Type incompatible : impossible d'affecter un '{type_affecte}' à une variable de type '{type_cible}'.",
+                    instruction.ligne
+                )
         symbole.est_initialise = True
 
     def visiter_ecrire(self, instruction: Ecrire) -> None:

@@ -1,0 +1,329 @@
+================================================================================
+CONTEXTE COMPLET DU PROJET EVANA - LANGAGE ALGORITHMIQUE PÉDAGOGIQUE
+================================================================================
+
+## 🎯 OBJECTIF GLOBAL
+
+Développer EVANA, un interpréteur Python pour le pseudo-code algorithmique
+français enseigné par le professeur Hassan El Bahi.
+
+Cible : les écoles qui enseignent l'algorithmique en français.
+Version actuelle : v0.0.0 (preuve de concept).
+Objectif de la v0.0.0 : exécuter TOUT le pseudo-code de Hassan El Bahi
+avant d'ajouter quoi que ce soit d'autre.
+
+Règle d'or : ne PAS ajouter de fonctionnalités qui ne sont pas dans le
+pseudo-code de référence. Reprogrammer fidèlement, pas inventer.
+
+NOUVELLE RÈGLE CRITIQUE : compatibilité à 100% avec Hassan El Bahi,
+même quand sa syntaxe n'est pas standard. Un étudiant qui suit son cours
+doit pouvoir écrire EXACTEMENT ce que le prof écrit, et que ça marche.
+
+## 🏗️ ARCHITECTURE ET GESTION DE VERSIONS
+
+Le projet est à ~/mon_langage_propre/EVANA.
+
+Gestion de versions :
+- Outil local : PIJUL (pas Git). Commandes : pijul add, pijul record,
+  pijul push, pijul pull, pijul diff, pijul status.
+- Remote Nest : sasoricfa7-coder@nest.pijul.com:sasoricfa7-coder/EVANA
+- Hébergement source de vérité : NEST (nest.pijul.com).
+- Miroir de sécurité : GITHUB, mis à jour toutes les 2 heures via un workflow.
+  Le workflow écrase complètement le dépôt GitHub précédent.
+
+Contributeurs : SASORI est actuellement le SEUL contributeur.
+Pas de CONTRIBUTING.md, pas de PRs, pas de discussions ouvertes.
+Pas de sur-ingénierie pour un problème qui n'existe pas encore.
+
+Si un jour des contributeurs arrivent (vision future) :
+- GitHub deviendra la base commune pour TOUS, y compris SASORI.
+- Le workflow d'écrasement sera annulé.
+- Pijul restera l'outil privé de SASORI (remote privé = Nest).
+- Synchronisation manuelle : Pijul (local) → rsync/export → GitHub.
+- Chaque contributeur utilisera l'outil qu'il veut (Git, Pijul, Mercurial...).
+- Le mainteneur commitera sur GitHub comme tout le monde.
+MAIS ce n'est PAS pour maintenant. Focus v0.0.0.
+
+Arborescence complète :
+~/mon_langage_propre/
+├── correction.txt             (roadmap initiale)
+├── EVANA/                     (projet principal)
+│   ├── AVANT_TOUS/
+│   │   ├── __init__.py
+│   │   ├── avant_lexer.py     (charge code + JSON)
+│   │   └── langage.json       (mots-clés, opérateurs, normalisation)
+│   ├── INTERPRETEUR/
+│   │   ├── __init__.py
+│   │   └── interpreteur.py    (Interpreteur(AST=ast))
+│   ├── LEXER/
+│   │   ├── __init__.py
+│   │   ├── aide_lexer.py      (classe AideLexer)
+│   │   ├── essai
+│   │   ├── lexer.py           (classe Lexer hérite de AideLexer)
+│   │   ├── lexer.py.bac       (sauvegarde avant refactor)
+│   │   └── aide_lexer.py.bac
+│   ├── PARSEUR/
+│   │   ├── __init__.py
+│   │   └── parseur.py         (Parseur(token).ast)
+│   ├── SEMANTIQUE/
+│   │   ├── __init__.py
+│   │   ├── analyseur_semantique.py (dataclass + __post_init__)
+│   │   ├── symbole.py         (dataclass Symbole)
+│   │   └── tables.py          (dataclass TableSymboles)
+│   ├── TYPES_CREER/
+│   │   ├── __init__.py
+│   │   ├── __lexer.py         (Token, Langage, MAX=3)
+│   │   └── __parseur.py       (toutes les dataclasses de l'AST)
+│   ├── UTILS/
+│   │   ├── __init__.py
+│   │   ├── afficher_ast.py    (afficher_ast)
+│   │   ├── environnement.py   (dataclass Environnement)
+│   │   ├── erreur.py          (messages colorés ROUGE/VERT/JAUNE)
+│   │   └── utils.py           (sans_accents)
+│   ├── main.py                (orchestrateur)
+│   ├── test.algo              (fichier de test)
+│   └── CONTEXTE.txt           (ce fichier)
+├── helloWorld.algo            (exemple)
+├── LICENSE                    (AGPL v3+)
+├── SYNTAXE/grammaire.md       (documentation grammaire)
+└── .pijul/                    (métadonnées Pijul)
+
+Commande d'utilisation : evana mon_fichier.algo
+(alias défini dans ~/.zshrc :
+ evana="python3 /home/sasori/mon_langage_propre/EVANA/main.py")
+
+## 🔄 LE PIPELINE
+
+1. AVANT_TOUS  : charge le code source + langage.json, construit la table
+                 de normalisation. Retourne (code_source, fichier_json).
+                 Affiche "=== nom_fichier ===" au début.
+2. LEXER       : Lexer(le_json, code_source, _commentaire).token
+                 → lance la tokenisation via __post_init__.
+                 Retourne list[Token] via .token.
+                 Token = TypedDict {ligne, type, valeur}.
+3. PARSEUR     : Parseur(token).ast
+                 → lance l'analyse dans __init__.
+                 Retourne Algorithme via .ast.
+4. SEMANTIQUE  : AnalyseurSemantique(ast)
+                 → lance l'analyse dans __post_init__.
+                 Retourne rien (lève des erreurs ou passe).
+5. INTERPRETEUR: Interpreteur(AST=ast)
+                 → lance l'interprétation dans __init__.
+                 Retourne rien (effets de bord).
+
+main.py fait donc simplement :
+    code_source, fichier_json = avant_lexer()
+    token = Lexer(
+        le_json=fichier_json,
+        code_source=code_source,
+        _commentaire=fichier_json["commentaire"]
+    ).token
+    ast = Parseur(token).ast
+    ANA_SEMAN = AnalyseurSemantique(ast)
+    interprete = Interpreteur(AST=ast)
+
+## ✅ CE QUI MARCHE DÉJÀ (testé et validé)
+
+Tests validés :
+1. Hello World + x <-- 5 puis Ecrire(x) → 5
+2. Bloc variable vide → erreur claire avec ligne
+3. Tableau 2D M(2, 3) → 42
+4. Fonction + retourne → 10
+5. Commentaire bloc % ... % → OK
+6. a <-- "a" (chaîne de 1) sur variable caractere → a (COMPATIBILITÉ HASSAN EL BAHI)
+7. a <-- 'a' (caractère simple quote) → a
+8. a <-- "az" (chaîne de 2) sur caractere → erreur claire
+9. a <-- 'az' (2 caractères) → erreur LEXER claire
+10. x <-- 5 avec x <-- (opérateur ASCII) → 5
+
+Fonctionnalités validées :
+- Syntaxe complète : algorithme, variables, constantes, tableaux 1D/2D,
+  fonctions, procédures, si/alors/sinon, cas/vaut/sinon, pour, tant que,
+  repeter/jusqu'a, ecrire, lire, retourne.
+- Gestion des accents via sans_accents (unicodedata NFD).
+- Insensibilité à la casse (sauf pour "a" traité contextuellement dans
+  parse_pour).
+- Commentaires en bloc : % ... %
+- Gestion des portées (variables locales aux fonctions, globales).
+- Tableaux 1D et 2D en paramètres et en retour de fonction.
+- Copie profonde des tableaux à l'entrée des fonctions (pas d'effet de bord).
+- Vérification sémantique : types, dimensions, initialisation, retour.
+- Numéros de ligne dans TOUTES les erreurs (lexer, parser, sémantique,
+  interpréteur).
+- Messages d'erreur en français + anglais, colorés.
+- Alias shell "evana" fonctionnel.
+- Architecture POO du Lexer (classe Lexer hérite de AideLexer).
+- Opérateur <-- (ASCII) reconnu, normalisé en ←.
+- Synonymes de chaine : chaines de caractère, chaine de caractères,
+  chaines des caractères, etc. Tous normalisés en chaine.
+- Compatibilité Hassan El Bahi : "a" (chaîne de 1) affecté à un caractere
+  est accepté, grâce à une règle d'affectation contextuelle dans le
+  sémantique (pas dans le lexer).
+
+## 🚨 CONTRAINTES ET RÈGLES DU PROJET
+
+1. Le langage est INSENSIBLE à la casse (Algorithme, ALGORITHME, algorithme
+   sont identiques). Sauf "a" qui est traité spécialement :
+   - "a" minuscule dans "pour i ← 0 a 3 pas 1" = mot de liaison
+   - "A" majuscule ou "a" hors contexte = identifiant valide
+   Le lexer ne doit PAS traiter "a" comme mot-clé. C'est le parser
+   (parse_pour) qui gère "a" contextuellement.
+
+2. Unicité par portée : les variables peuvent avoir le même nom dans
+   différentes fonctions. Seul le nom de l'algorithme est globalement unique.
+
+3. Règles imposées par le créateur (SASORI) :
+   - Un bloc "variable" doit contenir au moins une déclaration.
+   - Un bloc "constante" doit contenir au moins une déclaration.
+   - Un tableau 1D doit avoir des dimensions > 1 (suggérer une variable
+     simple à la place).
+   - Un tableau constant doit avoir au moins 2 éléments.
+   - Pas de mélange tableaux 1D et 2D sur la même ligne de déclaration.
+   - Pas de mélange tableaux et variables sur la même ligne.
+
+4. Les commentaires sont UNIQUEMENT des blocs % ... %. Pas de
+   commentaire de fin de ligne. Choix validé : fidélité au pseudo-code.
+   Conséquence : un % dans un commentaire (comme "8%") termine le
+   commentaire. C'est une limite documentée.
+
+5. Tableaux limités à 2 dimensions maximum (en déclaration).
+   Paramètres tableaux limités à 1D (nb_dimensions=1 par défaut dans
+   le sémantique).
+
+6. Pas de "goto", pas de "class", pas d'exceptions (sauf SignalRetour
+   interne pour l'interprétation).
+
+7. Opérateur d'affectation : ← en priorité, <-- en fallback ASCII.
+   Les deux sont normalisés en ←.
+
+8. Compatibilité Hassan El Bahi : le langage doit accepter 100% du
+   pseudo-code du prof, même les notations non standard :
+   - `a <-- "a"` : chaîne de 1 caractère affectée à un `caractere`.
+     Accepté par une règle d'affectation contextuelle dans le sémantique.
+   - Le lexer NE transforme PAS "a" (guillemets doubles) en CARACTERE.
+     C'est une CHAINE. La conversion contextuelle se fait au moment de
+     l'affectation.
+   - `;` en fin de ligne : à ignorer (comme un espace). PAS ENCORE FAIT.
+   - `8%` dans un commentaire : % termine le commentaire, c'est une
+     limite documentée. L'utilisateur doit éviter % dans les commentaires.
+
+## 🐛 BUGS CONNUS / À VÉRIFIER
+
+- Le `;` en fin de ligne n'est pas encore géré. Correction à faire :
+  dans `LEXER/lexer.py`, ajouter `";"` à la liste des caractères traités
+  comme espace (dans `orchestreur`).
+
+- Le cas `1/I` avec `I` entier et `S` réel produit parfois un affichage
+  bizarre (ex: 111111111111111111). À vérifier : est-ce que `aide_moi`
+  initialise bien les réels à 0.0 ? Est-ce que le type `reel` (sans accent)
+  est bien normalisé depuis `réel` (avec accent) ?
+
+- Propagation de "ligne" dans certains appels : Environnement.obtenir et
+  Environnement.modifier doivent recevoir "ligne" partout. Vérifié et
+  corrigé dans la plupart des cas.
+
+- Dans visiter_fonctions et visiter_procedures, les appels à
+  self.tables.rechercher(param.nom) ne passent PAS param.ligne. C'est
+  mineur (le paramètre est forcément trouvé), mais à corriger pour la
+  cohérence.
+
+- Les fichiers .bac dans LEXER sont des sauvegardes avant refactor.
+  Peuvent être supprimés une fois la refactor confirmée.
+
+## 📋 ROADMAP v0.0.0 (état)
+
+1. ✅ Architecture modulaire (fait)
+2. ✅ En-têtes AGPL v3+ (fait via add_license.sh)
+3. ✅ Hook pre-commit (fait, à vérifier fonctionnel)
+4. ✅ Architecture POO du Lexer (fait)
+5. ✅ Opérateur <-- (fait)
+6. ✅ Synonymes chaine (fait)
+7. ✅ Propagation ligne partout (fait)
+8. ✅ Compatibilité Hassan El Bahi sur les caractères (fait)
+9. ⏳ Gérer le `;` en fin de ligne (à faire)
+10. ⏳ Lancer les 70 exos de Hassan El Bahi (en cours)
+11. ⏳ Corriger les bugs révélés par les exos
+12. ⏳ README complet
+13. ⏳ Publier v0.0.0 (tag Pijul + release)
+
+## 🧪 PHILOSOPHIE DE DÉBOGAGE
+
+- Quand un exo plante avec un beau message d'erreur EVANA (rouge + ligne) :
+  c'est probablement une erreur de frappe dans le fichier .algo.
+  Vérifier la ligne indiquée, corriger le .algo.
+
+- Quand un exo plante avec un Traceback Python (peur, pas rouge) :
+  c'est un trou dans la raquette du compilateur.
+  Envoyer le code .algo + le message d'erreur à l'IA.
+
+- Quand un exo produit un résultat faux sans erreur :
+  c'est un bug sémantique ou d'interprétation.
+  Isoler le cas minimal, vérifier avec afficher_ast.py.
+
+- Règle d'or : ne PAS corriger un bug avant d'avoir vu les 70 exos.
+  Noter les bugs, mais prioriser après avoir la liste complète.
+
+## 💡 PERFORMANCE (contexte)
+
+Sur Hello World :
+- EVANA : ~0.10s (Python + AST direct)
+- Dart  : ~0.32s (VM + JIT)
+
+EVANA est plus rapide au démarrage, mais sera beaucoup plus lent sur du
+calcul pur (1000x à 2000x plus lent sur une boucle de 1M d'itérations).
+Ce trade-off est acceptable pour un usage pédagogique.
+
+## 📄 LICENCE
+
+AGPL v3+ (GNU Affero General Public License version 3 ou ultérieure).
+Copyright (C) 2026 SASORI.
+En-têtes ajoutés dans tous les fichiers .py via add_license.sh.
+Fichier LICENSE à la racine : ~/mon_langage_propre/LICENSE.
+
+## 🎯 CE QUE JE VEUX FAIRE MAINTENANT
+
+[Décrire ici la tâche du moment]
+
+Exemple :
+- Gérer le `;` en fin de ligne (correction rapide)
+- Lancer les 70 exos
+- Corriger le bug sur la fonction récursive somme_tableau.algo
+- Préparer la publication v0.0.0
+- Peaufiner tel ou tel comportement
+
+## 🧠 NOTES POUR L'IA QUI LIT CE FICHIER
+
+Tu es un assistant technique qui aide SASORI à développer EVANA.
+Ton rôle :
+1. Fournir du code Python propre, sans régression.
+2. Respecter l'architecture modulaire existante.
+3. Ne pas inventer de fonctionnalités hors du pseudo-code de référence.
+4. Toujours proposer des corrections ciblées (pas de refactor global
+   sans demande explicite).
+5. Vérifier la propagation du paramètre "ligne" dans toute erreur.
+6. Répondre en français, ton direct et technique.
+7. Pour les tests, proposer des cas concrets que SASORI peut copier-
+   coller dans test.algo puis lancer avec "evana test.algo".
+8. Priorité absolue : compatibilité à 100% avec Hassan El Bahi.
+   Si un étudiant écrit ce que le prof écrit, ça doit marcher.
+
+Quand SASORI envoie un fichier de code, tu peux lui dire :
+- "Ce fichier est bon, rien à changer."
+- "Il y a un bug à la ligne X, voici la correction."
+- "Ce fichier est incomplet, il manque la méthode Y."
+
+Ne sois pas condescendant, ne refais pas tout, corrige uniquement
+ce qui est cassé.
+
+Contexte multi-outils :
+- SASORI utilise Pijul en local (pas Git) pour le développement quotidien.
+- Le remote Pijul est Nest (nest.pijul.com).
+- GitHub est un miroir de sécurité mis à jour toutes les 2h.
+- Ne PAS proposer de commandes git pour le travail quotidien.
+- Si SASORI veut voir un fichier, il copie-colle (comme il fait déjà).
+- Pour voir le dépôt complet, on peut consulter le miroir GitHub (à jour
+  toutes les 2h).
+
+================================================================================
+FIN DU CONTEXTE
+================================================================================

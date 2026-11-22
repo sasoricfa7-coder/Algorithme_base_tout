@@ -132,6 +132,7 @@ class AideLexer:
 
     #---------------------------------------------------------------------------------------------
     def symbole(self) -> None:
+        index_depart: int = self.index
         valeur_un: str = self.code_source[self.index]
         self.index += 1
 
@@ -151,6 +152,7 @@ class AideLexer:
                 return
 
         # fallback 1 caractère
+        self.index = index_depart + 1
         valide, type_ = self.verificateur(valeur_un)
         if not valide:
             self.erreur(
