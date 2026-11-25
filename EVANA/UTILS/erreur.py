@@ -14,15 +14,15 @@ def aide_remonter(index: int, code_source: str, ligne: int, message: str) -> Non
     contenu: str = ""
     index_depart: int = index
 
-    # garde-fou : 0 < index < len, sinon code_source[index] peut exploser ou boucler
-    while (0 < index < len(code_source)
-           and code_source[index] != "\n"
-           and ligne_depart != 1):
-        index -= 1
+    fin_ligne: int = index_depart
+    while(
+        fin_ligne < len(code_source)
+        and code_source[fin_ligne] != "\n"
+    ) :
+        fin_ligne += 1
 
     if ligne != 1:
-        for i in range(index_depart - index):
-            contenu += code_source[index + i]
+        contenu = f"[ici] {code_source[index_depart : fin_ligne]}"
     else:
         message = f"À la première ligne // On first line : {message}"
 
