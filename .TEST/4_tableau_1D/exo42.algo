@@ -1,3 +1,10 @@
+%
+Ecrire un algorithme qui renverse un tableau 
+de taille 6. celui ci doit prendre comme entrer un tableau
+et renvoyer un tableau de meme taille ayant les
+valeurs dans l'ordre inverse.
+%
+
 algorithmes inverser_tableau
 variables
 	tableau t1(6), t2(6): entier

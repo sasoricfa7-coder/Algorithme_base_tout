@@ -1,3 +1,13 @@
+%
+Ecrire un algorithme permettant, 
+permettant à l'utilisateur de saisir les notes
+d'une classe (10 étudiants).
+Une fois la saisie terminer, l'algorithme
+e nombre de ces notes superieurs a la moyenne
+de la classe.
+%
+
+
 algorithmes  notes_superieur_moyenne
 variables
 	tableau T(50): réel

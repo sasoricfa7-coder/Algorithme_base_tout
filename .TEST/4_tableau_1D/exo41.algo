@@ -1,6 +1,19 @@
+%
+Pour sa naissance le grand père de Mohamed 
+place une somme de 1_000 franc sur son 
+compte epargne renumerer au taux de 2pourcent
+(
+	chaque année, le compte est augmenté de 2pourcent
+)
+Ecrire un algorithme permettant d'afficher un tableau 
+sur 20 ans associant a chaque anniversaire de Mohamed
+la somme acquise sur son compte.
+%
+
+
 algorithmes somme_mohamed
 variables
-	tableau T(50): réel
+	tableau T(20): réel
 	s: réel
 	i: entier
 constantes
@@ -8,12 +21,12 @@ constantes
 
 debut
 	s ← somme_base
-	pour i ← 0 à 49 pas 1 faire
-		s ← s + (i * 2 / 100)
+	pour i ← 0 à 19 pas 1 faire
+		s ← s + (s * 2 / 100)
 		t(i) ← s
 	fin pour
 
-	pour i ← 0 à 49 pas 1 faire
+	pour i ← 0 à 19 pas 1 faire
 		Ecrire(i+1, " ans : ", t(i), " FCFA.")
 	fin pour
 fin

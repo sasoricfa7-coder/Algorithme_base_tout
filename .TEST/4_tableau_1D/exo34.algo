@@ -1,3 +1,14 @@
+%
+Ecrire un algorithme qui demande à l'utilisateur
+de saisir 10 réels stocker dans un tableau,
+puis l'algorithme calcul et affiche :
+	la somme
+	le produit
+	la moyenne
+des elements du tableau
+%
+
+
 algorithmes cacul_tableau
 variables
 	tableau T(10): entier

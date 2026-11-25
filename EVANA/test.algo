@@ -1,8 +1,7 @@
 algorithme test
 variables
-    a: caractere
+A: chaine
 debut
-    % un commentaire %
-    a <-- 'a'
+    A <-- "L'ecole"
     Ecrire(a)
 fin

@@ -45,7 +45,7 @@ class AideLexer:
 
         if not self.index_Error():
             self.erreur(
-                "Fichier terminé brutalement, inspecte la dernière ligne // File ends abruptly, check the last line 🔍",
+                "Fichier terminé brutalement, inspecte la dernière ligne  // File ends abruptly, check the last line 🔍",
             )
 
         if not self.index_Error(1) or self.code_source[self.index + 1] != "'":
@@ -142,14 +142,16 @@ class AideLexer:
             if valide:
                 self.index += 1
                 self.token_append(type_, valeur_deux)
-                return # Je ne sais pas comment me passer du return
-
-            valeur_trois: str = valeur_deux + self.code_source[self.index]
-            valide, type_ = self.verificateur(valeur_trois)
-            if valide:
-                self.index += 2
-                self.token_append(type_, self.le_json["normalisation"][valeur_trois])
                 return
+
+            if self.index_Error(1):#bizare ici je dit valeur_deux + self.code_source[self.index] or
+                #quand valeur_deux je l'ai créer je n'ai plus bouger l'index
+                valeur_trois: str = valeur_deux + self.code_source[self.index]
+                valide, type_ = self.verificateur(valeur_trois)
+                if valide:
+                    self.index += 2
+                    self.token_append(type_, self.le_json["normalisation"][valeur_trois])
+                    return
 
         # fallback 1 caractère
         self.index = index_depart + 1

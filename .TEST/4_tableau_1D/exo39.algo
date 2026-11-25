@@ -1,3 +1,11 @@
+%
+Ecrire un algorithme qui demande a l'utilisateur 
+de saisir 50 entiers qu'on stocke dans un tableau T.
+Ensuite on redemande a l'utilisateur de saisir un entier n.
+L'algorithme va ensuite calculer le nombre d'occurence
+de n dans T.
+%
+
 algorithmes nombres_d_occurences
 variables
 	tableau T(50): entier

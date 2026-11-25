@@ -1,3 +1,9 @@
+%
+Ecrire un ALGORITHME qui effectue le produit
+scalaire de 2 vecteurs de meme taille (3 elements)
+representer par des tableaux 1D
+%
+
 ALGORITHMES PRODUIT_SCALAIRE
 variables
 	tableau u(3), v(3): entier

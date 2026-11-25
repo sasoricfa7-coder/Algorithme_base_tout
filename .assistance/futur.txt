@@ -1,5 +1,7 @@
 NB: Decision : toute nos librairies et ecosystème nouveau sera ecrit en EVA pure.
 
+Ajouter la caractère d'echappement comme \ mais on peut trouver mieux
+par exemple ca nous servira dans un commentaire de faire %
 
 Et pour le mot cas revoir et pouvoir gerer sur plusieurs lignes sans debut ... fin
 

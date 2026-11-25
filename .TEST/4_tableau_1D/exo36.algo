@@ -1,3 +1,11 @@
+%
+Ecrire un algorithme qui demande a l'utilisateur 
+de saisir 10 entiers qu'on stocke dans un tableau T.
+Ensuite l'algorithme determine et affiche le
+maximum des elements de T
+%
+
+
 ALGORITHMES MAX_10_ENTIERS
 variables
 	tableau T(10): entier

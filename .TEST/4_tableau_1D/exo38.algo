@@ -1,3 +1,14 @@
+%
+Ecrire un algorithme qui demande a l'utilisateur 
+de saisir 10 entiers qu'on stocke dans un tableau T.
+Ensuite on redemande a l'utilisateur de saisir un entier n.
+L'objectif etant de rechercher l'existence de n dans le tableau T le resultat
+va s'afficher comme suit : 
+	Si n se trouve dans T : "n se trouve dans le tableau"
+	Si n ne se trouve pas dans T : "n ne se trouve pas dans le tableau"
+%
+
+
 ALGORITHMES MAX_10_ENTIERS
 variables
 	tableau T(10): entier

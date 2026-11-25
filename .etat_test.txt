@@ -1,4 +1,3 @@
-TEST : exo23.algo
-
-
 TITRE : exo27.algo
+
+Lecture : lexer : Aide lexer : alpha
