@@ -1,3 +1,11 @@
+%
+Ecrire un algorithme utilisant 
+une fonction qui demande à l'utilisateur 
+d'entrer un entier, puis l'algorithme 
+compte et affiche le nombre de chiffres
+qui composent cet entier.
+%
+
 algorithmes nombre_chiffre
 
 fonction determine_nombre_chiffre(nombre: entier): entier
@@ -20,7 +28,7 @@ variables
 n: entier
 
 debut
-	Ecrire("Entrez un nombre positif non nul")
+	Ecrire("Entrez un nombre :")
 	lire(N)
 
 	Ecrire("Le nombre ", n, " contient : ", determine_nombre_chiffre(n), " chiffres.")

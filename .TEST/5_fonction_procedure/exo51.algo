@@ -1,3 +1,12 @@
+%
+Ecrire un algorithme qui demande à l'utilisateur de saisir 10 réels stocker dans un tableau.
+Ecrire ensuite les fonctions suivantes:
+*Une fonction qui determine et affiche la maximum des elements du tableau
+*Une fonction qui determine et affiche le minimum des elements du tableau
+*Une fonction qui renvoie le tableau de meme taille en ayant les elements dans l'ordre inverse les
+memes valeurs
+%
+
 algorithmes max_min_inverseTableau
 
 fonction max(N: tableau réel): réel
@@ -8,42 +17,42 @@ variables
 debut
 	maximum ← N(0)
 	pour indice ← 1 à 9 pas 1 faire
-		si	maximum < N(i) alors
-			maximum ← N(i)
+		si	maximum < N(indice) alors
+			maximum ← N(indice)
 		fin si
 	fin pour
 	retourne maximum
 fin
 
-fonction min(min_notes: tableau réel): réel
+fonction min(N: tableau réel): réel
 variables
 	index: entier
 	minimum: réel
 
 debut
 	minimum ← N(0)
-	pour indice ← 1 à 9 pas 1 faire
-		si	minimum > N(i) alors
-			minimum ← N(i)
+	pour index ← 1 à 9 pas 1 faire
+		si	minimum > N(index) alors
+			minimum ← N(index)
 		fin si
 	fin pour
 	retourne minimum
 fin
 
-fonction tab_inverser(notes_tab: tableau réel): tableau réel
+fonction tab_inverser(N: tableau réel): tableau réel
 variables
 	iterateur: entier
 	tableau temporaire (10): réel
 debut
 	pour iterateur ← 0 à 9 pas 1 faire
-		temporaire(i) ← notes_tab(9 - i)
+		temporaire(iterateur) ← N(9 - iterateur)
 	fin pour
 	retourne temporaire
 fin
 
 variables
 	tableau notes(10): réel
-	i: réel
+	i: entier
 	tableau inverse(10): réel
 
 debut

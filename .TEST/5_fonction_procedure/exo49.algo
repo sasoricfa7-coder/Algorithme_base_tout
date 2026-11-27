@@ -1,3 +1,16 @@
+%
+Ecrire un algorithme qui affiche la ou les solutions
+d'une equation de second degré de la forme : ax² + bx + c
+Utiliser une fonction pour calculer le discriminant
+Delta et utiliser une procedure pour afficher les solutions
+selon Delta.
+PS : Pour calculer la racine carrée d'un nombre, nous utilisons la fonction
+sqrt. 
+Exemple :
+Après l'execution de l'instruction suivante A sera egale a 2.
+A <-- sqrt(4)
+%
+
 algorithmes equation_second_degré
 
 fonctions calcul_discriminant(M: réel, N: réel, P: réel): réel

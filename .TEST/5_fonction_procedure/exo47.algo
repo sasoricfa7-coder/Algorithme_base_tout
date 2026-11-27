@@ -1,3 +1,10 @@
+%
+Ecrire un ALGORITHME utilisant une fonction ou
+une procedure qui demande à l'utilisateur de 
+saisir une année et qui verifie si elle est
+bissextile (366 jours) ou non.
+%
+
 ALGORITHME ANNEE_BISSEXTILE
 
 	FONCTION EST_BISSEXTILE(AN: ENTIER): BOOLEEN

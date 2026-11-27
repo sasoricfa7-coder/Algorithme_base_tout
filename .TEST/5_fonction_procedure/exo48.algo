@@ -1,18 +1,20 @@
+%
+Ecrire un algorithme utilisant des fonctions 
+ou des procedures qui demande a l'utilisateur
+de saisir le rayon du cercle, puis l'algorithme
+affiche le diamètre, la surface et le périmètre.
+%
+
 algorithmes element_cercle
 
 procedure cercle(X: réel)
 constantes
-	PI ← 3.14
-variables
-	d, s, p: réel
-debut
-	d ← X * 2
-	S ← PI * X^2
-	P ← 2 * PI * X
+	PI ← 3.141592654
 
-	Ecrire("diamètre = ", d)
-	Ecrire("surface = ", s)
-	Ecrire("perimètre = ", P)
+debut
+	Ecrire("diamètre = ", X * 2)
+	Ecrire("surface = ", PI * X^2)
+	Ecrire("perimètre = ", 2 * PI * X)
 fin
 
 variables

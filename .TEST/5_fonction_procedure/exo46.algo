@@ -1,3 +1,8 @@
+%
+Ecrire une procedure qui affiche le tableau de multiplication
+d'un entier positif X.
+%
+
 algorithmes table_multiplication
 procedure fait_table(nombre: entier)
 variables

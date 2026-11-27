@@ -1,3 +1,12 @@
+%
+Ecrire un algorithme qui demande à l'utilisateur de saisir 10 réels stocker dans un tableau.
+Ecrire ensuite les fonctions et la procedure suivante : 
+*trois fonctions qui permettent respectivement de calculer la somme, le produit et la moyenne
+des elements du tableau.
+*une procedure qui determine et affiche les elements positifs et negatifs
+du tableau.
+%
+
 algorithmes calcul_tableau
 
 fonction somme(notes_somme: Tableau réel) : réel
@@ -6,7 +15,6 @@ variables
 	s: réel
 debut
 	s ← 0
-	Ecrire("Calcul de la somme en cours...")
 	pour index ← 0 à 9 pas 1 faire
 		s ← s + notes_somme(index)
 	fin pour
@@ -19,16 +27,15 @@ variables
 	p: réel
 debut
 	p ← 1
-	Ecrire("Calcul du produit en cours...")
 	pour indice ← 0 à 9 pas 1 faire
-		p ← p * notes_somme(indice)
+		p ← p * notes_produit(indice)
 	fin pour
 	retourne p
 fin
 
 fonction la_moyenne(notes_moyenne: Tableau réel): réel
 debut
-	return somme(notes_moyenne) / 10
+	retourner somme(notes_moyenne) / 10
 fin
 
 procedure est_negatif_ou_pas(N: tableau réel)
@@ -37,29 +44,29 @@ variables
 	valide: booléen
 
 debut
-	valide ← False
+	valide ← Faux
 	Ecrire("Les éléments positifs du tableau sont : ")
 	pour iterateur ← 0 à 9 pas 1 faire
 		si N(iterateur) >= 0 alors
 			Ecrire(N(iterateur))
-			valide ← true
+			valide ← Vrai
 		fin si
 	fin pour
 
-	si not valide alors
+	si non valide alors
 		Ecrire("Aucun")
 	fin si
 
-	valide ← False
+	valide ← Faux
 	Ecrire("Les éléments negatifs du tableau sont : ")
 	pour iterateur ← 0 à 9 pas 1 faire
 		si N(iterateur) < 0 alors
 			Ecrire(N(iterateur))
-			valide ← true
+			valide ← Vrai
 		fin si
 	fin pour
 
-	si not valide alors
+	si non valide alors
 		Ecrire("Aucun")
 	fin si
 fin
@@ -74,9 +81,13 @@ debut
 		lire(notes(i))
 	fin pour
 
+	Ecrire()
 	Ecrire("la somme des éléments = ", somme(notes))
+	Ecrire()
 	Ecrire("le produit des éléments = ", produit(notes))
+	Ecrire()
 	Ecrire("la moyenne des éléments = ", la_moyenne(notes))
+	Ecrire()
 
 	est_negatif_ou_pas(notes)
 fin
