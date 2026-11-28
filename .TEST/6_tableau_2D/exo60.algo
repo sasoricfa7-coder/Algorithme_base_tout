@@ -1,4 +1,11 @@
-Algorithme somme_deux_matrices
+%
+Ecrire un Algorithme qui demande à l'utilisateur
+de saisir un tableau 2D de dimensions (2, 2).
+Ensuite l'Algorithme calcul et affiche
+le determinant de la matrice.
+%
+
+Algorithme determinant_matrice
 
 Variable
 	Tableau X(2 , 2): réel
@@ -6,11 +13,13 @@ Variable
 	i, j: entier
 
 debut
+	Ecrire("Remplissage du tableau : ")
 	Pour i ← 0 à 1 pas 1 faire
 		Pour j ← 0 à 1 pas 1 faire
 			Ecrire("X(", i+1, ",", j+1, ") = ")
 			Lire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 	
 	det ← X(0 , 0) * X(1 , 1) - X(0 , 1) * X(1 , 0)

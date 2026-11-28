@@ -1,3 +1,12 @@
+%
+Ecrire un exercice qui permet de 
+construire le Triangle de pascal
+de degré N et le memoriser dans 
+une matrice carrée P de dimensions
+N+1
+%
+
+
 Algorithme Triangle_pascal
 
 Variable
@@ -24,6 +33,7 @@ debut
 		Pour j ← 0 à i pas 1 faire
 			Ecrire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 	
 fin

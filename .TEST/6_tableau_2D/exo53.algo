@@ -1,8 +1,15 @@
+%
+Ecrire un algorithme qui lit une matrice A(2D)
+de dimensions (4, 6) et affiche les données suivantes:
+	-La matrice A
+	-La transposer de la matrice A
+%
+
+
 algorithme calculer_transposer_matrice
 
 variables
-	tableau MA(4, 6): réel
-	tableau TA(6, 4): réel
+	tableau MA(4, 6), TA(6, 4): réel
 	i, j: entier
 
 debut
@@ -19,15 +26,19 @@ debut
 		fin	pour
 	fin pour
 
+	Ecrire("la matrice A : ")
 	pour i ← 0 à 3 pas 1 faire
 		pour j ← 0 à 5 pas 1 faire
 			Ecrire("MA(", i+1, ",", j+1, ") = ", ma(i, j))
 		fin	pour
+		Ecrire()
 	fin pour
 
+	Ecrire("La transposer de la matrice A : ")
 	pour i ← 0 à 3 pas 1 faire
 		pour j ← 0 à 5 pas 1 faire
 			Ecrire("TA(", j+1, ",", i+1, ") = ", TA(j, i))
 		fin	pour
+		Ecrire()
 	fin pour
 fin	

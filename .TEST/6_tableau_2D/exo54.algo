@@ -1,9 +1,15 @@
+%
+Ecrire un Algorithme qui lit 2 matrices
+A et B de meme dimensions (4, 5)
+et qui effectue l'adition des deux matrices.
+Le resutltat de l'affectation sera affecter
+a une matrice C, qui sera ensuite afficher
+%
+
 Algorithme somme_deux_matrices
 
 Variable
-	Tableau A(4, 5): réel
-	Tableau B(4, 5): réel
-	Tableau C(4, 5): réel
+	Tableau A(4, 5), B(4, 5), C(4, 5): réel
 	i, j: entier
 
 debut
@@ -19,6 +25,7 @@ debut
 		Pour j ← 0 à 4 pas 1 faire
 			Ecrire("C(", i+1, ",", j+1, ") = ", C(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 
 fin

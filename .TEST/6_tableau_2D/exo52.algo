@@ -1,3 +1,10 @@
+%
+Ecrire un algorithme permettant
+de declarer un tableau 2D (3, 6),
+puis l'algorithme remplit le tableau
+avec des valeurs nulles.
+%
+
 algorithme tab_2D
 variables
 	tableau tab(3, 6): réel
@@ -14,5 +21,6 @@ debut
 		pour j ← 0 à 5 pas 1 faire
 			Ecrire("tab(" , i, ", ", j, ") = ",tab(i, j))
 		fin pour
+		Ecrire()
 	fin pour
 fin

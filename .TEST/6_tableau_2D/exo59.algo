@@ -1,4 +1,13 @@
-Algorithme somme_deux_matrices
+%
+Ecrire un Algorithme qui demande à l'utilisateur
+de remplir un tableau 2D T de dimensions (4, 6).
+Ensuite l'Algorithme redemande à l'utilisateur de
+saisir un entier n. Puis il cherche l'existence
+du nombre n dans T et calcule le nombre d'occurence
+de n dans T
+%
+
+Algorithme nombre_occurence
 
 Variable
 	Tableau X(4 , 6): réel
@@ -6,11 +15,13 @@ Variable
 	i, j, occurence: entier
 
 debut
+	Ecrire("Remplissage : ")
 	Pour i ← 0 à 3 pas 1 faire
 		Pour j ← 0 à 5 pas 1 faire
 			Ecrire("X(", i+1, ",", j+1, ") = ")
 			Lire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 
 	Ecrire("Entrez N : ")

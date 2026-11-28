@@ -1,4 +1,12 @@
-Algorithme somme_deux_matrices
+%
+Ecrire un Algorithme qui remplit
+un tableau 2D de dimensions (4, 6) puis l'Algorithme
+determine :
+	Le minimum et le maximum de chaque Ligne
+	Le minimum et le maximum de chaque Colonne
+%
+
+Algorithme min_et_max
 
 Variable
 	Tableau X(4 , 6): entier
@@ -7,12 +15,13 @@ Variable
 	min_c , max_c: entier
 
 debut
+	Ecrire("Remplissage du tableau : ")
 	Pour i ← 0 à 3 pas 1 faire
 		Pour j ← 0 à 5 pas 1 faire
-			%X(i, j) ← i + j + 1%
 			Ecrire("C(", i+1, ",", j+1, ") = ")
 			Lire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 
 	min_l ← 0
@@ -20,7 +29,10 @@ debut
 	min_c ← 0
 	max_c ← 0
 
+	Ecrire("Operation concernant les lignes : ")
 	Pour i ← 0 à 3 pas 1 faire
+		max_l <-- X(i, 0)
+		min_l <-- X(i, 0)
 		Pour j ← 0 à 5 pas 1 faire
 			Si X(i, j) < min_l alors
 				min_l ← X(i, j)
@@ -32,9 +44,13 @@ debut
 		fin Pour
 		Ecrire("MAX ligne ", i + 1, " = ", max_l)
 		Ecrire("MIN ligne ", i + 1, " = ", min_l)
+		Ecrire()
 	fin Pour
-	
+
+	Ecrire("Operation concernant les colonnes : ")
 	Pour j ← 0 à 5 pas 1 faire
+		max_c <-- X(0, j)
+		min_c <-- X(0, j)
 		Pour i ← 0 à 3 pas 1 faire
 			Si X(i, j) < min_c alors
 				min_c ← X(i, j)
@@ -46,5 +62,6 @@ debut
 		fin Pour
 		Ecrire("MAX colonne ", j + 1, " = ", max_c)
 		Ecrire("MIN colonne ", j + 1, " = ", min_c)
+		Ecrire()
 	fin Pour
 fin

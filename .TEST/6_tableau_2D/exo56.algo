@@ -1,17 +1,26 @@
-Algorithme somme_deux_matrices
+%
+Ecrire un Algorithme qui remplit un tableau 2D
+et dimensions (5, 5), puis l'algorithme calcule 
+la somme de la diagonale principale.
+%
+
+Algorithme somme_diagonale
 
 Variable
-	Tableau X(5 , 5), d: entier
-	i, j: entier
+	Tableau X(5 , 5): entier
+	i, j, d: entier
 
 debut
+	Ecrire("Remplissage du tableau : ")
 	Pour i ← 0 à 4 pas 1 faire
 		Pour j ← 0 à 4 pas 1 faire
 			Ecrire("X(", i+1, ",", j+1, ") = ")
 			lire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 	d ← 0
+	Ecrire("Calcul de la diagonale en cours...")
 	Pour i ← 0 à 4 pas 1 faire
 		Pour j ← 0 à 4 pas 1 faire
 			Si i = j alors
@@ -20,6 +29,6 @@ debut
 		fin Pour
 	fin Pour
 	
-	Ecrire("Diagonale = ", d)
+	Ecrire("Somme de la Diagonale = ", d)
 
 fin

@@ -1,4 +1,13 @@
-Algorithme somme_deux_matrices
+%
+Ecrire l'Algorithme qui remplit
+et echange le triangle inferieur
+par le triangle superieur dans un 
+tableau 2D. C'est donc le tableau 
+obtenue en faisant la symetrie par
+rapport a la diagonale principale.
+%
+
+Algorithme echange_triangle_inf_sup
 
 Variable
 	Tableau X(5 , 5): entier
@@ -6,13 +15,16 @@ Variable
 	i, j: entier
 
 debut
+	Ecrire("Remplissage du tableau : ")
 	Pour i ← 0 à 4 pas 1 faire
 		Pour j ← 0 à 4 pas 1 faire
 			Ecrire("X(", i+1, ",", j+1, ") = ")
 			Lire(X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
-	
+
+	Ecrire("Echange en cours...")
 	Pour i ← 0 à 3 pas 1 faire
 		Pour j ← i + 1 à 4 pas 1 faire
 			b ← X(i, j)
@@ -20,11 +32,13 @@ debut
 			X(j, i) ← b
 		fin Pour
 	fin Pour
-	
+
+	Ecrire("Affichage après echange  : ")
 	Pour i ← 0 à 4 pas 1 faire
 		Pour j ← 0 à 4 pas 1 faire
 			Ecrire("X(", i+1, ",", j+1, ") = ", X(i, j))
 		fin Pour
+		Ecrire()
 	fin Pour
 
 fin
