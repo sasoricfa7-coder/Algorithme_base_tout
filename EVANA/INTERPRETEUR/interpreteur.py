@@ -47,7 +47,7 @@ class Interpreteur:
             valeur = False if valeur=="faux" else True
         self.env_courant.definir(nom, valeur)
 
-    def formater(self, valeur: int | float) -> int | float:
+    def formater(self, valeur: int | float) -> str:
         return f"{valeur:_}"
 
     def lire_tableau(self, tableau: list, indices: list[int], ligne: int = -1):

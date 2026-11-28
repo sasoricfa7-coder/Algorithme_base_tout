@@ -1,7 +1,7 @@
 %
 Les produits dans un magasin sont classés en trois categories de point
-du vue TVA: A = 7% , B = 20% et C = 25%
-Ecrivez un algorithme Prix qui calcule le prix TCC d'un produit connaissant son prix 
+du vue TVA: A = 7 pour cent, B = 20 pour cent et C = 25 pour cent
+Ecrivez un algorithme Prix qui calcule le prix TTC d'un produit connaissant son prix
 hors taxe et sa categorie.
 %
 

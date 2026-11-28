@@ -50,3 +50,7 @@ except PermissionError:
     erreur(
         "Vous n'avez pas la permission d'executer ce fichier"
     )
+except EOFError:
+    print("\n\033[1m\033[93mFin de la saisie (Ctrl+D) // End of input\033[0m")
+    stopper(130)
+
